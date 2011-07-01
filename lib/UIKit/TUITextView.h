@@ -78,5 +78,5 @@
 @end
 
 
-extern TUIViewDrawRect TUITextViewSearchFrame();
-extern TUIViewDrawRect TUITextViewSearchFrameOverDark();
+extern TUIViewDrawRect TUITextViewSearchFrame(void);
+extern TUIViewDrawRect TUITextViewSearchFrameOverDark(void);

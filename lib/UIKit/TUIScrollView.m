@@ -324,7 +324,7 @@ static CGFloat PointDist(CGPoint a, CGPoint b)
 	return sqrt(dx*dx + dy*dy);
 }
 
-CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
+static CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
 {
 	CGPoint p;
 	p.x = lerp(a.x, b.x, t);

@@ -136,14 +136,14 @@
 	return contentRect;
 }
 
-CGRect ButtonRectRoundOrigin(CGRect f)
+static CGRect ButtonRectRoundOrigin(CGRect f)
 {
 	f.origin.x = roundf(f.origin.x);
 	f.origin.y = roundf(f.origin.y);
 	return f;
 }
 
-CGRect ButtonRectCenteredInRect(CGRect a, CGRect b)
+static CGRect ButtonRectCenteredInRect(CGRect a, CGRect b)
 {
 	CGRect r;
 	r.size = a.size;

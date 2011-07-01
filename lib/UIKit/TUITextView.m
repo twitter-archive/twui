@@ -289,7 +289,7 @@ static CAAnimation *ThrobAnimation()
 
 @end
 
-void TUITextViewDrawRoundedFrame(TUIView *view, CGFloat radius, BOOL overDark)
+static void TUITextViewDrawRoundedFrame(TUIView *view, CGFloat radius, BOOL overDark)
 {
 	CGRect rect = view.bounds;
 	CGContextRef ctx = TUIGraphicsGetCurrentContext();
@@ -330,14 +330,14 @@ void TUITextViewDrawRoundedFrame(TUIView *view, CGFloat radius, BOOL overDark)
 	CGContextRestoreGState(ctx);
 }
 
-TUIViewDrawRect TUITextViewSearchFrame()
+TUIViewDrawRect TUITextViewSearchFrame(void)
 {
 	return [[^(TUIView *view, CGRect rect) {
 		TUITextViewDrawRoundedFrame(view, 	floor(view.bounds.size.height / 2), NO);
 	} copy] autorelease];
 }
 
-TUIViewDrawRect TUITextViewSearchFrameOverDark()
+TUIViewDrawRect TUITextViewSearchFrameOverDark(void)
 {
 	return [[^(TUIView *view, CGRect rect) {
 		TUITextViewDrawRoundedFrame(view, 	floor(view.bounds.size.height / 2), YES);

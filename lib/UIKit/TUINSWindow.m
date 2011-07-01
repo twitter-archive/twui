@@ -198,7 +198,7 @@ NSInteger makeFirstResponderCount = 0;
 
 @end
 
-NSScreen *ABScreenForProposedWindowRect(NSRect proposedRect)
+static NSScreen *ABScreenForProposedWindowRect(NSRect proposedRect)
 {
 	NSScreen *screen = [NSScreen mainScreen];
 	
