@@ -28,7 +28,7 @@ An included example project shows off the basic construction of a pure TwUI-base
 
 TwUI should be considered an alpha project.  It is current shipping in Twitter for Mac, in use 24/7 by many, many users and has proven itself very stable.  The code still has a few Twitter-for-Mac-isms that should be refactored and cleaned up.
 
-This project follows the [SemVer](http://semver.org/) standard. The API may change in backward incompatible ways before the 1.0 release.
+This project follows the [SemVer](http://semver.org/) standard. The API may change in backwards-incompatible ways before the 1.0 release.
 
 The goal of TwUI is to build a high-quality UI framework designed specifically for the Mac.  Much inspiration comes from UIKit, but diverging to try new things (i.e. block-based layout and drawRect), and to optimize for Mac-specific interactions is encouraged.
 
@@ -48,7 +48,9 @@ You can generate documentation with [doxygen](http://www.doxygen.org). Install i
 > cd docs
 > doxygen
 
-Documentation is a work in progress, but the API will be familiar if you have used UIKit.
+Documentation is a work in progress, but the API will be familiar if you have used UIKit.  (TODO: [appledoc](http://www.gentlebytes.com/home/appledocapp/) looks very cool, moving to that might be nice).
+
+TwUI has a mailing list, subscribe by sending an email to <twui@librelist.com>.
 
 # Copyright and License
 
