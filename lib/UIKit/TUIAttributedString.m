@@ -22,7 +22,7 @@
 
 + (TUIAttributedString *)stringWithString:(NSString *)string
 {
-	return [[[NSMutableAttributedString alloc] initWithString:string] autorelease];
+	return (TUIAttributedString *)[[[NSMutableAttributedString alloc] initWithString:string] autorelease];
 }
 
 @end
