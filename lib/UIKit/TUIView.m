@@ -807,7 +807,7 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 - (void)setBackgroundColor:(TUIColor *)color
 {
 	self.layer.backgroundColor = color.CGColor;
-	if(color.alpha < 1.0)
+	if(color.alphaComponent < 1.0)
 		self.opaque = NO;
 	[self setNeedsDisplay];
 }

@@ -196,9 +196,41 @@ CACHED_COLOR(graphiteColor,		[self colorWithRed:0.45 green:0.49 blue:0.58 alpha:
 	return _nsColor;
 }
 
-- (CGFloat)alpha
+- (CGFloat)alphaComponent
 {
 	return CGColorGetAlpha(_cgColor);
+}
+
+- (void)getRed:(CGFloat *)r green:(CGFloat *)g blue:(CGFloat *)b alpha:(CGFloat *)a
+{
+	switch(CGColorGetNumberOfComponents(_cgColor)) {
+		case 4: { // assume RGBA
+			const CGFloat *components = CGColorGetComponents(_cgColor);
+			if(r) *r = components[0];
+			if(g) *g = components[1];
+			if(b) *b = components[2];
+			if(a) *a = components[3];
+			break;
+		}
+		default:
+			// fail silently
+			break;
+	}
+}
+
+- (void)getWhite:(CGFloat *)w alpha:(CGFloat *)a
+{
+	switch(CGColorGetNumberOfComponents(_cgColor)) {
+		case 2: { // assume LA
+			const CGFloat *components = CGColorGetComponents(_cgColor);
+			if(w) *w = components[0];
+			if(a) *a = components[1];
+			break;
+		}
+		default:
+			// fail silently
+			break;
+	}
 }
 
 @end

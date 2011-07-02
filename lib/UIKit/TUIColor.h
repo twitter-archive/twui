@@ -69,16 +69,23 @@
 
 - (TUIColor *)colorWithAlphaComponent:(CGFloat)alpha;
 
-/**
- Very fast
- */
 @property (nonatomic, readonly) CGColorRef CGColor;
 
+@property (nonatomic, readonly) CGFloat alphaComponent;
+
 /**
- Not as fast
+ It is the caller's responsibility to ensure the reciever is an RGBA color. Pass NULL for components you don't care about.
+ */
+- (void)getRed:(CGFloat *)r green:(CGFloat *)g blue:(CGFloat *)b alpha:(CGFloat *)a;
+
+/**
+ It is the caller's responsibility to ensure the reciever is an Luminance/Alpha color. Pass NULL for components you don't care about.
+ */
+- (void)getWhite:(CGFloat *)w alpha:(CGFloat *)a;
+
+/**
+ Not cached
  */
 @property (nonatomic, readonly) NSColor *nsColor;
-
-@property (nonatomic, readonly) CGFloat alpha;
 
 @end
