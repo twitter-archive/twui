@@ -60,20 +60,27 @@
 	CGRect b = self.bounds;
 	CGContextRef ctx = TUIGraphicsGetCurrentContext();
 	
-	// light gray background
-	CGContextSetRGBFillColor(ctx, .97, .97, .97, 1);
-	CGContextFillRect(ctx, b);
+	if(self.selected) {
+		// selected background
+		CGContextSetRGBFillColor(ctx, .87, .87, .87, 1);
+		CGContextFillRect(ctx, b);
+	} else {
+		// light gray background
+		CGContextSetRGBFillColor(ctx, .97, .97, .97, 1);
+		CGContextFillRect(ctx, b);
+		
+		// emboss
+		CGContextSetRGBFillColor(ctx, 1, 1, 1, 0.9); // light at the top
+		CGContextFillRect(ctx, CGRectMake(0, b.size.height-1, b.size.width, 1));
+		CGContextSetRGBFillColor(ctx, 0, 0, 0, 0.08); // dark at the bottom
+		CGContextFillRect(ctx, CGRectMake(0, 0, b.size.width, 1));
+	}
 	
 	// text
 	CGRect textRect = CGRectOffset(b, 15, -15);
 	textRenderer.frame = textRect; // set the frame so it knows where to draw itself
 	[textRenderer draw];
 	
-	// emboss
-	CGContextSetRGBFillColor(ctx, 1, 1, 1, 0.9); // light at the top
-	CGContextFillRect(ctx, CGRectMake(0, b.size.height-1, b.size.width, 1));
-	CGContextSetRGBFillColor(ctx, 0, 0, 0, 0.08); // dark at the bottom
-	CGContextFillRect(ctx, CGRectMake(0, 0, b.size.width, 1));
 }
 
 @end
