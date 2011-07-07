@@ -34,14 +34,16 @@ typedef struct {
   
 }
 
-@property (readonly) TUIView        * headerView;
-@property (nonatomic, assign) CGFloat sectionOffset;
+@property (readonly) TUIView          * headerView;
+@property (nonatomic, assign) CGFloat   sectionOffset;
+@property (readonly) NSInteger          sectionIndex;
 
 @end
 
 @implementation TUITableViewSection
 
 @synthesize sectionOffset;
+@synthesize sectionIndex;
 
 -(id)initWithNumberOfRows:(NSUInteger)n sectionIndex:(NSInteger)s tableView:(TUITableView *)t {
 	if((self = [super init])){
@@ -335,9 +337,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
   NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
   
 	for(int i = 0; i < [_sectionInfo count]; i++) {
-	  TUITableViewSection *section = [_sectionInfo objectAtIndex:[_sectionInfo count] - i - 1];
-		NSInteger numberOfRows = [section numberOfRows];
-    if(CGRectIntersectsRect(CGRectMake(0, section.sectionOffset, self.bounds.size.width, section.sectionHeight), rect)){
+    if(CGRectIntersectsRect([self rectForHeaderOfSection:i], rect)){
       [indexes addIndex:i];
     }
 	}
@@ -355,9 +355,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
   NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
   
 	for(int i = 0; i < [_sectionInfo count]; i++) {
-	  TUITableViewSection *section = [_sectionInfo objectAtIndex:[_sectionInfo count] - i - 1];
-		NSInteger numberOfRows = [section numberOfRows];
-    if(CGRectIntersectsRect(CGRectMake(0, section.sectionOffset, self.bounds.size.width, section.headerHeight), rect)){
+    if(CGRectIntersectsRect([self rectForHeaderOfSection:i], rect)){
       [indexes addIndex:i];
     }
 	}
