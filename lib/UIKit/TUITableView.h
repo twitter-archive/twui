@@ -46,34 +46,36 @@ typedef enum {
 
 @end
 
-@interface TUITableView : TUIScrollView
-{
-	TUITableViewStyle				 _style;
-	id <TUITableViewDataSource>	 _dataSource; // weak
-	NSArray							*_sectionInfo;
-
-	TUIView						*_pullDownView;
-
-	CGSize							_lastSize;
-	CGFloat							_contentHeight;
-	
-	NSMutableDictionary				*_visibleItems;
-	NSMutableDictionary				*_reusableTableCells;
-	
-	TUIFastIndexPath				*_selectedIndexPath;
-	TUIFastIndexPath				*_indexPathShouldBeFirstResponder;
-	NSInteger						_futureMakeFirstResponderToken;
-	TUIFastIndexPath				*_keepVisibleIndexPathForReload;
-	CGFloat							_relativeOffsetForReload;
-	
-	struct {
-		unsigned int forceSaveScrollPosition:1;
-		unsigned int derepeaterEnabled:1;
-		unsigned int layoutSubviewsReentrancyGuard:1;
-		unsigned int didFirstLayout:1;
-		unsigned int dataSourceNumberOfSectionsInTableView:1;
-		unsigned int delegateTableViewWillDisplayCellForRowAtIndexPath:1;
-	} _tableFlags;
+@interface TUITableView : TUIScrollView {
+  
+  TUITableViewStyle             _style;
+  id <TUITableViewDataSource>	  _dataSource; // weak
+  NSArray							        * _sectionInfo;
+  
+  TUIView                     * _pullDownView;
+  
+  CGSize                        _lastSize;
+  CGFloat                       _contentHeight;
+  
+  NSMutableIndexSet           * _visibleSectionHeaders;
+  NSMutableDictionary         * _visibleItems;
+  NSMutableDictionary         * _reusableTableCells;
+  
+  TUIFastIndexPath            * _selectedIndexPath;
+  TUIFastIndexPath            * _indexPathShouldBeFirstResponder;
+  NSInteger                     _futureMakeFirstResponderToken;
+  TUIFastIndexPath            * _keepVisibleIndexPathForReload;
+  CGFloat                       _relativeOffsetForReload;
+  
+  struct {
+    unsigned int forceSaveScrollPosition:1;
+    unsigned int derepeaterEnabled:1;
+    unsigned int layoutSubviewsReentrancyGuard:1;
+    unsigned int didFirstLayout:1;
+    unsigned int dataSourceNumberOfSectionsInTableView:1;
+    unsigned int delegateTableViewWillDisplayCellForRowAtIndexPath:1;
+  } _tableFlags;
+  
 }
 
 - (id)initWithFrame:(CGRect)frame style:(TUITableViewStyle)style;                // must specify style at creation. -initWithFrame: calls this with UITableViewStylePlain
@@ -91,8 +93,11 @@ typedef enum {
 - (NSInteger)numberOfSections;
 - (NSInteger)numberOfRowsInSection:(NSInteger)section;
 
+- (CGRect)rectForHeaderOfSection:(NSInteger)section;
 - (CGRect)rectForRowAtIndexPath:(TUIFastIndexPath *)indexPath;
 
+- (NSIndexSet *)indexesOfSectionsInRect:(CGRect)rect;
+- (NSIndexSet *)indexesOfSectionHeadersInRect:(CGRect)rect;
 - (TUIFastIndexPath *)indexPathForCell:(TUITableViewCell *)cell;                      // returns nil if cell is not visible
 - (NSArray *)indexPathsForRowsInRect:(CGRect)rect;                              // returns nil if rect not valid 
 
@@ -133,6 +138,8 @@ typedef enum {
 - (TUITableViewCell *)tableView:(TUITableView *)tableView cellForRowAtIndexPath:(TUIFastIndexPath *)indexPath;
 
 @optional
+
+- (TUITableViewCell *)tableView:(TUITableView *)tableView headerViewForSection:(NSInteger)section;
 
 /**
  Default is 1 if not implemented
