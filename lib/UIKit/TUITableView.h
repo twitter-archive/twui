@@ -42,6 +42,7 @@ typedef enum {
 
 - (void)tableView:(TUITableView *)tableView willDisplayCell:(TUITableViewCell *)cell forRowAtIndexPath:(TUIFastIndexPath *)indexPath; // not implemented yet
 - (void)tableView:(TUITableView *)tableView didSelectRowAtIndexPath:(TUIFastIndexPath *)indexPath; // happens on mouse down
+- (void)tableView:(TUITableView *)tableView didDeselectRowAtIndexPath:(TUIFastIndexPath *)indexPath;
 - (void)tableView:(TUITableView *)tableView didClickRowAtIndexPath:(TUIFastIndexPath *)indexPath withEvent:(NSEvent *)event; // happens on mouse up (can look at clickCount)
 
 @end
@@ -67,6 +68,8 @@ typedef enum {
   TUIFastIndexPath            * _keepVisibleIndexPathForReload;
   CGFloat                       _relativeOffsetForReload;
   
+  BOOL                          _animateSelectionChanges;
+  
   struct {
     unsigned int forceSaveScrollPosition:1;
     unsigned int derepeaterEnabled:1;
@@ -80,8 +83,10 @@ typedef enum {
 
 - (id)initWithFrame:(CGRect)frame style:(TUITableViewStyle)style;                // must specify style at creation. -initWithFrame: calls this with UITableViewStylePlain
 
-@property (nonatomic,assign) id <TUITableViewDataSource> dataSource;
-@property (nonatomic,assign) id <TUITableViewDelegate>   delegate;
+@property (nonatomic,assign) id <TUITableViewDataSource>  dataSource;
+@property (nonatomic,assign) id <TUITableViewDelegate>    delegate;
+
+@property (readwrite, assign) BOOL                        animateSelectionChanges;
 
 - (void)reloadData;
 

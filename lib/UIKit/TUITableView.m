@@ -132,6 +132,7 @@ typedef struct {
 @implementation TUITableView
 
 @synthesize pullDownView=_pullDownView;
+@synthesize animateSelectionChanges = _animateSelectionChanges;
 
 - (id)initWithFrame:(CGRect)frame style:(TUITableViewStyle)style
 {
@@ -140,6 +141,7 @@ typedef struct {
 		_reusableTableCells = [[NSMutableDictionary alloc] init];
 		_visibleSectionHeaders = [[NSMutableIndexSet alloc] init];
 		_visibleItems = [[NSMutableDictionary alloc] init];
+		_animateSelectionChanges = TRUE;
 	}
 	return self;
 }
@@ -714,29 +716,47 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 
 - (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition
 {
+  
 	if([indexPath isEqual:[self indexPathForSelectedRow]]) {
 		// just scroll to visible
 	} else {
 		[self deselectRowAtIndexPath:[self indexPathForSelectedRow] animated:animated];
+		
 		TUITableViewCell *cell = [self cellForRowAtIndexPath:indexPath]; // may be nil
 		[cell setSelected:YES animated:animated];
 		[_selectedIndexPath release]; // should already be nil
 		_selectedIndexPath = [indexPath retain];
 		[cell setNeedsDisplay];
+		
+		// only notify when the selection actually changes
+    if([self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
+      [self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
+    }
+		
 	}
+	
 	[self _makeRowAtIndexPathFirstResponder:indexPath];
 	[self scrollToRowAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
 }
 
 - (void)deselectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated
 {
+  
 	if([indexPath isEqual:_selectedIndexPath]) {
 		TUITableViewCell *cell = [self cellForRowAtIndexPath:indexPath]; // may be nil
+		
 		[cell setSelected:NO animated:animated];
 		[_selectedIndexPath release];
 		_selectedIndexPath = nil;
 		[cell setNeedsDisplay];
+		
+		// only notify when the selection actually changes
+    if([self.delegate respondsToSelector:@selector(tableView:didDeselectRowAtIndexPath:)]){
+      [self.delegate tableView:self didDeselectRowAtIndexPath:indexPath];
+    }
+    
 	}
+	
 }
 
 - (TUIFastIndexPath *)indexPathForFirstVisibleRow 
@@ -789,7 +809,8 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 				newIndexPath = [TUIFastIndexPath indexPathForRow:row inSection:section];
 			}
 			
-			[self selectRowAtIndexPath:newIndexPath animated:YES scrollPosition:TUITableViewScrollPositionToVisible];
+			[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
+			
 			return YES;
 		}
 	
@@ -817,7 +838,8 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 				newIndexPath = [TUIFastIndexPath indexPathForRow:row inSection:section];
 			}
 			
-			[self selectRowAtIndexPath:newIndexPath animated:YES scrollPosition:TUITableViewScrollPositionToVisible];
+			[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
+			
 			return YES;
 		}
 	}
