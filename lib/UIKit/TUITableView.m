@@ -331,18 +331,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
  */
 -(NSIndexSet *)indexesOfSectionsInRect:(CGRect)rect {
   NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
-  BOOL foundAny = FALSE;
   
 	for(int i = 0; i < [_sectionInfo count]; i++) {
-	  TUITableViewSection *section = [_sectionInfo objectAtIndex:i];
+	  TUITableViewSection *section = [_sectionInfo objectAtIndex:[_sectionInfo count] - i - 1];
 		NSInteger numberOfRows = [section numberOfRows];
     if(CGRectIntersectsRect(CGRectMake(0, section.sectionOffset, self.bounds.size.width, section.sectionHeight), rect)){
       [indexes addIndex:i];
-      foundAny = TRUE;
-    }else if(foundAny){
-      // we've passed the area that contains headers, so we don't need
-      // to keep looking for visible frames
-      break;
     }
 	}
 	
@@ -357,18 +351,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
  */
 -(NSIndexSet *)indexesOfSectionHeadersInRect:(CGRect)rect {
   NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
-  BOOL foundAny = FALSE;
   
 	for(int i = 0; i < [_sectionInfo count]; i++) {
-	  TUITableViewSection *section = [_sectionInfo objectAtIndex:i];
+	  TUITableViewSection *section = [_sectionInfo objectAtIndex:[_sectionInfo count] - i - 1];
 		NSInteger numberOfRows = [section numberOfRows];
     if(CGRectIntersectsRect(CGRectMake(0, section.sectionOffset, self.bounds.size.width, section.headerHeight), rect)){
       [indexes addIndex:i];
-      foundAny = TRUE;
-    }else if(foundAny){
-      // we've passed the area that contains headers, so we don't need
-      // to keep looking for visible frames
-      break;
     }
 	}
 	
@@ -520,11 +508,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		[_visibleSectionHeaders removeIndex:index];
 	}];
 	
-	// add new headeres
+	// add new headers
 	[toAdd enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
     TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
     if(section.headerView != nil){
       section.headerView.frame = [self rectForHeaderOfSection:index];
+      [section.headerView setNeedsLayout];
       [self addSubview:section.headerView];
     }
 		[_visibleSectionHeaders addIndex:index];
