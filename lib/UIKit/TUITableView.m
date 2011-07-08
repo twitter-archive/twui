@@ -480,10 +480,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
   if(visibleHeadersNeedRelayout){
     if(_visibleSectionHeaders != nil){
       [_visibleSectionHeaders enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-        TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
-        if(section.headerView != nil){
-          section.headerView.frame = [self rectForHeaderOfSection:index];
-          [section.headerView setNeedsLayout];
+        if(index >= 0 && index < [_sectionInfo count]){
+          TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
+          if(section.headerView != nil){
+            section.headerView.frame = [self rectForHeaderOfSection:index];
+            [section.headerView setNeedsLayout];
+          }
         }
       }];
     }
@@ -501,20 +503,24 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	
 	// remove offscreen headers
 	[toRemove enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-    TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
-    if(section.headerView != nil){
-      [section.headerView removeFromSuperview];
+    if(index >= 0 && index < [_sectionInfo count]){
+      TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
+      if(section.headerView != nil){
+        [section.headerView removeFromSuperview];
+      }
     }
-		[_visibleSectionHeaders removeIndex:index];
+    [_visibleSectionHeaders removeIndex:index];
 	}];
 	
 	// add new headers
 	[toAdd enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-    TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
-    if(section.headerView != nil){
-      section.headerView.frame = [self rectForHeaderOfSection:index];
-      [section.headerView setNeedsLayout];
-      [self addSubview:section.headerView];
+    if(index >= 0 && index < [_sectionInfo count]){
+      TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
+      if(section.headerView != nil){
+        section.headerView.frame = [self rectForHeaderOfSection:index];
+        [section.headerView setNeedsLayout];
+        [self addSubview:section.headerView];
+      }
     }
 		[_visibleSectionHeaders addIndex:index];
 	}];
