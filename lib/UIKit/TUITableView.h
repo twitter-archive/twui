@@ -47,38 +47,36 @@ typedef enum {
 
 @end
 
-@interface TUITableView : TUIScrollView {
-  
-  TUITableViewStyle             _style;
-  id <TUITableViewDataSource>	  _dataSource; // weak
-  NSArray							        * _sectionInfo;
-  
-  TUIView                     * _pullDownView;
-  
-  CGSize                        _lastSize;
-  CGFloat                       _contentHeight;
-  
-  NSMutableIndexSet           * _visibleSectionHeaders;
-  NSMutableDictionary         * _visibleItems;
-  NSMutableDictionary         * _reusableTableCells;
-  
-  TUIFastIndexPath            * _selectedIndexPath;
-  TUIFastIndexPath            * _indexPathShouldBeFirstResponder;
-  NSInteger                     _futureMakeFirstResponderToken;
-  TUIFastIndexPath            * _keepVisibleIndexPathForReload;
-  CGFloat                       _relativeOffsetForReload;
-  
-  BOOL                          _animateSelectionChanges;
-  
-  struct {
-    unsigned int forceSaveScrollPosition:1;
-    unsigned int derepeaterEnabled:1;
-    unsigned int layoutSubviewsReentrancyGuard:1;
-    unsigned int didFirstLayout:1;
-    unsigned int dataSourceNumberOfSectionsInTableView:1;
-    unsigned int delegateTableViewWillDisplayCellForRowAtIndexPath:1;
-  } _tableFlags;
-  
+@interface TUITableView : TUIScrollView
+{
+	TUITableViewStyle             _style;
+	id <TUITableViewDataSource>	  _dataSource; // weak
+	NSArray                     * _sectionInfo;
+	
+	TUIView                     * _pullDownView;
+	
+	CGSize                        _lastSize;
+	CGFloat                       _contentHeight;
+	
+	NSMutableIndexSet           * _visibleSectionHeaders;
+	NSMutableDictionary         * _visibleItems;
+	NSMutableDictionary         * _reusableTableCells;
+	
+	TUIFastIndexPath            * _selectedIndexPath;
+	TUIFastIndexPath            * _indexPathShouldBeFirstResponder;
+	NSInteger                     _futureMakeFirstResponderToken;
+	TUIFastIndexPath            * _keepVisibleIndexPathForReload;
+	CGFloat                       _relativeOffsetForReload;
+	
+	struct {
+		unsigned int animateSelectionChanges:1;
+		unsigned int forceSaveScrollPosition:1;
+		unsigned int derepeaterEnabled:1;
+		unsigned int layoutSubviewsReentrancyGuard:1;
+		unsigned int didFirstLayout:1;
+		unsigned int dataSourceNumberOfSectionsInTableView:1;
+		unsigned int delegateTableViewWillDisplayCellForRowAtIndexPath:1;
+	} _tableFlags;
 }
 
 - (id)initWithFrame:(CGRect)frame style:(TUITableViewStyle)style;                // must specify style at creation. -initWithFrame: calls this with UITableViewStylePlain

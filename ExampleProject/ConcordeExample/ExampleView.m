@@ -132,13 +132,14 @@
 	return 50.0;
 }
 
--(TUIView *)tableView:(TUITableView *)tableView headerViewForSection:(NSInteger)section {
-  ExampleSectionHeaderView *view = [[ExampleSectionHeaderView alloc] initWithFrame:CGRectMake(0, 0, 100, 32)];
-  TUIAttributedString *title = [TUIAttributedString stringWithString:[NSString stringWithFormat:@"Example Section %d", section]];
+- (TUIView *)tableView:(TUITableView *)tableView headerViewForSection:(NSInteger)section
+{
+	ExampleSectionHeaderView *view = [[ExampleSectionHeaderView alloc] initWithFrame:CGRectMake(0, 0, 100, 32)];
+	TUIAttributedString *title = [TUIAttributedString stringWithString:[NSString stringWithFormat:@"Example Section %d", section]];
 	title.color = [TUIColor blackColor];
 	title.font = exampleFont2;
-  view.labelRenderer.attributedString = title;
-  return [view autorelease];
+	view.labelRenderer.attributedString = title;
+	return [view autorelease];
 }
 
 - (TUITableViewCell *)tableView:(TUITableView *)tableView cellForRowAtIndexPath:(TUIFastIndexPath *)indexPath

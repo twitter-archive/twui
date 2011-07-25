@@ -22,19 +22,18 @@ typedef struct {
 	CGFloat height;
 } TUITableViewRowInfo;
 
-@interface TUITableViewSection : NSObject {
-  
-  TUITableView        * _tableView;   // weak
-  TUIView             * _headerView;  // Not reusable (similar to UITableView)
-  NSInteger             sectionIndex;
-  NSUInteger            numberOfRows;
-  CGFloat               sectionHeight;
-  CGFloat               sectionOffset;
-  TUITableViewRowInfo * rowInfo;
-  
+@interface TUITableViewSection : NSObject
+{
+	TUITableView         *_tableView;   // weak
+	TUIView              *_headerView;  // Not reusable (similar to UITableView)
+	NSInteger             sectionIndex;
+	NSUInteger            numberOfRows;
+	CGFloat               sectionHeight;
+	CGFloat               sectionOffset;
+	TUITableViewRowInfo  *rowInfo;
 }
 
-@property (readonly) TUIView          * headerView;
+@property (readonly) TUIView           *headerView;
 @property (nonatomic, assign) CGFloat   sectionOffset;
 @property (readonly) NSInteger          sectionIndex;
 
@@ -45,7 +44,8 @@ typedef struct {
 @synthesize sectionOffset;
 @synthesize sectionIndex;
 
--(id)initWithNumberOfRows:(NSUInteger)n sectionIndex:(NSInteger)s tableView:(TUITableView *)t {
+- (id)initWithNumberOfRows:(NSUInteger)n sectionIndex:(NSInteger)s tableView:(TUITableView *)t
+{
 	if((self = [super init])){
 		_tableView = t;
 		sectionIndex = s;
@@ -55,23 +55,26 @@ typedef struct {
 	return self;
 }
 
--(void)dealloc {
+- (void)dealloc
+{
 	if(rowInfo) free(rowInfo);
 	[_headerView release];
 	[super dealloc];
 }
 
--(NSUInteger)numberOfRows {
+- (NSUInteger)numberOfRows
+{
 	return numberOfRows;
 }
 
--(void)_setupRowHeights {
+- (void)_setupRowHeights
+{
 	sectionHeight = 0.0;
 	
-  TUIView *header;
-  if((header = self.headerView) != nil){
-    sectionHeight += roundf(header.frame.size.height);
-  }
+	TUIView *header;
+	if((header = self.headerView) != nil) {
+		sectionHeight += roundf(header.frame.size.height);
+	}
   
 	for(int i = 0; i < numberOfRows; ++i) {
 		CGFloat h = roundf([_tableView.delegate tableView:_tableView heightForRowAtIndexPath:[TUIFastIndexPath indexPathForRow:i inSection:sectionIndex]]);
@@ -82,29 +85,34 @@ typedef struct {
 	
 }
 
--(CGFloat)rowHeight:(NSInteger)i {
-	if(i >= 0 && i < numberOfRows){
+- (CGFloat)rowHeight:(NSInteger)i
+{
+	if(i >= 0 && i < numberOfRows) {
 		return rowInfo[i].height;
 	}
 	return 0.0;
 }
 
--(CGFloat)sectionRowOffset:(NSInteger)i {
+- (CGFloat)sectionRowOffset:(NSInteger)i
+{
 	if(i >= 0 && i < numberOfRows){
 		return rowInfo[i].offset;
 	}
 	return 0.0;
 }
 
--(CGFloat)tableRowOffset:(NSInteger)i {
+- (CGFloat)tableRowOffset:(NSInteger)i
+{
 	return sectionOffset + [self sectionRowOffset:i];
 }
 
--(CGFloat)sectionHeight {
+- (CGFloat)sectionHeight
+{
 	return sectionHeight;
 }
 
--(CGFloat)headerHeight {
+- (CGFloat)headerHeight
+{
 	return (self.headerView != nil) ? self.headerView.frame.size.height : 0;
 }
 
@@ -116,13 +124,15 @@ typedef struct {
  * 
  * @return section header view
  */
--(TUIView *)headerView {
-  if(_headerView == nil){
-    if(_tableView.dataSource != nil && [_tableView.dataSource respondsToSelector:@selector(tableView:headerViewForSection:)]){
-      _headerView = [[_tableView.dataSource tableView:_tableView headerViewForSection:sectionIndex] retain];
-    }
-  }
-  return _headerView;
+- (TUIView *)headerView
+{
+	if(_headerView == nil) {
+		if(_tableView.dataSource != nil && [_tableView.dataSource respondsToSelector:@selector(tableView:headerViewForSection:)]){
+			_headerView = [[_tableView.dataSource tableView:_tableView headerViewForSection:sectionIndex] retain];
+			_headerView.autoresizingMask = TUIViewAutoresizingFlexibleWidth;
+		}
+	}
+	return _headerView;
 }
 
 @end
@@ -134,7 +144,6 @@ typedef struct {
 @implementation TUITableView
 
 @synthesize pullDownView=_pullDownView;
-@synthesize animateSelectionChanges = _animateSelectionChanges;
 
 - (id)initWithFrame:(CGRect)frame style:(TUITableViewStyle)style
 {
@@ -143,7 +152,7 @@ typedef struct {
 		_reusableTableCells = [[NSMutableDictionary alloc] init];
 		_visibleSectionHeaders = [[NSMutableIndexSet alloc] init];
 		_visibleItems = [[NSMutableDictionary alloc] init];
-		_animateSelectionChanges = TRUE;
+		_tableFlags.animateSelectionChanges = 1;
 	}
 	return self;
 }
@@ -188,6 +197,16 @@ typedef struct {
 	_tableFlags.dataSourceNumberOfSectionsInTableView = [_dataSource respondsToSelector:@selector(numberOfSectionsInTableView:)];
 }
 
+- (BOOL)animateSelectionChanges
+{
+	return _tableFlags.animateSelectionChanges;
+}
+
+- (void)setAnimateSelectionChanges:(BOOL)a
+{
+	_tableFlags.animateSelectionChanges = a;
+}
+
 - (NSInteger)numberOfSections
 {
 	return [_sectionInfo count];
@@ -198,7 +217,7 @@ typedef struct {
 	return [[_sectionInfo objectAtIndex:section] numberOfRows];
 }
 
--(CGRect)rectForHeaderOfSection:(NSInteger)section {
+- (CGRect)rectForHeaderOfSection:(NSInteger)section {
 	if(section >= 0 && section < [_sectionInfo count]){
 		TUITableViewSection *s = [_sectionInfo objectAtIndex:section];
 		CGFloat offset = [s sectionOffset];
@@ -333,16 +352,17 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
  * @param rect the rect
  * @return intersecting sections
  */
--(NSIndexSet *)indexesOfSectionsInRect:(CGRect)rect {
-  NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
-  
+- (NSIndexSet *)indexesOfSectionsInRect:(CGRect)rect
+{
+	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
+	
 	for(int i = 0; i < [_sectionInfo count]; i++) {
-    if(CGRectIntersectsRect([self rectForHeaderOfSection:i], rect)){
-      [indexes addIndex:i];
-    }
+		if(CGRectIntersectsRect([self rectForHeaderOfSection:i], rect)){
+			[indexes addIndex:i];
+		}
 	}
 	
-  return [indexes autorelease];
+	return [indexes autorelease];
 }
 
 /**
@@ -351,16 +371,17 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
  * @param rect the rect
  * @return intersecting sections
  */
--(NSIndexSet *)indexesOfSectionHeadersInRect:(CGRect)rect {
-  NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
-  
+- (NSIndexSet *)indexesOfSectionHeadersInRect:(CGRect)rect
+{
+	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
+	
 	for(int i = 0; i < [_sectionInfo count]; i++) {
-    if(CGRectIntersectsRect([self rectForHeaderOfSection:i], rect)){
-      [indexes addIndex:i];
-    }
+		if(CGRectIntersectsRect([self rectForHeaderOfSection:i], rect)){
+			[indexes addIndex:i];
+		}
 	}
 	
-  return [indexes autorelease];
+	return [indexes autorelease];
 }
 
 - (NSArray *)indexPathsForRowsInRect:(CGRect)rect
@@ -475,21 +496,21 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 /**
  * @brief Layout header views for sections which have one.
  */
--(void)_layoutSectionHeaders:(BOOL)visibleHeadersNeedRelayout {
-  
-  if(visibleHeadersNeedRelayout){
-    if(_visibleSectionHeaders != nil){
-      [_visibleSectionHeaders enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-        if(index >= 0 && index < [_sectionInfo count]){
-          TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
-          if(section.headerView != nil){
-            section.headerView.frame = [self rectForHeaderOfSection:index];
-            [section.headerView setNeedsLayout];
-          }
-        }
-      }];
-    }
-  }
+- (void)_layoutSectionHeaders:(BOOL)visibleHeadersNeedRelayout
+{
+	if(visibleHeadersNeedRelayout) {
+		if(_visibleSectionHeaders != nil){
+			[_visibleSectionHeaders enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
+				if(index < [_sectionInfo count]) {
+					TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
+					if(section.headerView != nil) {
+						section.headerView.frame = [self rectForHeaderOfSection:index];
+						[section.headerView setNeedsLayout];
+					}
+				}
+			}];
+		}
+	}
   
 	CGRect visible = [self visibleRect];
 	
@@ -503,28 +524,27 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	
 	// remove offscreen headers
 	[toRemove enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-    if(index >= 0 && index < [_sectionInfo count]){
-      TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
-      if(section.headerView != nil){
-        [section.headerView removeFromSuperview];
-      }
-    }
-    [_visibleSectionHeaders removeIndex:index];
+		if(index < [_sectionInfo count]) {
+			TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
+			if(section.headerView != nil) {
+				[section.headerView removeFromSuperview];
+			}
+		}
+		[_visibleSectionHeaders removeIndex:index];
 	}];
 	
 	// add new headers
 	[toAdd enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-    if(index >= 0 && index < [_sectionInfo count]){
-      TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
-      if(section.headerView != nil){
-        section.headerView.frame = [self rectForHeaderOfSection:index];
-        [section.headerView setNeedsLayout];
-        [self addSubview:section.headerView];
-      }
-    }
+		if(index < [_sectionInfo count]){
+			TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
+			if(section.headerView != nil) {
+				section.headerView.frame = [self rectForHeaderOfSection:index];
+				[section.headerView setNeedsLayout];
+				[self addSubview:section.headerView];
+			}
+		}
 		[_visibleSectionHeaders addIndex:index];
 	}];
-  
 }
 
 - (void)_layoutCells:(BOOL)visibleCellsNeedRelayout
