@@ -97,6 +97,7 @@ typedef enum {
 - (NSInteger)numberOfRowsInSection:(NSInteger)section;
 
 - (CGRect)rectForHeaderOfSection:(NSInteger)section;
+- (CGRect)rectForSection:(NSInteger)section;
 - (CGRect)rectForRowAtIndexPath:(TUIFastIndexPath *)indexPath;
 
 - (NSIndexSet *)indexesOfSectionsInRect:(CGRect)rect;

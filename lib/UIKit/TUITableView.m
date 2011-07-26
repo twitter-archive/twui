@@ -228,6 +228,18 @@ typedef struct {
 	return CGRectZero;
 }
 
+- (CGRect)rectForSection:(NSInteger)section
+{
+	if(section >= 0 && section < [_sectionInfo count]){
+		TUITableViewSection *s = [_sectionInfo objectAtIndex:section];
+		CGFloat offset = [s sectionOffset];
+		CGFloat height = [s sectionHeight];
+		CGFloat y = _contentHeight - offset - height;
+		return CGRectMake(0, y, self.bounds.size.width, height);
+	}
+	return CGRectZero;
+}
+
 - (CGRect)rectForRowAtIndexPath:(TUIFastIndexPath *)indexPath
 {
 	NSInteger section = indexPath.section;
@@ -357,7 +369,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
 	
 	for(int i = 0; i < [_sectionInfo count]; i++) {
-		if(CGRectIntersectsRect([self rectForHeaderOfSection:i], rect)){
+		if(CGRectIntersectsRect([self rectForSection:i], rect)){
 			[indexes addIndex:i];
 		}
 	}
