@@ -659,6 +659,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 
 - (void)reloadData
 {
+  
+  // notify our delegate we're about to reload the table
+  if(self.delegate != nil && [self.delegate respondsToSelector:@selector(tableViewWillReloadData:)]){
+    [self.delegate tableViewWillReloadData:self];
+  }
+  
 	// need to recycle all visible cells, have them be regenerated on layoutSubviews
 	// because the same cells might have different content
 	for(TUIFastIndexPath *i in _visibleItems) {
@@ -672,6 +678,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	_sectionInfo = nil; // will be regenerated on next layout
 	
 	[self layoutSubviews];
+	
+  // notify our delegate the table view has been reloaded
+  if(self.delegate != nil && [self.delegate respondsToSelector:@selector(tableViewDidReloadData:)]){
+    [self.delegate tableViewDidReloadData:self];
+  }
+  
 }
 
 - (void)layoutSubviews
