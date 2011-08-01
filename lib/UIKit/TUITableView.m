@@ -172,6 +172,9 @@ typedef struct {
 	[_indexPathShouldBeFirstResponder release];
 	[_keepVisibleIndexPathForReload release];
 	[_pullDownView release];
+	[_currentDragToReorderIndexPath release];
+	[_previousDragToReorderIndexPath release];
+	[_referenceDragToReorderIndexPath release];
 	[super dealloc];
 }
 
@@ -414,6 +417,32 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		++sectionIndex;
 	}
 	return indexPaths;
+}
+
+/**
+ * @brief Obtain the index path of the row at the specified point
+ * 
+ * If the point is not valid or no row exists at that point, nil is
+ * returned.
+ * 
+ * @param point location in the table view
+ * @return index path of the row at @p point
+ */
+- (TUIFastIndexPath *)indexPathForRowAtPoint:(CGPoint)point {
+  
+	NSInteger sectionIndex = 0;
+  for(TUITableViewSection *section in _sectionInfo){
+    for(NSInteger row = 0; row < [section numberOfRows]; row++){
+      TUIFastIndexPath *indexPath = [TUIFastIndexPath indexPathForRow:row inSection:sectionIndex];
+      CGRect cellRect = [self rectForRowAtIndexPath:indexPath];
+      if(CGRectContainsPoint(cellRect, point)){
+        return indexPath;
+      }
+    }
+		++sectionIndex;
+  }
+	
+	return nil;
 }
 
 - (TUIFastIndexPath *)_topVisibleIndexPath

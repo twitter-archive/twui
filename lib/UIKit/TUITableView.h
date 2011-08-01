@@ -44,8 +44,14 @@ typedef enum {
 - (void)tableView:(TUITableView *)tableView didSelectRowAtIndexPath:(TUIFastIndexPath *)indexPath; // happens on mouse down
 - (void)tableView:(TUITableView *)tableView didDeselectRowAtIndexPath:(TUIFastIndexPath *)indexPath;
 - (void)tableView:(TUITableView *)tableView didClickRowAtIndexPath:(TUIFastIndexPath *)indexPath withEvent:(NSEvent *)event; // happens on mouse up (can look at clickCount)
+
+// the following are good places to update or restore state (such as selection) when the table data reloads
 - (void)tableViewWillReloadData:(TUITableView *)tableView;
 - (void)tableViewDidReloadData:(TUITableView *)tableView;
+
+// the following are required to support dragging to reorder cells
+- (BOOL)tableView:(TUITableView *)tableView allowsReorderingOfRowAtIndexPath:(TUIFastIndexPath *)indexPath;
+- (TUIFastIndexPath *)tableView:(TUITableView *)tableView targetIndexPathForMoveFromRowAtIndexPath:(TUIFastIndexPath *)fromPath toProposedIndexPath:(TUIFastIndexPath *)proposedPath;
 
 @end
 
@@ -70,6 +76,11 @@ typedef enum {
 	TUIFastIndexPath            * _keepVisibleIndexPathForReload;
 	CGFloat                       _relativeOffsetForReload;
 	
+  TUIFastIndexPath            * _currentDragToReorderIndexPath;
+  TUIFastIndexPath            * _previousDragToReorderIndexPath;
+  TUIFastIndexPath            * _referenceDragToReorderIndexPath;
+	NSComparisonResult            _currentDragToReorderDirection;
+  
 	struct {
 		unsigned int animateSelectionChanges:1;
 		unsigned int forceSaveScrollPosition:1;
@@ -79,6 +90,7 @@ typedef enum {
 		unsigned int dataSourceNumberOfSectionsInTableView:1;
 		unsigned int delegateTableViewWillDisplayCellForRowAtIndexPath:1;
 	} _tableFlags;
+	
 }
 
 - (id)initWithFrame:(CGRect)frame style:(TUITableViewStyle)style;                // must specify style at creation. -initWithFrame: calls this with UITableViewStylePlain
@@ -106,6 +118,7 @@ typedef enum {
 - (NSIndexSet *)indexesOfSectionHeadersInRect:(CGRect)rect;
 - (TUIFastIndexPath *)indexPathForCell:(TUITableViewCell *)cell;                      // returns nil if cell is not visible
 - (NSArray *)indexPathsForRowsInRect:(CGRect)rect;                              // returns nil if rect not valid 
+- (TUIFastIndexPath *)indexPathForRowAtPoint:(CGPoint)point;
 
 - (TUITableViewCell *)cellForRowAtIndexPath:(TUIFastIndexPath *)indexPath;            // returns nil if cell is not visible or index path is out of range
 - (NSArray *)visibleCells; // no particular order
