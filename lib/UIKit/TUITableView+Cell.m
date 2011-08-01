@@ -79,45 +79,78 @@
   // we now have the final destination index path.  if it's not nil, update surrounding
   // cells to make room for the dragged cell
   if(currentPath != nil && (_currentDragToReorderIndexPath == nil || ![currentPath isEqual:_currentDragToReorderIndexPath])){
-    TUIFastIndexPath *previousPath = (_currentDragToReorderIndexPath == nil) ? cell.indexPath : _currentDragToReorderIndexPath;
+    NSComparisonResult relativeDirection = [currentPath compare:cell.indexPath];
     
     // determine whether we're above or below the original index path and handle the
     // reordering accodringly
     if(currentDragDirection == NSOrderedAscending){
-      NSLog(@"Above: %@", currentPath);
-      CGFloat adjust = ([currentPath compare:cell.indexPath] == NSOrderedDescending) ? 1 : 0;
+      NSLog(@"  Up: %@", currentPath);
       
-      int irow = currentPath.row;
+      int irow;
+      if(relativeDirection == NSOrderedDescending){
+        irow = currentPath.row + 1; // restore below only
+      }else{
+        irow = currentPath.row;
+      }
+      
       for(int i = currentPath.section; i < [self numberOfSections]; i++){
         for(int j = irow; j < [self numberOfRowsInSection:i]; j++){
           TUIFastIndexPath *path = [TUIFastIndexPath indexPathForRow:j inSection:i];
           TUITableViewCell *displacedCell;
+          
+          if((displacedCell = [self cellForRowAtIndexPath:path]) != nil){
+            CGRect frame = [self rectForRowAtIndexPath:path];
+            if(relativeDirection == NSOrderedDescending || relativeDirection == NSOrderedSame){
+              // if we're moving up but we are below or at the dragged cell index, cells are returned to their
+              // original frame as they're passed
+              displacedCell.frame = frame;
+            }else if(relativeDirection == NSOrderedAscending){
+              // if we're moving up but we are above the dragged cell index, cells are adjusted down to swap
+              // places with the dragged cell
+              displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+            }
+          }
+          
           if([path isEqual:_previousDragToReorderIndexPath]){
             goto done; // stop when we hit the original row
-          }else if((displacedCell = [self cellForRowAtIndexPath:path]) != nil){
-            CGRect frame = [self rectForRowAtIndexPath:path];
-            displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
           }
+          
         }
         irow = 0;
       }
       
     }else if(currentDragDirection == NSOrderedDescending){
-      NSLog(@"Below: %@ (%@)", currentPath, _previousDragToReorderIndexPath);
-      CGFloat adjust = ([currentPath compare:cell.indexPath] == NSOrderedDescending) ? 0 : 1;
+      NSLog(@"Down: %@", currentPath);
       
       int irow = _previousDragToReorderIndexPath.row;
       for(int i = _previousDragToReorderIndexPath.section; i < [self numberOfSections]; i++){
         for(int j = irow; j < [self numberOfRowsInSection:i]; j++){
           TUIFastIndexPath *path = [TUIFastIndexPath indexPathForRow:j inSection:i];
           TUITableViewCell *displacedCell;
+          
+          // stop before we handle the current row when we're above
+          if(relativeDirection == NSOrderedAscending && [path isEqual:currentPath]){
+            goto done;
+          }
+          
           if((displacedCell = [self cellForRowAtIndexPath:path]) != nil){
             CGRect frame = [self rectForRowAtIndexPath:path];
-            displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y + (cell.frame.size.height * adjust), frame.size.width, frame.size.height);
+            if(relativeDirection == NSOrderedAscending || relativeDirection == NSOrderedSame){
+              // if we're moving down but we are above or at the dragged cell index, cells are returned to their
+              // original frame as they're passed
+              displacedCell.frame = frame;
+            }else if(relativeDirection == NSOrderedDescending){
+              // if we're moving down but we are below the dragged cell index, cells are adjusted up to swap
+              // places with the dragged cell
+              displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
+            }
           }
+          
+          // stop after we handle the current row if we haven't already
           if([path isEqual:currentPath]){
-            goto done; // stop when we hit the current row
+            goto done;
           }
+          
         }
         irow = 0;
       }
