@@ -78,7 +78,6 @@ typedef enum {
 	
   TUIFastIndexPath            * _currentDragToReorderIndexPath;
   TUIFastIndexPath            * _previousDragToReorderIndexPath;
-  TUIFastIndexPath            * _referenceDragToReorderIndexPath;
 	NSComparisonResult            _currentDragToReorderDirection;
   
 	struct {

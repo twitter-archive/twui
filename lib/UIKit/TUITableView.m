@@ -174,7 +174,6 @@ typedef struct {
 	[_pullDownView release];
 	[_currentDragToReorderIndexPath release];
 	[_previousDragToReorderIndexPath release];
-	[_referenceDragToReorderIndexPath release];
 	[super dealloc];
 }
 

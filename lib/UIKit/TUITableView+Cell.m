@@ -22,24 +22,30 @@
  * @brief Mouse down in a cell
  */
 -(void)__mouseDownInCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
-  [_referenceDragToReorderIndexPath release];
-  _referenceDragToReorderIndexPath = [cell.indexPath retain];
   [_currentDragToReorderIndexPath release];
-  _currentDragToReorderIndexPath = [cell.indexPath retain];
+  _currentDragToReorderIndexPath = nil;
   [_previousDragToReorderIndexPath release];
-  _previousDragToReorderIndexPath = [cell.indexPath retain];
+  _previousDragToReorderIndexPath = nil;
 }
 
 /**
  * @brief Mouse up in a cell
  */
 -(void)__mouseUpInCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
-  [_referenceDragToReorderIndexPath release];
-  _referenceDragToReorderIndexPath = nil;
-  [_currentDragToReorderIndexPath release];
-  _currentDragToReorderIndexPath = nil;
+  BOOL animate = TRUE;
+  
+  // finalize drag to reorder if we have a drag index
+  if(_currentDragToReorderIndexPath != nil){
+    if(animate) [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
+    cell.frame = [self rectForRowAtIndexPath:_currentDragToReorderIndexPath];
+    if(animate) [TUIView commitAnimations];
+    [_currentDragToReorderIndexPath release];
+    _currentDragToReorderIndexPath = nil;
+  }
+  
   [_previousDragToReorderIndexPath release];
   _previousDragToReorderIndexPath = nil;
+  
 }
 
 /**
@@ -48,11 +54,18 @@
  * If reordering is permitted by the table, this will begin a move operation.
  */
 -(void)__mouseDraggedCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
+  BOOL animate = TRUE;
   
   // determine if reordering this cell is permitted or not via our delegate
   if(self.delegate == nil || ![self.delegate respondsToSelector:@selector(tableView:allowsReorderingOfRowAtIndexPath:)] || ![self.delegate tableView:self allowsReorderingOfRowAtIndexPath:cell.indexPath]){
     return; // reordering cells is not permitted
   }
+  
+  // initialize defaults
+  if(_currentDragToReorderIndexPath == nil)
+    _currentDragToReorderIndexPath = [cell.indexPath retain];
+  if(_previousDragToReorderIndexPath == nil)
+    _previousDragToReorderIndexPath = [cell.indexPath retain];
   
   CGPoint location = [[cell superview] localPointForEvent:event];
   CGRect visible = [self visibleRect];
@@ -76,6 +89,11 @@
   // determine the current drag direction
   NSComparisonResult currentDragDirection = (_previousDragToReorderIndexPath != nil) ? [currentPath compare:_previousDragToReorderIndexPath] : NSOrderedSame;
   
+  // begin animations
+  if(animate){
+    [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
+  }
+  
   // we now have the final destination index path.  if it's not nil, update surrounding
   // cells to make room for the dragged cell
   if(currentPath != nil && (_currentDragToReorderIndexPath == nil || ![currentPath isEqual:_currentDragToReorderIndexPath])){
@@ -93,6 +111,7 @@
         irow = currentPath.row;
       }
       
+      // update rows
       for(int i = currentPath.section; i < [self numberOfSections]; i++){
         for(int j = irow; j < [self numberOfRowsInSection:i]; j++){
           TUIFastIndexPath *path = [TUIFastIndexPath indexPathForRow:j inSection:i];
@@ -111,11 +130,13 @@
             }
           }
           
+          // stop after we handle the previous row
           if([path isEqual:_previousDragToReorderIndexPath]){
-            goto done; // stop when we hit the original row
+            goto done;
           }
           
         }
+        
         irow = 0;
       }
       
@@ -163,6 +184,11 @@ done:
   // note the current path
   [_currentDragToReorderIndexPath release];
   _currentDragToReorderIndexPath = [currentPath retain];
+  
+  // commit animations
+  if(animate){
+    [TUIView commitAnimations];
+  }
   
   // bring to front
   [[cell superview] bringSubviewToFront:cell];
