@@ -316,6 +316,22 @@ typedef struct {
 	return nil;
 }
 
+/**
+ * @brief Obtain the header view for the specified section
+ * 
+ * If the section has no header, nil is returned.
+ * 
+ * @param section the section
+ * @return section header
+ */
+- (TUIView *)headerViewForSection:(NSInteger)section {
+  if(section >= 0 && section < [_sectionInfo count]){
+    return [(TUITableViewSection *)[_sectionInfo objectAtIndex:section] headerView];
+  }else{
+    return nil;
+  }
+}
+
 - (TUITableViewCell *)cellForRowAtIndexPath:(TUIFastIndexPath *)indexPath // returns nil if cell is not visible or index path is out of range
 {
 	return [_visibleItems objectForKey:indexPath];
@@ -701,6 +717,17 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		[cell removeFromSuperview];
 	}
 	[_visibleItems removeAllObjects];
+	
+	// remove any visible headers, they should be re-added when the table is laid out
+	for(TUITableViewSection *section in _sectionInfo){
+	  TUIView *headerView;
+	  if((headerView = [section headerView]) != nil){
+	    [headerView removeFromSuperview];
+	  }
+	}
+	
+	// clear visible sections
+	[_visibleSectionHeaders removeAllIndexes];
 	
 	[_sectionInfo release];
 	_sectionInfo = nil; // will be regenerated on next layout

@@ -111,8 +111,23 @@
         irow = currentPath.row;
       }
       
-      // update rows
       for(int i = currentPath.section; i < [self numberOfSections]; i++){
+        
+        // update headers, if present
+        if(i > currentPath.section){
+          TUIView *headerView;
+          if((headerView = [self headerViewForSection:i]) != nil){
+            [self addSubview:headerView];
+            CGRect frame = [self rectForHeaderOfSection:i];
+            if(relativeDirection == NSOrderedDescending || relativeDirection == NSOrderedSame){
+              headerView.frame = frame;
+            }else if(relativeDirection == NSOrderedAscending){
+              headerView.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+            }
+          }
+        }
+        
+        // update rows
         for(int j = irow; j < [self numberOfRowsInSection:i]; j++){
           TUIFastIndexPath *path = [TUIFastIndexPath indexPathForRow:j inSection:i];
           TUITableViewCell *displacedCell;

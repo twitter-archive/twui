@@ -119,6 +119,7 @@ typedef enum {
 - (NSArray *)indexPathsForRowsInRect:(CGRect)rect;                              // returns nil if rect not valid 
 - (TUIFastIndexPath *)indexPathForRowAtPoint:(CGPoint)point;
 
+- (TUIView *)headerViewForSection:(NSInteger)section;
 - (TUITableViewCell *)cellForRowAtIndexPath:(TUIFastIndexPath *)indexPath;            // returns nil if cell is not visible or index path is out of range
 - (NSArray *)visibleCells; // no particular order
 - (NSArray *)sortedVisibleCells; // top to bottom
