@@ -134,39 +134,7 @@
       [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
     }
     
-    /* UNRELIABLE, FASTER VERSION
-    // enumerate index paths between the previous and current paths.  these are the affected
-    // rows which need to be adjusted for the dragged row.
     [self enumerateIndexPathsFromIndexPath:fromIndexPath toIndexPath:toIndexPath withOptions:0 usingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
-      TUITableViewCell *displacedCell;
-      if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil){
-        CGRect frame = [self rectForRowAtIndexPath:indexPath];
-        if(currentDragDirection == NSOrderedAscending){
-          if(relativeDirection == NSOrderedAscending){
-            // if we're moving up but we are above the dragged cell index, cells are adjusted down to swap
-            // places with the dragged cell
-            displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
-          }else{
-            // if we're moving up but we are below or at the dragged cell index, cells are returned to their
-            // original frame as they're passed
-            displacedCell.frame = frame;
-          }
-        }else if(currentDragDirection == NSOrderedDescending){
-          if(relativeDirection == NSOrderedDescending){
-            // if we're moving down but we are below the dragged cell index, cells are adjusted up to swap
-            // places with the dragged cell
-            displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
-          }else{
-            // if we're moving down but we are above or at the dragged cell index, cells are returned to their
-            // original frame as they're passed
-            displacedCell.frame = frame;
-          }
-        }
-      }
-    }];
-    */
-    
-    [self enumerateIndexPathsUsingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
       TUITableViewCell *displacedCell;
       if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil){
         CGRect frame = [self rectForRowAtIndexPath:indexPath];
