@@ -36,11 +36,21 @@
   
   // finalize drag to reorder if we have a drag index
   if(_currentDragToReorderIndexPath != nil){
+    
+    // notify our data source that the row must be reordered
+    if(self.dataSource != nil && [self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
+      [self.dataSource tableView:self moveRowAtIndexPath:cell.indexPath toIndexPath:_currentDragToReorderIndexPath];
+    }
+    
+    // animate the cell to the destination index path
     if(animate) [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
     cell.frame = [self rectForRowAtIndexPath:_currentDragToReorderIndexPath];
     if(animate) [TUIView commitAnimations];
+    
+    // clear state
     [_currentDragToReorderIndexPath release];
     _currentDragToReorderIndexPath = nil;
+    
   }
   
   [_previousDragToReorderIndexPath release];
@@ -56,16 +66,24 @@
 -(void)__mouseDraggedCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
   BOOL animate = TRUE;
   
-  // determine if reordering this cell is permitted or not via our delegate
-  if(self.delegate == nil || ![self.delegate respondsToSelector:@selector(tableView:allowsReorderingOfRowAtIndexPath:)] || ![self.delegate tableView:self allowsReorderingOfRowAtIndexPath:cell.indexPath]){
-    return; // reordering cells is not permitted
+  // make sure reordering is supported by our data source (this should probably be done only once somewhere)
+  if(self.dataSource == nil || ![self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
+    return; // reordering is not supported by the data source
   }
   
-  // initialize defaults
-  if(_currentDragToReorderIndexPath == nil)
+  // determine if reordering this cell is permitted or not via our data source (this should probably be done only once somewhere)
+  if(self.dataSource == nil || ![self.dataSource respondsToSelector:@selector(tableView:canMoveRowAtIndexPath:)] || ![self.dataSource tableView:self canMoveRowAtIndexPath:cell.indexPath]){
+    return; // reordering is not permitted
+  }
+  
+  // initialize defaults on the first drag
+  if(_currentDragToReorderIndexPath == nil || _previousDragToReorderIndexPath == nil){
+    [_currentDragToReorderIndexPath release];
     _currentDragToReorderIndexPath = [cell.indexPath retain];
-  if(_previousDragToReorderIndexPath == nil)
+    [_previousDragToReorderIndexPath release];
     _previousDragToReorderIndexPath = [cell.indexPath retain];
+    return; // just initialize on the first one
+  }
   
   CGPoint location = [[cell superview] localPointForEvent:event];
   CGRect visible = [self visibleRect];
@@ -116,6 +134,7 @@
       [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
     }
     
+    /* UNRELIABLE, FASTER VERSION
     // enumerate index paths between the previous and current paths.  these are the affected
     // rows which need to be adjusted for the dragged row.
     [self enumerateIndexPathsFromIndexPath:fromIndexPath toIndexPath:toIndexPath withOptions:0 usingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
@@ -143,6 +162,35 @@
             displacedCell.frame = frame;
           }
         }
+      }
+    }];
+    */
+    
+    [self enumerateIndexPathsUsingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
+      TUITableViewCell *displacedCell;
+      if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil){
+        CGRect frame = [self rectForRowAtIndexPath:indexPath];
+        CGRect target;
+        
+        if([indexPath compare:currentPath] != NSOrderedAscending && [indexPath compare:cell.indexPath] == NSOrderedAscending){
+          // the visited index path is above the origin and below the current index path;
+          // shift the cell down by the height of the dragged cell
+          target = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+        }else if([indexPath compare:currentPath] != NSOrderedDescending && [indexPath compare:cell.indexPath] == NSOrderedDescending){
+          // the visited index path is below the origin and above the current index path;
+          // shift the cell up by the height of the dragged cell
+          target = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
+        }else{
+          // the visited cell is outside the affected range and should be returned to its
+          // normal frame
+          target = frame;
+        }
+        
+        // only animate if we actually need to
+        if(!CGRectEqualToRect(target, displacedCell.frame)){
+          displacedCell.frame = target;
+        }
+        
       }
     }];
     

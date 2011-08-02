@@ -49,8 +49,7 @@ typedef enum {
 - (void)tableViewWillReloadData:(TUITableView *)tableView;
 - (void)tableViewDidReloadData:(TUITableView *)tableView;
 
-// the following are required to support dragging to reorder cells
-- (BOOL)tableView:(TUITableView *)tableView allowsReorderingOfRowAtIndexPath:(TUIFastIndexPath *)indexPath;
+// the following is optional for row reordering
 - (TUIFastIndexPath *)tableView:(TUITableView *)tableView targetIndexPathForMoveFromRowAtIndexPath:(TUIFastIndexPath *)fromPath toProposedIndexPath:(TUIFastIndexPath *)proposedPath;
 
 @end
@@ -163,6 +162,10 @@ typedef enum {
 @optional
 
 - (TUITableViewCell *)tableView:(TUITableView *)tableView headerViewForSection:(NSInteger)section;
+
+// the following are required to support row reordering
+- (BOOL)tableView:(TUITableView *)tableView canMoveRowAtIndexPath:(TUIFastIndexPath *)indexPath;
+- (void)tableView:(TUITableView *)tableView moveRowAtIndexPath:(TUIFastIndexPath *)fromIndexPath toIndexPath:(TUIFastIndexPath *)toIndexPath;
 
 /**
  Default is 1 if not implemented
