@@ -460,6 +460,52 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	return nil;
 }
 
+/**
+ * @brief Enumerate index paths
+ * @see #enumerateIndexPathsFromIndexPath:toIndexPath:withOptions:usingBlock:
+ */
+- (void)enumerateIndexPathsUsingBlock:(void (^)(TUIFastIndexPath *indexPath, BOOL *stop))block {
+  [self enumerateIndexPathsFromIndexPath:nil toIndexPath:nil withOptions:0 usingBlock:block];
+}
+
+/**
+ * @brief Enumerate index paths
+ * @see #enumerateIndexPathsFromIndexPath:toIndexPath:withOptions:usingBlock:
+ */
+- (void)enumerateIndexPathsWithOptions:(NSEnumerationOptions)options usingBlock:(void (^)(TUIFastIndexPath *indexPath, BOOL *stop))block {
+  [self enumerateIndexPathsFromIndexPath:nil toIndexPath:nil withOptions:options usingBlock:block];
+}
+
+/**
+ * @brief Enumerate index paths
+ * 
+ * The provided block is repeatedly invoked with each valid index path between
+ * the specified bounds.  Both bounding index paths are inclusive.
+ * 
+ * @param fromIndexPath the index path to begin enumerating at or nil to begin at the first index path
+ * @param toIndexPath the index path to stop enumerating at or nil to stop at the last index path
+ * @param options enumeration options (not currently supported; pass 0)
+ * @param block the block to enumerate with
+ */
+- (void)enumerateIndexPathsFromIndexPath:(TUIFastIndexPath *)fromIndexPath toIndexPath:(TUIFastIndexPath *)toIndexPath withOptions:(NSEnumerationOptions)options usingBlock:(void (^)(TUIFastIndexPath *indexPath, BOOL *stop))block {
+  NSInteger sectionLowerBound = (fromIndexPath != nil) ? fromIndexPath.section : 0;
+  NSInteger sectionUpperBound = (toIndexPath != nil) ? toIndexPath.section : [self numberOfSections] - 1;
+  NSInteger rowLowerBound = (fromIndexPath != nil) ? fromIndexPath.row : 0;
+  NSInteger rowUpperBound = (toIndexPath != nil) ? toIndexPath.row : -1;
+  
+  int irow = rowLowerBound; // start at the lower bound row for the first iteration...
+  for(int i = sectionLowerBound; i < [self numberOfSections] && i <= sectionUpperBound /* inclusive */; i++){
+    NSInteger rowCount = [self numberOfRowsInSection:i];
+    for(int j = irow; j < rowCount && j <= ((rowUpperBound < 0 || i < sectionUpperBound) ? rowCount - 1 : rowUpperBound); j++){
+      BOOL stop = FALSE;
+      block([TUIFastIndexPath indexPathForRow:j inSection:i], &stop);
+      if(stop) return;
+    }
+    irow = 0; // ...then use zero for subsequent iterations
+  }
+  
+}
+
 - (TUIFastIndexPath *)_topVisibleIndexPath
 {
 	TUIFastIndexPath *topVisibleIndex = nil;

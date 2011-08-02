@@ -85,124 +85,72 @@
   // note the previous path
   [_previousDragToReorderIndexPath release];
   _previousDragToReorderIndexPath = [_currentDragToReorderIndexPath retain];
-  
-  // determine the current drag direction
-  NSComparisonResult currentDragDirection = (_previousDragToReorderIndexPath != nil) ? [currentPath compare:_previousDragToReorderIndexPath] : NSOrderedSame;
-  
-  // begin animations
-  if(animate){
-    [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
-  }
-  
-  // we now have the final destination index path.  if it's not nil, update surrounding
-  // cells to make room for the dragged cell
-  if(currentPath != nil && (_currentDragToReorderIndexPath == nil || ![currentPath isEqual:_currentDragToReorderIndexPath])){
-    NSComparisonResult relativeDirection = [currentPath compare:cell.indexPath];
-    
-    // determine whether we're above or below the original index path and handle the
-    // reordering accodringly
-    if(currentDragDirection == NSOrderedAscending){
-      NSLog(@"  Up: %@", currentPath);
-      
-      int irow;
-      if(relativeDirection == NSOrderedDescending){
-        irow = currentPath.row + 1; // restore below only
-      }else{
-        irow = currentPath.row;
-      }
-      
-      for(int i = currentPath.section; i < [self numberOfSections]; i++){
-        
-        // update headers, if present
-        if(i > currentPath.section){
-          TUIView *headerView;
-          if((headerView = [self headerViewForSection:i]) != nil){
-            [self addSubview:headerView];
-            CGRect frame = [self rectForHeaderOfSection:i];
-            if(relativeDirection == NSOrderedDescending || relativeDirection == NSOrderedSame){
-              headerView.frame = frame;
-            }else if(relativeDirection == NSOrderedAscending){
-              headerView.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
-            }
-          }
-        }
-        
-        // update rows
-        for(int j = irow; j < [self numberOfRowsInSection:i]; j++){
-          TUIFastIndexPath *path = [TUIFastIndexPath indexPathForRow:j inSection:i];
-          TUITableViewCell *displacedCell;
-          
-          if((displacedCell = [self cellForRowAtIndexPath:path]) != nil){
-            CGRect frame = [self rectForRowAtIndexPath:path];
-            if(relativeDirection == NSOrderedDescending || relativeDirection == NSOrderedSame){
-              // if we're moving up but we are below or at the dragged cell index, cells are returned to their
-              // original frame as they're passed
-              displacedCell.frame = frame;
-            }else if(relativeDirection == NSOrderedAscending){
-              // if we're moving up but we are above the dragged cell index, cells are adjusted down to swap
-              // places with the dragged cell
-              displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
-            }
-          }
-          
-          // stop after we handle the previous row
-          if([path isEqual:_previousDragToReorderIndexPath]){
-            goto done;
-          }
-          
-        }
-        
-        irow = 0;
-      }
-      
-    }else if(currentDragDirection == NSOrderedDescending){
-      NSLog(@"Down: %@", currentPath);
-      
-      int irow = _previousDragToReorderIndexPath.row;
-      for(int i = _previousDragToReorderIndexPath.section; i < [self numberOfSections]; i++){
-        for(int j = irow; j < [self numberOfRowsInSection:i]; j++){
-          TUIFastIndexPath *path = [TUIFastIndexPath indexPathForRow:j inSection:i];
-          TUITableViewCell *displacedCell;
-          
-          // stop before we handle the current row when we're above
-          if(relativeDirection == NSOrderedAscending && [path isEqual:currentPath]){
-            goto done;
-          }
-          
-          if((displacedCell = [self cellForRowAtIndexPath:path]) != nil){
-            CGRect frame = [self rectForRowAtIndexPath:path];
-            if(relativeDirection == NSOrderedAscending || relativeDirection == NSOrderedSame){
-              // if we're moving down but we are above or at the dragged cell index, cells are returned to their
-              // original frame as they're passed
-              displacedCell.frame = frame;
-            }else if(relativeDirection == NSOrderedDescending){
-              // if we're moving down but we are below the dragged cell index, cells are adjusted up to swap
-              // places with the dragged cell
-              displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
-            }
-          }
-          
-          // stop after we handle the current row if we haven't already
-          if([path isEqual:currentPath]){
-            goto done;
-          }
-          
-        }
-        irow = 0;
-      }
-      
-    }
-    
-  }
-  
-done:
   // note the current path
   [_currentDragToReorderIndexPath release];
   _currentDragToReorderIndexPath = [currentPath retain];
   
-  // commit animations
-  if(animate){
-    [TUIView commitAnimations];
+  // determine the current drag direction
+  NSComparisonResult currentDragDirection = (_previousDragToReorderIndexPath != nil) ? [currentPath compare:_previousDragToReorderIndexPath] : NSOrderedSame;
+  
+  // ordered index paths for enumeration
+  TUIFastIndexPath *fromIndexPath = nil;
+  TUIFastIndexPath *toIndexPath = nil;
+  
+  if(currentDragDirection == NSOrderedAscending){
+    fromIndexPath = currentPath;
+    toIndexPath = _previousDragToReorderIndexPath;
+  }else if(currentDragDirection == NSOrderedDescending){
+    fromIndexPath = _previousDragToReorderIndexPath;
+    toIndexPath = currentPath;
+  }else{
+    // same index path; nil
+  }
+  
+  // we now have the final destination index path.  if it's not nil, update surrounding
+  // cells to make room for the dragged cell
+  if(currentPath != nil && fromIndexPath != nil && toIndexPath != nil){
+    NSComparisonResult relativeDirection = [currentPath compare:cell.indexPath];
+    
+    // begin animations
+    if(animate){
+      [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
+    }
+    
+    // enumerate index paths between the previous and current paths.  these are the affected
+    // rows which need to be adjusted for the dragged row.
+    [self enumerateIndexPathsFromIndexPath:fromIndexPath toIndexPath:toIndexPath withOptions:0 usingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
+      TUITableViewCell *displacedCell;
+      if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil){
+        CGRect frame = [self rectForRowAtIndexPath:indexPath];
+        if(currentDragDirection == NSOrderedAscending){
+          if(relativeDirection == NSOrderedAscending){
+            // if we're moving up but we are above the dragged cell index, cells are adjusted down to swap
+            // places with the dragged cell
+            displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+          }else{
+            // if we're moving up but we are below or at the dragged cell index, cells are returned to their
+            // original frame as they're passed
+            displacedCell.frame = frame;
+          }
+        }else if(currentDragDirection == NSOrderedDescending){
+          if(relativeDirection == NSOrderedDescending){
+            // if we're moving down but we are below the dragged cell index, cells are adjusted up to swap
+            // places with the dragged cell
+            displacedCell.frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
+          }else{
+            // if we're moving down but we are above or at the dragged cell index, cells are returned to their
+            // original frame as they're passed
+            displacedCell.frame = frame;
+          }
+        }
+      }
+    }];
+    
+    // commit animations
+    if(animate){
+      [TUIView commitAnimations];
+    }
+    
   }
   
   // bring to front
