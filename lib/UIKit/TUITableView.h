@@ -29,6 +29,12 @@ typedef enum {
 	TUITableViewScrollPositionToVisible, // currently the only supported arg
 } TUITableViewScrollPosition;
 
+typedef enum {
+  TUITableViewInsertionMethodBeforeIndex  = -1,
+  TUITableViewInsertionMethodAtIndex      =  0,
+  TUITableViewInsertionMethodAfterIndex   =  1
+} TUITableViewInsertionMethod;
+
 @class TUITableViewCell;
 @protocol TUITableViewDataSource;
 
@@ -117,6 +123,7 @@ typedef enum {
 - (TUIFastIndexPath *)indexPathForCell:(TUITableViewCell *)cell;                      // returns nil if cell is not visible
 - (NSArray *)indexPathsForRowsInRect:(CGRect)rect;                              // returns nil if rect not valid 
 - (TUIFastIndexPath *)indexPathForRowAtPoint:(CGPoint)point;
+- (NSInteger)indexOfSectionWithHeaderAtPoint:(CGPoint)point;
 
 - (void)enumerateIndexPathsUsingBlock:(void (^)(TUIFastIndexPath *indexPath, BOOL *stop))block;
 - (void)enumerateIndexPathsWithOptions:(NSEnumerationOptions)options usingBlock:(void (^)(TUIFastIndexPath *indexPath, BOOL *stop))block;

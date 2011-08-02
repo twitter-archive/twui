@@ -95,17 +95,28 @@
   // move the cell
   cell.frame = dest;
   
+  TUITableViewInsertionMethod insertMethod = TUITableViewInsertionMethodAtIndex;
+  TUIFastIndexPath *currentPath = nil;
+  NSInteger sectionIndex = -1;
+  
   // determine the current index path the cell is occupying
-  TUIFastIndexPath *currentPath;
-  if((currentPath = [self indexPathForRowAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) != nil){
-    // allow the delegate to revise the proposed index path if it wants to
-    if(self.delegate != nil && [self.delegate respondsToSelector:@selector(tableView:targetIndexPathForMoveFromRowAtIndexPath:toProposedIndexPath:)]){
-      currentPath = [self.delegate tableView:self targetIndexPathForMoveFromRowAtIndexPath:cell.indexPath toProposedIndexPath:currentPath];
+  if((currentPath = [self indexPathForRowAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) == nil){
+    // if we're on a section header (but not the first one, which can't move) we insert after the last index in the
+    // preceding section
+    if((sectionIndex = [self indexOfSectionWithHeaderAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) > 0){
+      NSInteger previousSectionIndex = sectionIndex - 1;
+      currentPath = [TUIFastIndexPath indexPathForRow:[self numberOfRowsInSection:previousSectionIndex] - 1 inSection:previousSectionIndex];
+      insertMethod = TUITableViewInsertionMethodAfterIndex;
     }
   }
   
   // make sure we have a valid current path before proceeding
   if(currentPath == nil) return;
+  
+  // allow the delegate to revise the proposed index path if it wants to
+  if(self.delegate != nil && [self.delegate respondsToSelector:@selector(tableView:targetIndexPathForMoveFromRowAtIndexPath:toProposedIndexPath:)]){
+    currentPath = [self.delegate tableView:self targetIndexPathForMoveFromRowAtIndexPath:cell.indexPath toProposedIndexPath:currentPath];
+  }
   
   // note the previous path
   [_previousDragToReorderIndexPath release];
@@ -172,7 +183,11 @@
         CGRect frame = [self rectForRowAtIndexPath:indexPath];
         CGRect target;
         
-        if([indexPath compare:currentPath] != NSOrderedAscending && [indexPath compare:cell.indexPath] == NSOrderedAscending){
+        if([indexPath isEqual:currentPath] && insertMethod == TUITableViewInsertionMethodAfterIndex){
+          // the visited index path is the current index path and the insertion method is "after";
+          // leave the cell where it is, the section header should shift out of the way instead
+          target = frame;
+        }else if([indexPath compare:currentPath] != NSOrderedAscending && [indexPath compare:cell.indexPath] == NSOrderedAscending){
           // the visited index path is above the origin and below the current index path;
           // shift the cell down by the height of the dragged cell
           target = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);

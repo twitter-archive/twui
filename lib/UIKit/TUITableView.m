@@ -461,6 +461,35 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 }
 
 /**
+ * @brief Obtain the index of a section whose header is at the specified point
+ * 
+ * If the point is not valid or no header exists at that point, a negative value
+ * is returned.
+ * 
+ * @param point location in the table view
+ * @return index of the section whose header is at @p point
+ */
+- (NSInteger)indexOfSectionWithHeaderAtPoint:(CGPoint)point {
+  
+	NSInteger sectionIndex = 0;
+  for(TUITableViewSection *section in _sectionInfo){
+    TUIView *headerView;
+    if((headerView = section.headerView) != nil){
+      CGFloat offset = [section sectionOffset];
+      CGFloat height = [section headerHeight];
+      CGFloat y = _contentHeight - offset - height;
+      CGRect frame = CGRectMake(0, y, self.bounds.size.width, height);
+      if(CGRectContainsPoint(frame, point)){
+        return sectionIndex;
+      }
+    }
+    sectionIndex++;
+  }
+	
+	return -1;
+}
+
+/**
  * @brief Enumerate index paths
  * @see #enumerateIndexPathsFromIndexPath:toIndexPath:withOptions:usingBlock:
  */
