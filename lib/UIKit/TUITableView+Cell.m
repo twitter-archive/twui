@@ -90,6 +90,10 @@
   
   // dragged cell destination frame
   CGRect dest = CGRectMake(0, roundf(MAX(0, MIN(visible.origin.y + visible.size.height - cell.frame.size.height, location.y + visible.origin.y - offset.y))), self.bounds.size.width, cell.frame.size.height);
+  // bring to front
+  [[cell superview] bringSubviewToFront:cell];
+  // move the cell
+  cell.frame = dest;
   
   // determine the current index path the cell is occupying
   TUIFastIndexPath *currentPath;
@@ -99,6 +103,9 @@
       currentPath = [self.delegate tableView:self targetIndexPathForMoveFromRowAtIndexPath:cell.indexPath toProposedIndexPath:currentPath];
     }
   }
+  
+  // make sure we have a valid current path before proceeding
+  if(currentPath == nil) return;
   
   // note the previous path
   [_previousDragToReorderIndexPath release];
@@ -134,9 +141,34 @@
       [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
     }
     
+    for(int i = fromIndexPath.section; i <= toIndexPath.section; i++){
+      TUIView *headerView;
+      if(currentPath.section < i && i <= cell.indexPath.section){
+        // the current index path is above this section and this section is at or
+        // below the origin index path; shift our header down to make room
+        if((headerView = [self headerViewForSection:i]) != nil){
+          CGRect frame = [self rectForHeaderOfSection:i];
+          headerView.frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+        }
+      }else if(currentPath.section >= i && i > cell.indexPath.section){
+        // the current index path is at or below this section and this section is
+        // below the origin index path; shift our header up to make room
+        if((headerView = [self headerViewForSection:i]) != nil){
+          CGRect frame = [self rectForHeaderOfSection:i];
+          headerView.frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
+        }
+      }else{
+        // restore the header to it's normal position
+        if((headerView = [self headerViewForSection:i]) != nil){
+          headerView.frame = [self rectForHeaderOfSection:i];
+        }
+      }
+    }
+    
     [self enumerateIndexPathsFromIndexPath:fromIndexPath toIndexPath:toIndexPath withOptions:0 usingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
       TUITableViewCell *displacedCell;
       if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil){
+        TUIView *headerView = nil;
         CGRect frame = [self rectForRowAtIndexPath:indexPath];
         CGRect target;
         
@@ -168,11 +200,6 @@
     }
     
   }
-  
-  // bring to front
-  [[cell superview] bringSubviewToFront:cell];
-  // move the cell
-  cell.frame = dest;
   
 }
 
