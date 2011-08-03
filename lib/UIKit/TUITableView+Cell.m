@@ -59,27 +59,37 @@
     // only update the data source if the drag ended on a different index path
     // than it started; otherwise just clean up the view
     if(![targetIndexPath isEqual:cell.indexPath]){
-      
       // notify our data source that the row will be reordered
       if(self.dataSource != nil && [self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
         [self.dataSource tableView:self moveRowAtIndexPath:cell.indexPath toIndexPath:targetIndexPath];
       }
-      
-      // relayout...
-      
     }
     
     // compute the final cell destination frame
     CGRect frame = [self rectForRowAtIndexPath:_currentDragToReorderIndexPath];
-    if(_currentDragToReorderInsertionMethod == TUITableViewInsertionMethodAfterIndex){
-      frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+    // adjust if necessary based on the insertion method
+    switch(_currentDragToReorderInsertionMethod){
+      case TUITableViewInsertionMethodBeforeIndex:
+        frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
+        break;
+      case TUITableViewInsertionMethodAfterIndex:
+        frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+        break;
     }
     
     // move the cell to its final frame and reload the table data to make sure all
     // the internal caching/geometry stuff is consistent.  eventually this should probably
     // just update section info and reusable cells rather than doing a full reload.
-    if(animate){
-      [TUIView animateWithDuration:0.2 animations:^ { cell.frame = frame; } completion:^(BOOL finished) { [self reloadData]; }];
+    if(animate && !CGRectEqualToRect(cell.frame, frame)){
+      // disable user interaction until the animation has completed and the table has reloaded
+      [self setUserInteractionEnabled:FALSE];
+      [TUIView animateWithDuration:0.2
+        animations:^ { cell.frame = frame; }
+        completion:^(BOOL finished) {
+          if(finished) [self reloadData];
+          [self setUserInteractionEnabled:TRUE];
+        }
+      ];
     }else{
       cell.frame = frame;
       [self reloadData];
