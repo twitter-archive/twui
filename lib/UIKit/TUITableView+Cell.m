@@ -34,27 +34,62 @@
 -(void)__mouseUpInCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
   BOOL animate = TRUE;
   
+  [_previousDragToReorderIndexPath release];
+  _previousDragToReorderIndexPath = nil;
+  
   // finalize drag to reorder if we have a drag index
   if(_currentDragToReorderIndexPath != nil){
+    TUIFastIndexPath *targetIndexPath;
     
-    // notify our data source that the row must be reordered
-    if(self.dataSource != nil && [self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
-      [self.dataSource tableView:self moveRowAtIndexPath:cell.indexPath toIndexPath:_currentDragToReorderIndexPath];
+    switch(_currentDragToReorderInsertionMethod){
+      case TUITableViewInsertionMethodBeforeIndex:
+        // insert "before" is equivalent to insert "at" as subsequent indexes are shifted down to
+        // accommodate the insert.  the distinction is only useful for presentation.
+        targetIndexPath = _currentDragToReorderIndexPath;
+        break;
+      case TUITableViewInsertionMethodAfterIndex:
+        targetIndexPath = [TUIFastIndexPath indexPathForRow:_currentDragToReorderIndexPath.row + 1 inSection:_currentDragToReorderIndexPath.section];
+        break;
+      case TUITableViewInsertionMethodAtIndex:
+      default:
+        targetIndexPath = _currentDragToReorderIndexPath;
+        break;
     }
     
-    // animate the cell to the destination index path
-    if(animate) [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
-    cell.frame = [self rectForRowAtIndexPath:_currentDragToReorderIndexPath];
-    if(animate) [TUIView commitAnimations];
+    // only update the data source if the drag ended on a different index path
+    // than it started; otherwise just clean up the view
+    if(![targetIndexPath isEqual:cell.indexPath]){
+      
+      // notify our data source that the row will be reordered
+      if(self.dataSource != nil && [self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
+        [self.dataSource tableView:self moveRowAtIndexPath:cell.indexPath toIndexPath:targetIndexPath];
+      }
+      
+      // relayout...
+      
+    }
+    
+    // compute the final cell destination frame
+    CGRect frame = [self rectForRowAtIndexPath:_currentDragToReorderIndexPath];
+    if(_currentDragToReorderInsertionMethod == TUITableViewInsertionMethodAfterIndex){
+      frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+    }
+    
+    // move the cell to its final frame and reload the table data to make sure all
+    // the internal caching/geometry stuff is consistent.  eventually this should probably
+    // just update section info and reusable cells rather than doing a full reload.
+    if(animate){
+      [TUIView animateWithDuration:0.2 animations:^ { cell.frame = frame; } completion:^(BOOL finished) { [self reloadData]; }];
+    }else{
+      cell.frame = frame;
+      [self reloadData];
+    }
     
     // clear state
     [_currentDragToReorderIndexPath release];
     _currentDragToReorderIndexPath = nil;
     
   }
-  
-  [_previousDragToReorderIndexPath release];
-  _previousDragToReorderIndexPath = nil;
   
 }
 
@@ -101,14 +136,16 @@
   
   // determine the current index path the cell is occupying
   if((currentPath = [self indexPathForRowAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) == nil){
-    // if we're on a section header (but not the first one, which can't move) we insert after the last index in the
-    // preceding section
     if((sectionIndex = [self indexOfSectionWithHeaderAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) > 0){
       if(sectionIndex <= cell.indexPath.section){
+        // if we're on a section header (but not the first one, which can't move) which is above the origin
+        // index path we insert after the last index in the section above
         NSInteger targetSectionIndex = sectionIndex - 1;
         currentPath = [TUIFastIndexPath indexPathForRow:[self numberOfRowsInSection:targetSectionIndex] - 1 inSection:targetSectionIndex];
         insertMethod = TUITableViewInsertionMethodAfterIndex;
       }else{
+        // if we're on a section header below the origin index we insert before the first index in the
+        // section below
         NSInteger targetSectionIndex = sectionIndex;
         currentPath = [TUIFastIndexPath indexPathForRow:0 inSection:targetSectionIndex];
         insertMethod = TUITableViewInsertionMethodBeforeIndex;

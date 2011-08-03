@@ -791,6 +791,8 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		[self _enqueueReusableCell:cell];
 		[cell removeFromSuperview];
 	}
+	
+	// clear visible cells
 	[_visibleItems removeAllObjects];
 	
 	// remove any visible headers, they should be re-added when the table is laid out
@@ -801,7 +803,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	  }
 	}
 	
-	// clear visible sections
+	// clear visible section headers
 	[_visibleSectionHeaders removeAllIndexes];
 	
 	[_sectionInfo release];

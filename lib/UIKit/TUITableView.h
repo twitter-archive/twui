@@ -85,7 +85,6 @@ typedef enum {
   TUITableViewInsertionMethod   _currentDragToReorderInsertionMethod;
   TUIFastIndexPath            * _previousDragToReorderIndexPath;
   TUITableViewInsertionMethod   _previousDragToReorderInsertionMethod;
-  NSComparisonResult            _currentDragToReorderDirection;
   
 	struct {
 		unsigned int animateSelectionChanges:1;
