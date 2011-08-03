@@ -522,10 +522,10 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
   NSInteger rowLowerBound = (fromIndexPath != nil) ? fromIndexPath.row : 0;
   NSInteger rowUpperBound = (toIndexPath != nil) ? toIndexPath.row : -1;
   
-  int irow = rowLowerBound; // start at the lower bound row for the first iteration...
-  for(int i = sectionLowerBound; i < [self numberOfSections] && i <= sectionUpperBound /* inclusive */; i++){
+  NSInteger irow = rowLowerBound; // start at the lower bound row for the first iteration...
+  for(NSInteger i = sectionLowerBound; i < [self numberOfSections] && i <= sectionUpperBound /* inclusive */; i++){
     NSInteger rowCount = [self numberOfRowsInSection:i];
-    for(int j = irow; j < rowCount && j <= ((rowUpperBound < 0 || i < sectionUpperBound) ? rowCount - 1 : rowUpperBound) /* inclusive */; j++){
+    for(NSInteger j = irow; j < rowCount && j <= ((rowUpperBound < 0 || i < sectionUpperBound) ? rowCount - 1 : rowUpperBound) /* inclusive */; j++){
       BOOL stop = FALSE;
       block([TUIFastIndexPath indexPathForRow:j inSection:i], &stop);
       if(stop) return;

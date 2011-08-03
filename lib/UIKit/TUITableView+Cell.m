@@ -75,6 +75,10 @@
       case TUITableViewInsertionMethodAfterIndex:
         frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
         break;
+      case TUITableViewInsertionMethodAtIndex:
+      default:
+        // do nothing. this case is just here to avoid complier complaints...
+        break;
     }
     
     // move the cell to its final frame and reload the table data to make sure all
@@ -202,14 +206,13 @@
   // we now have the final destination index path.  if it's not nil, update surrounding
   // cells to make room for the dragged cell
   if(currentPath != nil && fromIndexPath != nil && toIndexPath != nil){
-    NSComparisonResult relativeDirection = [currentPath compare:cell.indexPath];
     
     // begin animations
     if(animate){
       [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
     }
     
-    for(int i = fromIndexPath.section; i <= toIndexPath.section; i++){
+    for(NSInteger i = fromIndexPath.section; i <= toIndexPath.section; i++){
       TUIView *headerView;
       if(currentPath.section < i && i <= cell.indexPath.section){
         // the current index path is above this section and this section is at or
@@ -236,7 +239,6 @@
     [self enumerateIndexPathsFromIndexPath:fromIndexPath toIndexPath:toIndexPath withOptions:0 usingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
       TUITableViewCell *displacedCell;
       if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil){
-        TUIView *headerView = nil;
         CGRect frame = [self rectForRowAtIndexPath:indexPath];
         CGRect target;
         
