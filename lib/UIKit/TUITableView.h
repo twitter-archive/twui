@@ -30,9 +30,9 @@ typedef enum {
 } TUITableViewScrollPosition;
 
 typedef enum {
-  TUITableViewInsertionMethodBeforeIndex  = -1,
-  TUITableViewInsertionMethodAtIndex      =  0,
-  TUITableViewInsertionMethodAfterIndex   =  1
+  TUITableViewInsertionMethodBeforeIndex  = NSOrderedAscending,
+  TUITableViewInsertionMethodAtIndex      = NSOrderedSame,
+  TUITableViewInsertionMethodAfterIndex   = NSOrderedDescending
 } TUITableViewInsertionMethod;
 
 @class TUITableViewCell;
@@ -82,8 +82,10 @@ typedef enum {
 	CGFloat                       _relativeOffsetForReload;
 	
   TUIFastIndexPath            * _currentDragToReorderIndexPath;
+  TUITableViewInsertionMethod   _currentDragToReorderInsertionMethod;
   TUIFastIndexPath            * _previousDragToReorderIndexPath;
-	NSComparisonResult            _currentDragToReorderDirection;
+  TUITableViewInsertionMethod   _previousDragToReorderInsertionMethod;
+  NSComparisonResult            _currentDragToReorderDirection;
   
 	struct {
 		unsigned int animateSelectionChanges:1;

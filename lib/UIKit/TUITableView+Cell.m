@@ -121,9 +121,12 @@
   // note the previous path
   [_previousDragToReorderIndexPath release];
   _previousDragToReorderIndexPath = [_currentDragToReorderIndexPath retain];
+  _previousDragToReorderInsertionMethod = _currentDragToReorderInsertionMethod;
+  
   // note the current path
   [_currentDragToReorderIndexPath release];
   _currentDragToReorderIndexPath = [currentPath retain];
+  _currentDragToReorderInsertionMethod = insertMethod;
   
   // determine the current drag direction
   NSComparisonResult currentDragDirection = (_previousDragToReorderIndexPath != nil) ? [currentPath compare:_previousDragToReorderIndexPath] : NSOrderedSame;
@@ -138,8 +141,9 @@
   }else if(currentDragDirection == NSOrderedDescending){
     fromIndexPath = _previousDragToReorderIndexPath;
     toIndexPath = currentPath;
-  }else{
-    // same index path; nil
+  }else if(insertMethod != _previousDragToReorderInsertionMethod){
+    fromIndexPath = currentPath;
+    toIndexPath = currentPath;
   }
   
   // we now have the final destination index path.  if it's not nil, update surrounding
