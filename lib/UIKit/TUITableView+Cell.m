@@ -104,9 +104,15 @@
     // if we're on a section header (but not the first one, which can't move) we insert after the last index in the
     // preceding section
     if((sectionIndex = [self indexOfSectionWithHeaderAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) > 0){
-      NSInteger previousSectionIndex = sectionIndex - 1;
-      currentPath = [TUIFastIndexPath indexPathForRow:[self numberOfRowsInSection:previousSectionIndex] - 1 inSection:previousSectionIndex];
-      insertMethod = TUITableViewInsertionMethodAfterIndex;
+      if(sectionIndex <= cell.indexPath.section){
+        NSInteger targetSectionIndex = sectionIndex - 1;
+        currentPath = [TUIFastIndexPath indexPathForRow:[self numberOfRowsInSection:targetSectionIndex] - 1 inSection:targetSectionIndex];
+        insertMethod = TUITableViewInsertionMethodAfterIndex;
+      }else{
+        NSInteger targetSectionIndex = sectionIndex;
+        currentPath = [TUIFastIndexPath indexPathForRow:0 inSection:targetSectionIndex];
+        insertMethod = TUITableViewInsertionMethodBeforeIndex;
+      }
     }
   }
   
@@ -189,6 +195,10 @@
         
         if([indexPath isEqual:currentPath] && insertMethod == TUITableViewInsertionMethodAfterIndex){
           // the visited index path is the current index path and the insertion method is "after";
+          // leave the cell where it is, the section header should shift out of the way instead
+          target = frame;
+        }else if([indexPath isEqual:currentPath] && insertMethod == TUITableViewInsertionMethodBeforeIndex){
+          // the visited index path is the current index path and the insertion method is "before";
           // leave the cell where it is, the section header should shift out of the way instead
           target = frame;
         }else if([indexPath compare:currentPath] != NSOrderedAscending && [indexPath compare:cell.indexPath] == NSOrderedAscending){
