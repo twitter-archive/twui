@@ -853,6 +853,10 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		[cell removeFromSuperview];
 	}
 	
+	// if we have a dragged cell, clear it
+	[_dragToReorderCell release];
+	_dragToReorderCell = nil;
+	
 	// clear visible cells
 	[_visibleItems removeAllObjects];
 	

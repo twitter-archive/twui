@@ -16,6 +16,14 @@
 
 #import "TUITableView+Cell.h"
 
+@interface TUITableView (CellPrivate)
+
+- (BOOL)_preLayoutCells;
+- (void)_layoutSectionHeaders:(BOOL)needLayout;
+- (void)_layoutCells:(BOOL)needLayout;
+
+@end
+
 @implementation TUITableView (Cell)
 
 /**
@@ -97,12 +105,14 @@
   
   CGRect visible = [self visibleRect];
   // dragged cell destination frame
-  CGRect dest = CGRectMake(0, roundf(MAX(0, MIN(visible.origin.y + visible.size.height - cell.frame.size.height, location.y + visible.origin.y - offset.y))), self.bounds.size.width, cell.frame.size.height);
+  CGRect dest = CGRectMake(0, roundf(MAX(visible.origin.y, MIN(visible.origin.y + visible.size.height - cell.frame.size.height, location.y + visible.origin.y - offset.y))), self.bounds.size.width, cell.frame.size.height);
   // bring to front
   [[cell superview] bringSubviewToFront:cell];
   // move the cell
   cell.frame = dest;
   
+  // constraint the location to the viewport
+  location = CGPointMake(location.x, MAX(0, MIN(visible.size.height, location.y)));
   // scroll content if necessary (scroll view figures out whether it's necessary or not)
   [self beginContinuousScrollForDragAtPoint:location animated:TRUE];
   
@@ -296,16 +306,25 @@
         break;
     }
     
-    // move the cell to its final frame and reload the table data to make sure all
-    // the internal caching/geometry stuff is consistent.  eventually this should probably
-    // just update section info and reusable cells rather than doing a full reload.
+    // move the cell to its final frame and layout to make sure all the internal caching/geometry
+    // stuff is consistent.
     if(animate && !CGRectEqualToRect(cell.frame, frame)){
       // disable user interaction until the animation has completed and the table has reloaded
       [self setUserInteractionEnabled:FALSE];
       [TUIView animateWithDuration:0.2
         animations:^ { cell.frame = frame; }
         completion:^(BOOL finished) {
-          if(finished) [self reloadData];
+          
+          if(finished){
+            // i think the following should be suitable to ensure the state is consistent after
+            // reordering, but i'm not completely sure about that...
+            [self _preLayoutCells];
+            [super layoutSubviews];
+            [self _layoutSectionHeaders:TRUE];
+            [self _layoutCells:TRUE];
+          }
+          
+          // restore user interactivity
           [self setUserInteractionEnabled:TRUE];
         }
       ];

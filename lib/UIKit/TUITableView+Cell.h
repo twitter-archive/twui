@@ -17,7 +17,7 @@
 #import "TUITableView.h"
 
 /**
- * @brief Exposes internal table view methods to cells.
+ * @brief Exposes some internal table view methods to cells (primarily for drag-to-reorder support)
  */
 @interface TUITableView (Cell)
 
