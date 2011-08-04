@@ -144,7 +144,19 @@
   
   // allow the delegate to revise the proposed index path if it wants to
   if(self.delegate != nil && [self.delegate respondsToSelector:@selector(tableView:targetIndexPathForMoveFromRowAtIndexPath:toProposedIndexPath:)]){
+    TUIFastIndexPath *proposedPath = currentPath;
     currentPath = [self.delegate tableView:self targetIndexPathForMoveFromRowAtIndexPath:cell.indexPath toProposedIndexPath:currentPath];
+    // revised index paths always use the "at" insertion method
+    switch([currentPath compare:proposedPath]){
+      case NSOrderedAscending:
+      case NSOrderedDescending:
+        insertMethod = TUITableViewInsertionMethodAtIndex;
+        break;
+      case NSOrderedSame:
+      default:
+        // do nothing
+        break;
+    }
   }
   
   // note the previous path
@@ -184,6 +196,7 @@
       [TUIView beginAnimations:NSStringFromSelector(_cmd) context:NULL];
     }
     
+    // update section headers
     for(NSInteger i = fromIndexPath.section; i <= toIndexPath.section; i++){
       TUIView *headerView;
       if(currentPath.section < i && i <= cell.indexPath.section){
@@ -208,9 +221,10 @@
       }
     }
     
+    // update rows
     [self enumerateIndexPathsFromIndexPath:fromIndexPath toIndexPath:toIndexPath withOptions:0 usingBlock:^(TUIFastIndexPath *indexPath, BOOL *stop) {
       TUITableViewCell *displacedCell;
-      if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil){
+      if((displacedCell = [self cellForRowAtIndexPath:indexPath]) != nil && ![displacedCell isEqual:cell]){
         CGRect frame = [self rectForRowAtIndexPath:indexPath];
         CGRect target;
         
