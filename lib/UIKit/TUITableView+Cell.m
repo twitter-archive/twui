@@ -22,89 +22,14 @@
  * @brief Mouse down in a cell
  */
 -(void)__mouseDownInCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
-  [_currentDragToReorderIndexPath release];
-  _currentDragToReorderIndexPath = nil;
-  [_previousDragToReorderIndexPath release];
-  _previousDragToReorderIndexPath = nil;
+  [self __beginDraggingCell:cell offset:offset location:[[cell superview] localPointForEvent:event]];
 }
 
 /**
  * @brief Mouse up in a cell
  */
 -(void)__mouseUpInCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
-  BOOL animate = TRUE;
-  
-  [_previousDragToReorderIndexPath release];
-  _previousDragToReorderIndexPath = nil;
-  
-  // finalize drag to reorder if we have a drag index
-  if(_currentDragToReorderIndexPath != nil){
-    TUIFastIndexPath *targetIndexPath;
-    
-    switch(_currentDragToReorderInsertionMethod){
-      case TUITableViewInsertionMethodBeforeIndex:
-        // insert "before" is equivalent to insert "at" as subsequent indexes are shifted down to
-        // accommodate the insert.  the distinction is only useful for presentation.
-        targetIndexPath = _currentDragToReorderIndexPath;
-        break;
-      case TUITableViewInsertionMethodAfterIndex:
-        targetIndexPath = [TUIFastIndexPath indexPathForRow:_currentDragToReorderIndexPath.row + 1 inSection:_currentDragToReorderIndexPath.section];
-        break;
-      case TUITableViewInsertionMethodAtIndex:
-      default:
-        targetIndexPath = _currentDragToReorderIndexPath;
-        break;
-    }
-    
-    // only update the data source if the drag ended on a different index path
-    // than it started; otherwise just clean up the view
-    if(![targetIndexPath isEqual:cell.indexPath]){
-      // notify our data source that the row will be reordered
-      if(self.dataSource != nil && [self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
-        [self.dataSource tableView:self moveRowAtIndexPath:cell.indexPath toIndexPath:targetIndexPath];
-      }
-    }
-    
-    // compute the final cell destination frame
-    CGRect frame = [self rectForRowAtIndexPath:_currentDragToReorderIndexPath];
-    // adjust if necessary based on the insertion method
-    switch(_currentDragToReorderInsertionMethod){
-      case TUITableViewInsertionMethodBeforeIndex:
-        frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
-        break;
-      case TUITableViewInsertionMethodAfterIndex:
-        frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
-        break;
-      case TUITableViewInsertionMethodAtIndex:
-      default:
-        // do nothing. this case is just here to avoid complier complaints...
-        break;
-    }
-    
-    // move the cell to its final frame and reload the table data to make sure all
-    // the internal caching/geometry stuff is consistent.  eventually this should probably
-    // just update section info and reusable cells rather than doing a full reload.
-    if(animate && !CGRectEqualToRect(cell.frame, frame)){
-      // disable user interaction until the animation has completed and the table has reloaded
-      [self setUserInteractionEnabled:FALSE];
-      [TUIView animateWithDuration:0.2
-        animations:^ { cell.frame = frame; }
-        completion:^(BOOL finished) {
-          if(finished) [self reloadData];
-          [self setUserInteractionEnabled:TRUE];
-        }
-      ];
-    }else{
-      cell.frame = frame;
-      [self reloadData];
-    }
-    
-    // clear state
-    [_currentDragToReorderIndexPath release];
-    _currentDragToReorderIndexPath = nil;
-    
-  }
-  
+  [self __endDraggingCell:cell offset:offset location:[[cell superview] localPointForEvent:event]];
 }
 
 /**
@@ -113,7 +38,43 @@
  * If reordering is permitted by the table, this will begin a move operation.
  */
 -(void)__mouseDraggedCell:(TUITableViewCell *)cell offset:(CGPoint)offset event:(NSEvent *)event {
+  [self __updateDraggingCell:cell offset:offset location:[[cell superview] localPointForEvent:event]];
+}
+
+/**
+ * @brief Determine if we're dragging a cell or not
+ */
+-(BOOL)__isDraggingCell {
+  return _dragToReorderCell != nil && _currentDragToReorderIndexPath != nil;
+}
+
+/**
+ * @brief Begin dragging a cell
+ */
+-(void)__beginDraggingCell:(TUITableViewCell *)cell offset:(CGPoint)offset location:(CGPoint)location {
+  
+  _currentDragToReorderLocation = location;
+  _currentDragToReorderMouseOffset = offset;
+  
+  [_dragToReorderCell release];
+  _dragToReorderCell = [cell retain];
+  
+  [_currentDragToReorderIndexPath release];
+  _currentDragToReorderIndexPath = nil;
+  [_previousDragToReorderIndexPath release];
+  _previousDragToReorderIndexPath = nil;
+  
+}
+
+/**
+ * @brief Update cell dragging
+ */
+-(void)__updateDraggingCell:(TUITableViewCell *)cell offset:(CGPoint)offset location:(CGPoint)location {
   BOOL animate = TRUE;
+  
+  // note the location in any event
+  _currentDragToReorderLocation = location;
+  _currentDragToReorderMouseOffset = offset;
   
   // make sure reordering is supported by our data source (this should probably be done only once somewhere)
   if(self.dataSource == nil || ![self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
@@ -131,18 +92,19 @@
     _currentDragToReorderIndexPath = [cell.indexPath retain];
     [_previousDragToReorderIndexPath release];
     _previousDragToReorderIndexPath = [cell.indexPath retain];
-    return; // just initialize on the first one
+    return; // just initialize on the first event
   }
   
-  CGPoint location = [[cell superview] localPointForEvent:event];
   CGRect visible = [self visibleRect];
-  
   // dragged cell destination frame
   CGRect dest = CGRectMake(0, roundf(MAX(0, MIN(visible.origin.y + visible.size.height - cell.frame.size.height, location.y + visible.origin.y - offset.y))), self.bounds.size.width, cell.frame.size.height);
   // bring to front
   [[cell superview] bringSubviewToFront:cell];
   // move the cell
   cell.frame = dest;
+  
+  // scroll content if necessary (scroll view figures out whether it's necessary or not)
+  [self beginContinuousScrollForDragAtPoint:location animated:TRUE];
   
   TUITableViewInsertionMethod insertMethod = TUITableViewInsertionMethodAtIndex;
   TUIFastIndexPath *currentPath = nil;
@@ -278,6 +240,94 @@
     }
     
   }
+  
+}
+
+/**
+ * @brief Finish dragging a cell
+ */
+-(void)__endDraggingCell:(TUITableViewCell *)cell offset:(CGPoint)offset location:(CGPoint)location {
+  BOOL animate = TRUE;
+  
+  // cancel our continuous scroll
+  [self endContinuousScrollAnimated:TRUE];
+  
+  // finalize drag to reorder if we have a drag index
+  if(_currentDragToReorderIndexPath != nil){
+    TUIFastIndexPath *targetIndexPath;
+    
+    switch(_currentDragToReorderInsertionMethod){
+      case TUITableViewInsertionMethodBeforeIndex:
+        // insert "before" is equivalent to insert "at" as subsequent indexes are shifted down to
+        // accommodate the insert.  the distinction is only useful for presentation.
+        targetIndexPath = _currentDragToReorderIndexPath;
+        break;
+      case TUITableViewInsertionMethodAfterIndex:
+        targetIndexPath = [TUIFastIndexPath indexPathForRow:_currentDragToReorderIndexPath.row + 1 inSection:_currentDragToReorderIndexPath.section];
+        break;
+      case TUITableViewInsertionMethodAtIndex:
+      default:
+        targetIndexPath = _currentDragToReorderIndexPath;
+        break;
+    }
+    
+    // only update the data source if the drag ended on a different index path
+    // than it started; otherwise just clean up the view
+    if(![targetIndexPath isEqual:cell.indexPath]){
+      // notify our data source that the row will be reordered
+      if(self.dataSource != nil && [self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
+        [self.dataSource tableView:self moveRowAtIndexPath:cell.indexPath toIndexPath:targetIndexPath];
+      }
+    }
+    
+    // compute the final cell destination frame
+    CGRect frame = [self rectForRowAtIndexPath:_currentDragToReorderIndexPath];
+    // adjust if necessary based on the insertion method
+    switch(_currentDragToReorderInsertionMethod){
+      case TUITableViewInsertionMethodBeforeIndex:
+        frame = CGRectMake(frame.origin.x, frame.origin.y + cell.frame.size.height, frame.size.width, frame.size.height);
+        break;
+      case TUITableViewInsertionMethodAfterIndex:
+        frame = CGRectMake(frame.origin.x, frame.origin.y - cell.frame.size.height, frame.size.width, frame.size.height);
+        break;
+      case TUITableViewInsertionMethodAtIndex:
+      default:
+        // do nothing. this case is just here to avoid complier complaints...
+        break;
+    }
+    
+    // move the cell to its final frame and reload the table data to make sure all
+    // the internal caching/geometry stuff is consistent.  eventually this should probably
+    // just update section info and reusable cells rather than doing a full reload.
+    if(animate && !CGRectEqualToRect(cell.frame, frame)){
+      // disable user interaction until the animation has completed and the table has reloaded
+      [self setUserInteractionEnabled:FALSE];
+      [TUIView animateWithDuration:0.2
+        animations:^ { cell.frame = frame; }
+        completion:^(BOOL finished) {
+          if(finished) [self reloadData];
+          [self setUserInteractionEnabled:TRUE];
+        }
+      ];
+    }else{
+      cell.frame = frame;
+      [self reloadData];
+    }
+    
+    // clear state
+    [_currentDragToReorderIndexPath release];
+    _currentDragToReorderIndexPath = nil;
+    
+  }
+  
+  [_previousDragToReorderIndexPath release];
+  _previousDragToReorderIndexPath = nil;
+  
+  [_dragToReorderCell release];
+  _dragToReorderCell = nil;
+  
+  _currentDragToReorderLocation = CGPointZero;
+  _currentDragToReorderMouseOffset = CGPointZero;
   
 }
 

@@ -15,6 +15,7 @@
  */
 
 #import "TUITableView.h"
+#import "TUITableView+Cell.h"
 #import "TUINSView.h"
 
 typedef struct {
@@ -173,6 +174,7 @@ typedef struct {
 	[_indexPathShouldBeFirstResponder release];
 	[_keepVisibleIndexPathForReload release];
 	[_pullDownView release];
+	[_dragToReorderCell release];
 	[_currentDragToReorderIndexPath release];
 	[_previousDragToReorderIndexPath release];
 	[_headerView release];
@@ -556,6 +558,13 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 {
 	_tableFlags.didFirstLayout = 1; // prevent the auto-scroll-to-top during the first layout
 	[super setContentOffset:p];
+	
+	// if we're currently dragging we need to update the drag operation since the content under
+	// the mouse has moved; we just call update again with the last mouse location
+  if([self __isDraggingCell]){
+    [self __updateDraggingCell:_dragToReorderCell offset:_currentDragToReorderMouseOffset location:_currentDragToReorderLocation];
+  }
+  
 }
 
 - (void)setPullDownView:(TUIView *)p
@@ -734,9 +743,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	// remove offscreen cells
 	for(TUIFastIndexPath *i in indexPathsToRemove) {
 		TUITableViewCell *cell = [self cellForRowAtIndexPath:i];
-		[self _enqueueReusableCell:cell];
-		[cell removeFromSuperview];
-		[_visibleItems removeObjectForKey:i];
+		// don't reuse the dragged cell
+		if(_dragToReorderCell == nil || ![cell isEqual:_dragToReorderCell]){
+      [self _enqueueReusableCell:cell];
+      [cell removeFromSuperview];
+      [_visibleItems removeObjectForKey:i];
+    }
 	}
 	
 	// add new cells
@@ -754,16 +766,24 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 			} else {
 				[cell setSelected:NO animated:NO];
 			}
+			
 			[self addSubview:cell];
+			
 			if([_indexPathShouldBeFirstResponder isEqual:i]) {
 				[self.nsWindow makeFirstResponderIfNotAlreadyInResponderChain:cell withFutureRequestToken:_futureMakeFirstResponderToken];
 				[_indexPathShouldBeFirstResponder release];
 				_indexPathShouldBeFirstResponder = nil;
 			}
+			
 			[_visibleItems setObject:cell forKey:i];
 		}
 	}
 	
+  // if we have a dragged cell, make sure it's on top of the newly added cells
+  if([indexPathsToAdd count] > 0 && _dragToReorderCell != nil){
+    [[_dragToReorderCell superview] bringSubviewToFront:_dragToReorderCell];
+  }
+  
 	if(_headerView) {
 		CGSize s = self.contentSize;
 		CGRect headerViewRect = CGRectMake(0, s.height - _headerView.frame.size.height, visible.size.width, _headerView.frame.size.height);

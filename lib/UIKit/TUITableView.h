@@ -67,7 +67,7 @@ typedef enum {
 	NSArray                     * _sectionInfo;
 	
 	TUIView                     * _pullDownView;
-	TUIView							        *_headerView;
+	TUIView							        * _headerView;
 	
 	CGSize                        _lastSize;
 	CGFloat                       _contentHeight;
@@ -82,6 +82,10 @@ typedef enum {
 	TUIFastIndexPath            * _keepVisibleIndexPathForReload;
 	CGFloat                       _relativeOffsetForReload;
 	
+	// drag-to-reorder state
+  TUITableViewCell            * _dragToReorderCell;
+  CGPoint                       _currentDragToReorderLocation;
+  CGPoint                       _currentDragToReorderMouseOffset;
   TUIFastIndexPath            * _currentDragToReorderIndexPath;
   TUITableViewInsertionMethod   _currentDragToReorderInsertionMethod;
   TUIFastIndexPath            * _previousDragToReorderIndexPath;
