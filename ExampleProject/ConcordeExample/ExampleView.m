@@ -164,6 +164,10 @@
 	if([event clickCount] == 1) {
 		// do something cool
 	}
+	
+	if(event.type == NSRightMouseUp){
+		NSLog(@"right mouse up");
+	}
 }
 
 -(BOOL)tableView:(TUITableView *)tableView canMoveRowAtIndexPath:(TUIFastIndexPath *)indexPath {
