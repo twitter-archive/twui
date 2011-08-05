@@ -328,16 +328,8 @@
       [TUIView animateWithDuration:0.2
         animations:^ { cell.frame = frame; }
         completion:^(BOOL finished) {
-          
-          if(finished){
-            // i think the following should be suitable to ensure the state is consistent after
-            // reordering, but i'm not completely sure about that...
-            [self _preLayoutCells];
-            [super layoutSubviews];
-            [self _layoutSectionHeaders:TRUE];
-            [self _layoutCells:TRUE];
-          }
-          
+          // reload the table when we're done
+          if(finished) [self reloadData];
           // restore user interactivity
           [self setUserInteractionEnabled:TRUE];
         }
