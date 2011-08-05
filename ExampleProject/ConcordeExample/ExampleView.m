@@ -162,7 +162,7 @@
 	}
 	
 	if(event.type == NSRightMouseUp){
-		NSLog(@"left mouse up");
+		NSLog(@"right mouse up");
 	}
 }
 
