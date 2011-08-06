@@ -166,7 +166,7 @@
 	}
 }
 
-- (BOOL)shouldSelectRowOnRightClick:(TUITableView*)tableView{
+- (BOOL)tableViewShouldSelectRowOnRightClick:(TUITableView*)tableView{
 	return YES;
 }
 
