@@ -74,11 +74,14 @@
 
 - (void)mouseDown:(NSEvent *)event
 {
+	[super mouseDown:event];
+	
 	TUITableView *tableView = self.tableView;
-	[tableView selectRowAtIndexPath:self.indexPath animated:tableView.animateSelectionChanges scrollPosition:TUITableViewScrollPositionNone];
-	[super mouseDown:event]; // may make the text renderer first responder, so we want to do the selection before this
-	_tableViewCellFlags.highlighted = 1;
-	[self setNeedsDisplay];
+	if(![tableView.delegate respondsToSelector:@selector(tableView:shouldSelectRowAtIndexPath:forEvent:)] || [tableView.delegate tableView:tableView shouldSelectRowAtIndexPath:self.indexPath forEvent:event]){
+		[tableView selectRowAtIndexPath:self.indexPath animated:tableView.animateSelectionChanges scrollPosition:TUITableViewScrollPositionNone];
+		_tableViewCellFlags.highlighted = 1;
+		[self setNeedsDisplay];
+	}
 }
 
 - (void)mouseUp:(NSEvent *)event
@@ -99,7 +102,7 @@
 	[super rightMouseDown:event];
 	
 	TUITableView *tableView = self.tableView;
-	if([tableView.delegate respondsToSelector:@selector(tableViewShouldSelectRowOnRightClick:)] && [tableView.delegate tableViewShouldSelectRowOnRightClick:tableView]){
+	if(![tableView.delegate respondsToSelector:@selector(tableView:shouldSelectRowAtIndexPath:forEvent:)] || [tableView.delegate tableView:tableView shouldSelectRowAtIndexPath:self.indexPath forEvent:event]){
 		[tableView selectRowAtIndexPath:self.indexPath animated:tableView.animateSelectionChanges scrollPosition:TUITableViewScrollPositionNone];
 		_tableViewCellFlags.highlighted = 1;
 		[self setNeedsDisplay];
@@ -108,6 +111,9 @@
 
 - (void)rightMouseUp:(NSEvent *)event{
 	[super rightMouseUp:event];
+	_tableViewCellFlags.highlighted = 0;
+	[self setNeedsDisplay];
+	
 	if([self eventInside:event]) {
 		TUITableView *tableView = self.tableView;
 		if([tableView.delegate respondsToSelector:@selector(tableView:didClickRowAtIndexPath:withEvent:)]){
