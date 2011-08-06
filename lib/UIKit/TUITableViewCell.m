@@ -95,6 +95,17 @@
 	}
 }
 
+- (void)rightMouseDown:(NSEvent *)event{
+	[super rightMouseDown:event];
+	
+	TUITableView *tableView = self.tableView;
+	if([tableView.delegate respondsToSelector:@selector(shouldSelectRowOnRightClick)] && [tableView.delegate shouldSelectRowOnRightClick]){
+		[tableView selectRowAtIndexPath:self.indexPath animated:tableView.animateSelectionChanges scrollPosition:TUITableViewScrollPositionNone];
+		_tableViewCellFlags.highlighted = 1;
+		[self setNeedsDisplay];
+	}
+}
+
 - (void)rightMouseUp:(NSEvent *)event{
 	[super rightMouseUp:event];
 	if([self eventInside:event]) {

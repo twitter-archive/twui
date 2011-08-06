@@ -166,4 +166,8 @@
 	}
 }
 
+- (BOOL)shouldSelectRowOnRightClick{
+	return YES;
+}
+
 @end
