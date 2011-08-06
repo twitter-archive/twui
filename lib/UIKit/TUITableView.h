@@ -45,7 +45,7 @@ typedef enum {
 - (void)tableView:(TUITableView *)tableView didDeselectRowAtIndexPath:(TUIFastIndexPath *)indexPath;
 - (void)tableView:(TUITableView *)tableView didClickRowAtIndexPath:(TUIFastIndexPath *)indexPath withEvent:(NSEvent *)event; // happens on mouse up (can look at clickCount)
 
-- (BOOL)shouldSelectRowOnRightClick; // NO, if not implemented
+- (BOOL)shouldSelectRowOnRightClick:(TUITableView*)tableView; // NO, if not implemented
 
 @end
 

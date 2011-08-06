@@ -99,7 +99,7 @@
 	[super rightMouseDown:event];
 	
 	TUITableView *tableView = self.tableView;
-	if([tableView.delegate respondsToSelector:@selector(shouldSelectRowOnRightClick)] && [tableView.delegate shouldSelectRowOnRightClick]){
+	if([tableView.delegate respondsToSelector:@selector(shouldSelectRowOnRightClick:)] && [tableView.delegate shouldSelectRowOnRightClick:tableView]){
 		[tableView selectRowAtIndexPath:self.indexPath animated:tableView.animateSelectionChanges scrollPosition:TUITableViewScrollPositionNone];
 		_tableViewCellFlags.highlighted = 1;
 		[self setNeedsDisplay];
