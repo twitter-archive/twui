@@ -271,7 +271,7 @@ typedef struct {
 	NSMutableArray *sections = [NSMutableArray arrayWithCapacity:numberOfSections];
 	
 	int s;
-	CGFloat offset = [_headerView bounds].size.height;
+	CGFloat offset = [_headerView bounds].size.height - self.contentInset.top;
 	for(s = 0; s < numberOfSections; ++s) {
 		TUITableViewSection *section = [[TUITableViewSection alloc] initWithNumberOfRows:[_dataSource tableView:self numberOfRowsInSection:s] sectionIndex:s tableView:self];
 		[section _setupRowHeights];
@@ -281,7 +281,7 @@ typedef struct {
 		[section release];
 	}
 	
-	_contentHeight = offset;
+	_contentHeight = offset - self.contentInset.bottom;
 	
 	return sections;
 }
@@ -1053,9 +1053,10 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 				}
 				newIndexPath = [TUIFastIndexPath indexPathForRow:row inSection:section];
 			}
-			
-			[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
-			
+			if(![_delegate respondsToSelector:@selector(tableView:shouldSelectRowAtIndexPath:forEvent:)] || [_delegate tableView:self shouldSelectRowAtIndexPath:newIndexPath forEvent:event]){
+				[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
+			}
+
 			return YES;
 		}
 	
@@ -1083,7 +1084,9 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 				newIndexPath = [TUIFastIndexPath indexPathForRow:row inSection:section];
 			}
 			
-			[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
+			if(![_delegate respondsToSelector:@selector(tableView:shouldSelectRowAtIndexPath:forEvent:)] || [_delegate tableView:self shouldSelectRowAtIndexPath:newIndexPath forEvent:event]){
+				[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
+			}
 			
 			return YES;
 		}
