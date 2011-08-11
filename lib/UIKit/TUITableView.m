@@ -770,7 +770,10 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 			[self addSubview:cell];
 			
 			if([_indexPathShouldBeFirstResponder isEqual:i]) {
-				[self.nsWindow makeFirstResponderIfNotAlreadyInResponderChain:cell withFutureRequestToken:_futureMakeFirstResponderToken];
+			  // only make cells first responder if they accept it
+			  if([cell acceptsFirstResponder]){
+			    [self.nsWindow makeFirstResponderIfNotAlreadyInResponderChain:cell withFutureRequestToken:_futureMakeFirstResponderToken];
+			  }
 				[_indexPathShouldBeFirstResponder release];
 				_indexPathShouldBeFirstResponder = nil;
 			}

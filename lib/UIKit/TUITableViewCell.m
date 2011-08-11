@@ -73,6 +73,13 @@
 	return NO;
 }
 
+/**
+ * @brief Accept first responder by default
+ */
+-(BOOL)acceptsFirstResponder {
+  return TRUE;
+}
+
 - (void)mouseDown:(NSEvent *)event
 {
   // note the initial mouse location for dragging
