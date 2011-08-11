@@ -122,6 +122,15 @@
 	}	
 }
 
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+	if([self.tableView.delegate respondsToSelector:@selector(tableView:menuForRowAtIndexPath:withEvent:)]) {
+		return [self.tableView.delegate tableView:self.tableView menuForRowAtIndexPath:self.indexPath withEvent:event];
+	} else {
+		return [super menuForEvent:event];
+	}
+}
+
 - (BOOL)isHighlighted
 {
 	return _tableViewCellFlags.highlighted;
