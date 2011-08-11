@@ -44,6 +44,7 @@
 		_tableView.autoresizingMask = TUIViewAutoresizingFlexibleSize;
 		_tableView.dataSource = self;
 		_tableView.delegate = self;
+		_tableView.maintainContentOffsetAfterReload = TRUE;
 		[self addSubview:_tableView];
 		
 		_tabBar = [[ExampleTabBar alloc] initWithNumberOfTabs:5];
