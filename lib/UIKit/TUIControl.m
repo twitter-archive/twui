@@ -58,7 +58,7 @@
 - (TUIControlState)state
 {
   // start with the normal state, then OR in implicit state that is based on other properties
-  TUIControlState actual = TUIControlStateNormal
+  TUIControlState actual = TUIControlStateNormal;
   
   if(_controlFlags.disabled)        actual |= TUIControlStateDisabled;
   if(_controlFlags.selected)        actual |= TUIControlStateSelected;
@@ -94,8 +94,10 @@
  * @see #state
  */
 -(void)setSelected:(BOOL)selected {
+	[self _stateWillChange];
   _controlFlags.selected = selected;
-  [self setNeedsDisplay]; // better safe than sorry...
+	[self _stateDidChange];
+  [self setNeedsDisplay];
 }
 
 - (BOOL)acceptsFirstMouse
@@ -116,19 +118,39 @@
 - (void)mouseDown:(NSEvent *)event
 {
 	[super mouseDown:event];
+	
+	// handle state change
 	[self _stateWillChange];
 	_controlFlags.tracking = 1;
 	[self _stateDidChange];
+	
+  // handle touch down
+  [self sendActionsForControlEvents:TUIControlEventTouchDown];
+  
+	// needs display
 	[self setNeedsDisplay];
+	
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
 	[super mouseUp:event];
+	
+	// handle state change
 	[self _stateWillChange];
 	_controlFlags.tracking = 0;
 	[self _stateDidChange];
+	
+  // handle touch up
+  if([self pointInside:[self localPointForEvent:event] withEvent:event]){
+    [self sendActionsForControlEvents:TUIControlEventTouchUpInside];
+  }else{
+    [self sendActionsForControlEvents:TUIControlEventTouchUpOutside];
+  }
+	
+  // needs display
 	[self setNeedsDisplay];
+	
 }
 
 @end
