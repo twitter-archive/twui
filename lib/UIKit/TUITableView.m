@@ -950,7 +950,8 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 - (void)_makeRowAtIndexPathFirstResponder:(TUIFastIndexPath *)indexPath
 {
 	TUITableViewCell *cell = [self cellForRowAtIndexPath:indexPath];
-	if(cell) {
+	// only cells that accept first responder should be made first responder
+	if(cell && [cell acceptsFirstResponder]) {
 		[self.nsWindow makeFirstResponderIfNotAlreadyInResponderChain:cell];
 	} else {
 		[_indexPathShouldBeFirstResponder release];
