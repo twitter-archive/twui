@@ -16,6 +16,7 @@
 		5C782FD713A556A900CF69EF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C782FD613A556A800CF69EF /* QuartzCore.framework */; };
 		5C78300513A577B100CF69EF /* TUICGAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5C78300413A5778500CF69EF /* TUICGAdditions.m */; };
 		5C90DB9D13A7C08E00ECDD14 /* ExampleTabBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 5C90DB9C13A7C08D00ECDD14 /* ExampleTabBar.m */; };
+		5ED06F2C13F4C98800B34CAE /* TUITextViewEditor.m in Sources */ = {isa = PBXBuildFile; fileRef = 5ED06F2B13F4C98800B34CAE /* TUITextViewEditor.m */; };
 		5ED56678139DC30300031CDF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5ED56677139DC30300031CDF /* Cocoa.framework */; };
 		5ED56682139DC30300031CDF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5ED56680139DC30300031CDF /* InfoPlist.strings */; };
 		5ED56685139DC30300031CDF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5ED56684139DC30300031CDF /* main.m */; };
@@ -84,6 +85,8 @@
 		5C78300413A5778500CF69EF /* TUICGAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TUICGAdditions.m; sourceTree = "<group>"; };
 		5C90DB9B13A7C08D00ECDD14 /* ExampleTabBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExampleTabBar.h; sourceTree = "<group>"; };
 		5C90DB9C13A7C08D00ECDD14 /* ExampleTabBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExampleTabBar.m; sourceTree = "<group>"; };
+		5ED06F2A13F4C98800B34CAE /* TUITextViewEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TUITextViewEditor.h; sourceTree = "<group>"; };
+		5ED06F2B13F4C98800B34CAE /* TUITextViewEditor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TUITextViewEditor.m; sourceTree = "<group>"; };
 		5ED56673139DC30300031CDF /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5ED56677139DC30300031CDF /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		5ED5667A139DC30300031CDF /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -357,6 +360,8 @@
 				5ED566E5139DC35100031CDF /* TUITextView.m */,
 				5ED566E2139DC35100031CDF /* TUITextRenderer.h */,
 				5ED566E3139DC35100031CDF /* TUITextRenderer.m */,
+				5ED06F2A13F4C98800B34CAE /* TUITextViewEditor.h */,
+				5ED06F2B13F4C98800B34CAE /* TUITextViewEditor.m */,
 				5ED566DF139DC35100031CDF /* TUITextRenderer+Event.h */,
 				5ED566E0139DC35100031CDF /* TUITextRenderer+Event.m */,
 				5ED566E1139DC35100031CDF /* TUITextRenderer+KeyBindings.m */,
@@ -489,6 +494,7 @@
 				5C90DB9D13A7C08E00ECDD14 /* ExampleTabBar.m in Sources */,
 				D3CE671313C6646B00D47B2D /* ExampleSectionHeaderView.m in Sources */,
 				D3502AAE13EA0FE4007C5CA7 /* TUITableView+Cell.m in Sources */,
+				5ED06F2C13F4C98800B34CAE /* TUITextViewEditor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
