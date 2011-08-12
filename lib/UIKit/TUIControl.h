@@ -17,36 +17,37 @@
 #import "TUIView.h"
 
 enum {
-    TUIControlEventTouchDown           = 1 <<  0,
-    TUIControlEventTouchDownRepeat     = 1 <<  1,
-	TUIControlEventTouchUpInside       = 1 <<  6,
-	TUIControlEventTouchUpOutside      = 1 <<  7,
-    TUIControlEventValueChanged        = 1 << 12,
-    TUIControlEventEditingDidEndOnExit = 1 << 19,
-    TUIControlEventAllTouchEvents      = 0x00000FFF,
-    TUIControlEventAllEditingEvents    = 0x000F0000,
-    TUIControlEventApplicationReserved = 0x0F000000,
-    TUIControlEventSystemReserved      = 0xF0000000,
-    TUIControlEventAllEvents           = 0xFFFFFFFF
+  TUIControlEventTouchDown           = 1 <<  0,
+  TUIControlEventTouchDownRepeat     = 1 <<  1,
+  TUIControlEventTouchUpInside       = 1 <<  6,
+  TUIControlEventTouchUpOutside      = 1 <<  7,
+  TUIControlEventValueChanged        = 1 << 12,
+  TUIControlEventEditingDidEndOnExit = 1 << 19,
+  TUIControlEventAllTouchEvents      = 0x00000FFF,
+  TUIControlEventAllEditingEvents    = 0x000F0000,
+  TUIControlEventApplicationReserved = 0x0F000000,
+  TUIControlEventSystemReserved      = 0xF0000000,
+  TUIControlEventAllEvents           = 0xFFFFFFFF
 };
 typedef NSUInteger TUIControlEvents;
 
 enum {
-	TUIControlStateNormal       = 0,                       
-	TUIControlStateHighlighted  = 1 << 0,
-	TUIControlStateDisabled     = 1 << 1,
-	TUIControlStateSelected     = 1 << 2,
-	TUIControlStateNotKey		 = 1 << 11,
-	TUIControlStateApplication  = 0x00FF0000,
-	TUIControlStateReserved     = 0xFF000000
+  TUIControlStateNormal       = 0,                       
+  TUIControlStateHighlighted  = 1 << 0,
+  TUIControlStateDisabled     = 1 << 1,
+  TUIControlStateSelected     = 1 << 2,
+  TUIControlStateNotKey       = 1 << 11,
+  TUIControlStateApplication  = 0x00FF0000,
+  TUIControlStateReserved     = 0xFF000000
 };
 typedef NSUInteger TUIControlState;
 
 @interface TUIControl : TUIView
 {
-	NSMutableArray* _targetActions;
+  NSMutableArray*   _targetActions;
 	struct {
 		unsigned int disabled:1;
+		unsigned int selected:1;
 		unsigned int acceptsFirstMouse:1;
 		unsigned int tracking:1;
 	} _controlFlags;
@@ -56,6 +57,7 @@ typedef NSUInteger TUIControlState;
 
 @property(nonatomic,readonly) TUIControlState state;
 @property(nonatomic,readonly,getter=isTracking) BOOL tracking;
+@property(nonatomic,assign) BOOL selected;
 
 @property (nonatomic, assign) BOOL acceptsFirstMouse;
 
