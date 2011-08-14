@@ -16,6 +16,9 @@
 
 #import "TUITableView+Cell.h"
 
+// Dragged cells should be just above pinned headers
+#define kTUITableViewDraggedCellZPosition 1001
+
 @interface TUITableView (CellPrivate)
 
 - (BOOL)_preLayoutCells;
@@ -96,6 +99,9 @@
   
   // initialize defaults on the first drag
   if(_currentDragToReorderIndexPath == nil || _previousDragToReorderIndexPath == nil){
+    // make sure the dragged cell is on top
+    _dragToReorderCell.layer.zPosition = kTUITableViewDraggedCellZPosition;
+    // setup index paths
     [_currentDragToReorderIndexPath release];
     _currentDragToReorderIndexPath = [cell.indexPath retain];
     [_previousDragToReorderIndexPath release];
@@ -348,6 +354,9 @@
   [_previousDragToReorderIndexPath release];
   _previousDragToReorderIndexPath = nil;
   
+  // restore the dragged cell z-position
+  _dragToReorderCell.layer.zPosition = 0;
+  // and clean up
   [_dragToReorderCell release];
   _dragToReorderCell = nil;
   

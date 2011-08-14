@@ -19,8 +19,25 @@
 	if((self = [super initWithFrame:frame])) {
 		_labelRenderer = [[TUITextRenderer alloc] init];
 		self.textRenderers = [NSArray arrayWithObjects:_labelRenderer, nil];
+		self.opaque = TRUE;
 	}
 	return self;
+}
+
+/**
+ * @brief The header will become pinned
+ */
+-(void)headerWillBecomePinned {
+  self.opaque = FALSE;
+  [super headerWillBecomePinned];
+}
+
+/**
+ * @brief The header will become unpinned
+ */
+-(void)headerWillBecomeUnpinned {
+  self.opaque = TRUE;
+  [super headerWillBecomeUnpinned];
 }
 
 /**
@@ -32,8 +49,13 @@
   if((g = TUIGraphicsGetCurrentContext()) != nil){
     [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:g flipped:FALSE]];
     
-    NSColor *start = [NSColor colorWithCalibratedRed:0.8 green:0.8 blue:0.8 alpha:1];
-    NSColor *end = [NSColor colorWithCalibratedRed:0.9 green:0.9 blue:0.9 alpha:1];
+    if(!self.pinnedToViewport){
+      [[NSColor whiteColor] set];
+      NSRectFill(self.bounds);
+    }
+    
+    NSColor *start = [NSColor colorWithCalibratedRed:0.8 green:0.8 blue:0.8 alpha:0.9];
+    NSColor *end = [NSColor colorWithCalibratedRed:0.9 green:0.9 blue:0.9 alpha:0.9];
     NSGradient *gradient = nil;
     
     gradient = [[NSGradient alloc] initWithStartingColor:start endingColor:end];
