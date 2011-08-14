@@ -2,7 +2,7 @@
 
 #import "TUIKit.h"
 
-@interface ExampleSectionHeaderView : TUIView {
+@interface ExampleSectionHeaderView : TUITableViewSectionHeader {
   
   TUITextRenderer * _labelRenderer;
   
