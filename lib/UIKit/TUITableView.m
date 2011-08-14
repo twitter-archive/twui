@@ -16,6 +16,7 @@
 
 #import "TUITableView.h"
 #import "TUITableView+Cell.h"
+#import "TUITableViewSectionHeader.h"
 #import "TUINSView.h"
 
 // header views need to be above the cells at all times
@@ -682,24 +683,38 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 			TUITableViewSection *section = [_sectionInfo objectAtIndex:index];
 			if(section.headerView != nil) {
 				CGRect headerFrame = [self rectForHeaderOfSection:index];
-
+				
 				// check if this header needs to be pinned
 				if(CGRectGetMaxY(headerFrame) > CGRectGetMaxY(visible)) {
 					headerFrame.origin.y = CGRectGetMaxY(visible) - headerFrame.size.height;
 					pinnedHeader = section.headerView;
-				}
-				else if((pinnedHeader != nil) && (CGRectGetMaxY(headerFrame) > pinnedHeader.frame.origin.y)) {
+					// if the header is a TUITableViewSectionHeader notify it of it's pinned state
+					if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
+					  ((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = TRUE;
+					}
+				}else if((pinnedHeader != nil) && (CGRectGetMaxY(headerFrame) > pinnedHeader.frame.origin.y)) {
 					// this header is intersecting with the pinned header, so we push the pinned header upwards.
 					CGRect pinnedHeaderFrame = pinnedHeader.frame;
 					pinnedHeaderFrame.origin.y = CGRectGetMaxY(headerFrame);
 					pinnedHeader.frame = pinnedHeaderFrame;
+					// if the header is a TUITableViewSectionHeader notify it of it's pinned state
+					if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
+					  ((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = FALSE;
+					}
+				}else{
+					// if the header is a TUITableViewSectionHeader notify it of it's pinned state
+					if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
+					  ((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = FALSE;
+					}
 				}
 				
 				section.headerView.frame = headerFrame;
 				[section.headerView setNeedsLayout];
 				
-				if (section.headerView.superview == nil)
+				if(section.headerView.superview == nil){
 					[self addSubview:section.headerView];
+				}
+				
 			}
 		}
 		[_visibleSectionHeaders addIndex:index];
@@ -715,6 +730,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		}
 		[_visibleSectionHeaders removeIndex:index];
 	}];
+	
 }
 
 - (void)_layoutCells:(BOOL)visibleCellsNeedRelayout
@@ -926,6 +942,16 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 {
 	CGRect v = [self visibleRect];
 	CGRect r = [self rectForRowAtIndexPath:indexPath];
+	
+	// when the target index path section has a header view, add its height to
+	// the height of our row to prevent the selected row from being overlapped
+	// by the pinned header
+  TUIView *headerView;
+  if((headerView = [self headerViewForSection:indexPath.section]) != nil){
+    CGRect headerFrame = [self rectForHeaderOfSection:indexPath.section];
+    r.size.height += headerFrame.size.height;
+  }
+	
 	switch(scrollPosition) {
 		case TUITableViewScrollPositionNone:
 			// do nothing
@@ -939,8 +965,8 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		default:
 			[self scrollRectToVisible:r animated:animated];
 			break;
-		
 	}
+	
 }
 
 - (TUIFastIndexPath *)indexPathForSelectedRow
