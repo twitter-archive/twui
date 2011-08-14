@@ -26,6 +26,7 @@
 #import "TUITableView.h"
 #import "TUITableView+Additions.h"
 #import "TUITableViewCell.h"
+#import "TUITableViewSectionHeader.h"
 #import "TUILabel.h"
 #import "TUIImageView.h"
 #import "TUIButton.h"
