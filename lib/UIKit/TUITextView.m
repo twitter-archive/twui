@@ -281,8 +281,11 @@ static CAAnimation *ThrobAnimation()
 }
 
 - (void)_checkSpelling
-{	
-	lastCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:NSMakeRange(0, [self.text length]) types:NSTextCheckingTypeSpelling options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
+{
+	NSTextCheckingType checkingTypes = NSTextCheckingTypeSpelling;
+	if(autocorrectionEnabled) checkingTypes |= NSTextCheckingTypeCorrection;
+	
+	lastCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:NSMakeRange(0, [self.text length]) types:checkingTypes options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
 		// This needs to happen on the main thread so that the user doesn't enter more text while we're changing the attributed string.
 		dispatch_async(dispatch_get_main_queue(), ^{
 			// we only care about the most recent results, ignore anything older
@@ -295,13 +298,26 @@ static CAAnimation *ThrobAnimation()
 			[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:wholeStringRange];
 			
 			NSRange selectionRange = [self selectedRange];
+			NSMutableArray *autocorrectedResults = [NSMutableArray array];
 			for(NSTextCheckingResult *result in results) {
-				// Don't spell check the word they're typing, otherwise we're constantly marking it as misspelled and that's lame.
+				// Don't check the word they're typing. It's just annoying.
 				BOOL isActiveWord = (result.range.location + result.range.length == selectionRange.location) && selectionRange.length == 0;
 				if(isActiveWord) continue;
 				
-				[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
-				[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
+				if(result.resultType == NSTextCheckingTypeCorrection) {
+					[[renderer backingStore] replaceCharactersInRange:result.range withString:result.replacementString];
+					
+					[autocorrectedResults addObject:result];
+				} else if(result.resultType == NSTextCheckingTypeSpelling) {
+					[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
+					[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
+				}
+			}
+			
+			// We need to go back and remove any misspelled markers from the results that we autocorrected.
+			for(NSTextCheckingResult *result in autocorrectedResults) {
+				[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:result.range];
+				[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:result.range];
 			}
 			
 			[[renderer backingStore] endEditing];
