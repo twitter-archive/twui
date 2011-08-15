@@ -118,6 +118,10 @@
 /**
  * @brief Create a new TUIImage from an NSImage
  * 
+ * @note Don't use this method in -drawRect: if you use a NSGraphicsContext.  This method may
+ * change the current context in order to convert the image and will not restore any previous
+ * context.
+ * 
  * @param image an NSImage
  * @return TUIImage
  */
