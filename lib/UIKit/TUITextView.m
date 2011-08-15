@@ -17,9 +17,14 @@
 #import "TUIKit.h"
 #import "TUITextView.h"
 #import "TUITextViewEditor.h"
+#import "TUITextRenderer+Event.h"
 
 @interface TUITextView ()
-- (void)checkSpelling;
+- (void)_checkSpelling;
+- (void)_replaceMisspelledWord:(NSMenuItem *)menuItem;
+
+@property (nonatomic, retain) NSArray *lastCheckResults;
+@property (nonatomic, strong) NSTextCheckingResult *selectedTextCheckingResult;
 @end
 
 @implementation TUITextView
@@ -33,6 +38,9 @@
 @synthesize contentInset;
 @synthesize placeholder;
 @synthesize spellCheckingEnabled;
+@synthesize lastCheckResults;
+@synthesize selectedTextCheckingResult;
+@synthesize autocorrectionEnabled;
 
 - (void)_updateDefaultAttributes
 {
@@ -81,6 +89,8 @@
 	[font release];
 	[textColor release];
 	[placeholder release];
+	[lastCheckResults release];
+	[selectedTextCheckingResult release];
 	[super dealloc];
 }
 
@@ -265,33 +275,89 @@ static CAAnimation *ThrobAnimation()
 	if(_textViewFlags.delegateTextViewDidChange)
 		[delegate textViewDidChange:self];
 	
-	// We only want to spell-check once they're done typing because it's super annoying to see the red wrong-spelling underline as you're typing out a word. So delay the spell check until we don't get any more text changes.
 	if(spellCheckingEnabled) {
-		static const NSTimeInterval spellCheckDelay = 0.3f;
-		[[self class] cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkSpelling) object:nil];
-		[self performSelector:@selector(checkSpelling) withObject:nil afterDelay:spellCheckDelay];
+		[self _checkSpelling];
 	}
 }
 
-- (void)checkSpelling
+- (void)_checkSpelling
 {	
-	lastSpellCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:NSMakeRange(0, [self.text length]) types:NSTextCheckingTypeSpelling options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
+	lastCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:NSMakeRange(0, [self.text length]) types:NSTextCheckingTypeSpelling options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
 		// This needs to happen on the main thread so that the user doesn't enter more text while we're changing the attributed string.
 		dispatch_async(dispatch_get_main_queue(), ^{
 			// we only care about the most recent results, ignore anything older
-			if(sequenceNumber != lastSpellCheckToken) return;
+			if(sequenceNumber != lastCheckToken) return;
+						
+			[[renderer backingStore] beginEditing];
 			
-			[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:NSMakeRange(0, [self.text length])];
-			[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:NSMakeRange(0, [self.text length])];
-
+			NSRange wholeStringRange = NSMakeRange(0, [self.text length]);
+			[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:wholeStringRange];
+			[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:wholeStringRange];
+			
+			NSRange selectionRange = [self selectedRange];
 			for(NSTextCheckingResult *result in results) {
+				// Don't spell check the word they're typing, otherwise we're constantly marking it as misspelled and that's lame.
+				BOOL isActiveWord = (result.range.location + result.range.length == selectionRange.location) && selectionRange.length == 0;
+				if(isActiveWord) continue;
+				
 				[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
 				[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
 			}
+			
+			[[renderer backingStore] endEditing];
+			[renderer reset]; // make sure we reset so that the renderer uses our new attributes
 
 			[self setNeedsDisplay];
+			
+			self.lastCheckResults = results;
 		});
 	}];
+}
+
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{
+	CFIndex stringIndex = [renderer stringIndexForEvent:event];
+	for(NSTextCheckingResult *result in lastCheckResults) {
+		if(stringIndex >= result.range.location && stringIndex <= result.range.location + result.range.length) {
+			self.selectedTextCheckingResult = result;
+			break;
+		}
+	}
+	
+	if(selectedTextCheckingResult == nil) return nil;
+		
+	NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
+	NSArray *guesses = [[NSSpellChecker sharedSpellChecker] guessesForWordRange:selectedTextCheckingResult.range inString:[self text] language:nil inSpellDocumentWithTag:0];
+	if(guesses.count > 0) {
+		for(NSString *guess in guesses) {
+			NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:guess action:@selector(_replaceMisspelledWord:) keyEquivalent:@""];
+			[menuItem setTarget:self];
+			[menuItem setRepresentedObject:guess];
+			[menu addItem:menuItem];
+			[menuItem release];
+		}
+	} else {
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:@"No guesses" action:NULL keyEquivalent:@""];
+		[menu addItem:menuItem];
+		[menuItem release];
+	}
+	
+	return [menu autorelease];
+}
+
+- (void)_replaceMisspelledWord:(NSMenuItem *)menuItem
+{	
+	NSString *replacement = [menuItem representedObject];
+	[[renderer backingStore] beginEditing];
+	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
+	[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:selectedTextCheckingResult.range];
+	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:replacement];
+	[[renderer backingStore] endEditing];
+	[renderer reset];
+	
+	[self _textDidChange];
+	
+	self.selectedTextCheckingResult = nil;
 }
 
 - (NSRange)selectedRange
