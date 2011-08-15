@@ -24,7 +24,7 @@
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem;
 
 @property (nonatomic, retain) NSArray *lastCheckResults;
-@property (nonatomic, strong) NSTextCheckingResult *selectedTextCheckingResult;
+@property (nonatomic, retain) NSTextCheckingResult *selectedTextCheckingResult;
 @end
 
 @implementation TUITextView
