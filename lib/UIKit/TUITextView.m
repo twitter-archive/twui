@@ -18,6 +18,10 @@
 #import "TUITextView.h"
 #import "TUITextViewEditor.h"
 
+@interface TUITextView ()
+- (void)checkSpelling;
+@end
+
 @implementation TUITextView
 
 @synthesize delegate;
@@ -28,6 +32,7 @@
 @synthesize editable;
 @synthesize contentInset;
 @synthesize placeholder;
+@synthesize spellCheckingEnabled;
 
 - (void)_updateDefaultAttributes
 {
@@ -259,6 +264,34 @@ static CAAnimation *ThrobAnimation()
 {
 	if(_textViewFlags.delegateTextViewDidChange)
 		[delegate textViewDidChange:self];
+	
+	// We only want to spell-check once they're done typing because it's super annoying to see the red wrong-spelling underline as you're typing out a word. So delay the spell check until we don't get any more text changes.
+	if(spellCheckingEnabled) {
+		static const NSTimeInterval spellCheckDelay = 0.3f;
+		[[self class] cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkSpelling) object:nil];
+		[self performSelector:@selector(checkSpelling) withObject:nil afterDelay:spellCheckDelay];
+	}
+}
+
+- (void)checkSpelling
+{	
+	lastSpellCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:NSMakeRange(0, [self.text length]) types:NSTextCheckingTypeSpelling options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
+		// This needs to happen on the main thread so that the user doesn't enter more text while we're changing the attributed string.
+		dispatch_async(dispatch_get_main_queue(), ^{
+			// we only care about the most recent results, ignore anything older
+			if(sequenceNumber != lastSpellCheckToken) return;
+			
+			[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:NSMakeRange(0, [self.text length])];
+			[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:NSMakeRange(0, [self.text length])];
+
+			for(NSTextCheckingResult *result in results) {
+				[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
+				[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
+			}
+
+			[self setNeedsDisplay];
+		});
+	}];
 }
 
 - (NSRange)selectedRange

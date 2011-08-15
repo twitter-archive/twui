@@ -35,6 +35,9 @@
 	TUIColor *textColor;
 	TUITextAlignment textAlignment;
 	BOOL editable;
+	
+	BOOL spellCheckingEnabled;
+	NSInteger lastSpellCheckToken;
 
 	TUIEdgeInsets contentInset;
 
@@ -62,6 +65,7 @@
 
 @property (nonatomic, assign) NSRange selectedRange;
 @property (nonatomic, assign, getter=isEditable) BOOL editable;
+@property (nonatomic, assign, getter=isSpellCheckingEnabled) BOOL spellCheckingEnabled;
 
 @property (nonatomic, copy) TUIViewDrawRect drawFrame;
 
