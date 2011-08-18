@@ -334,7 +334,7 @@
       [TUIView animateWithDuration:0.2
         animations:^ { cell.frame = frame; }
         completion:^(BOOL finished) {
-          // reload the table when we're done
+          // reload the table when we're done (implicitly restores z-position)
           if(finished) [self reloadData];
           // restore user interactivity
           [self setUserInteractionEnabled:TRUE];
@@ -342,6 +342,7 @@
       ];
     }else{
       cell.frame = frame;
+      cell.layer.zPosition = 0;
       [self reloadData];
     }
     
@@ -349,13 +350,13 @@
     [_currentDragToReorderIndexPath release];
     _currentDragToReorderIndexPath = nil;
     
+  }else{
+    cell.layer.zPosition = 0;
   }
   
   [_previousDragToReorderIndexPath release];
   _previousDragToReorderIndexPath = nil;
   
-  // restore the dragged cell z-position
-  _dragToReorderCell.layer.zPosition = 0;
   // and clean up
   [_dragToReorderCell release];
   _dragToReorderCell = nil;
