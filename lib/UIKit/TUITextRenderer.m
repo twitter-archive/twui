@@ -284,8 +284,14 @@
 - (CGSize)sizeConstrainedToWidth:(CGFloat)width
 {
 	if(attributedString) {
-		// height needs to be something big but not CGFLOAT_MAX big
-		return [attributedString ab_sizeConstrainedToSize:CGSizeMake(width, 1000000.0f)];
+		CGRect oldFrame = frame;
+		self.frame = CGRectMake(0.0f, 0.0f, width, 1000000.0f);
+
+		CGSize size = [self size];
+		
+		self.frame = oldFrame;
+		
+		return size;
 	}
 	return CGSizeZero;
 }
