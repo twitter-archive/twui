@@ -87,6 +87,9 @@
   _currentDragToReorderLocation = location;
   _currentDragToReorderMouseOffset = offset;
   
+  // return if there wasn't a proper drag
+  if(![cell didDrag]) return;
+  
   // make sure reordering is supported by our data source (this should probably be done only once somewhere)
   if(self.dataSource == nil || ![self.dataSource respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]){
     return; // reordering is not supported by the data source

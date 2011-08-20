@@ -21,7 +21,6 @@
 - (void)viewWillStartLiveResize; // call super to propogate to subviews
 - (void)viewDidEndLiveResize;
 
-// add support as needed (might be slow) - 'up' only for now
 - (void)mouseDown:(NSEvent *)event onSubview:(TUIView *)subview;
 - (void)mouseDragged:(NSEvent *)event onSubview:(TUIView *)subview;
 - (void)mouseUp:(NSEvent *)event fromSubview:(TUIView *)subview;
