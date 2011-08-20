@@ -915,7 +915,7 @@ static float clampBounce(float x) {
 
 -(void)mouseEntered:(NSEvent *)event onSubview:(TUIView *)subview {
   [super mouseEntered:event onSubview:subview];
-  if(++_mouseInside == 1){
+  if(_mouseInside++ < 1){
     [self _updateScrollKnobs];
   }
 }
@@ -942,7 +942,7 @@ static float clampBounce(float x) {
 		case 63275: // end
 			[self scrollToBottomAnimated:YES];
 			return YES;
-		case 32:
+		case 32: // spacebar
 			if([NSEvent modifierFlags] & NSShiftKeyMask)
 				[self pageUp:nil];
 			else

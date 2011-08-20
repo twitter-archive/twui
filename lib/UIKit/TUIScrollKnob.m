@@ -130,12 +130,16 @@ if(isnan(knobLength)) knobLength = 0.0;
 {
 	_scrollKnobFlags.hover = 1;
 	[self _updateKnobColor:0.08];
+	// make sure we propagate mouse events
+	[super mouseEntered:event];
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
 	_scrollKnobFlags.hover = 0;
 	[self _updateKnobColor:0.25];
+	// make sure we propagate mouse events
+	[super mouseExited:event];
 }
 
 - (void)mouseDown:(NSEvent *)event

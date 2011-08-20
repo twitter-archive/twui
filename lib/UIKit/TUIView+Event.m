@@ -42,6 +42,11 @@
 	_viewFlags.dragDistanceLock = 1;
 	_viewFlags.didStartMovingByDragging = 0;
 	_viewFlags.didStartResizeByDragging = 0;
+	
+	if(self.superview != nil){
+	  [self.superview mouseDown:event onSubview:self];
+	}
+	
 }
 
 - (void)mouseUp:(NSEvent *)event
@@ -138,6 +143,11 @@
 		if(!_currentTextRenderer && _viewFlags.pasteboardDraggingEnabled)
 			[self pasteboardDragMouseDragged:event];
 	}
+	
+	if(self.superview != nil){
+	  [self.superview mouseDragged:event onSubview:self];
+	}
+	
 }
 
 - (BOOL)didDrag
@@ -192,12 +202,12 @@
 
 - (void)mouseDown:(NSEvent *)event onSubview:(TUIView *)subview
 {
-	
+  [self.superview mouseDown:event onSubview:subview];
 }
 
 - (void)mouseDragged:(NSEvent *)event onSubview:(TUIView *)subview
 {
-	
+  [self.superview mouseDragged:event onSubview:subview];
 }
 
 - (void)mouseUp:(NSEvent *)event fromSubview:(TUIView *)subview
@@ -210,7 +220,7 @@
 
 - (void)rightMouseDown:(NSEvent *)event onSubview:(TUIView *)subview
 {
-	
+  [self.superview rightMouseDown:event onSubview:subview];
 }
 
 - (void)rightMouseUp:(NSEvent *)event fromSubview:(TUIView *)subview
@@ -221,16 +231,12 @@
 
 - (void)mouseEntered:(NSEvent *)event onSubview:(TUIView *)subview
 {
-  if(self.superview != nil){
-    [self.superview mouseEntered:event onSubview:subview];
-  }
+  [self.superview mouseEntered:event onSubview:subview];
 }
 
 - (void)mouseExited:(NSEvent *)event fromSubview:(TUIView *)subview
 {
-  if(self.superview != nil){
-    [self.superview mouseExited:event fromSubview:subview];
-  }
+  [self.superview mouseExited:event fromSubview:subview];
 }
 
 @end

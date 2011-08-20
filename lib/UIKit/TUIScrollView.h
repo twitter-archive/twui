@@ -57,10 +57,10 @@ typedef enum {
 
 @interface TUIScrollView : TUIView
 {
-  CGPoint                             _unroundedContentOffset;
-  CGSize                              _contentSize;
-  CGSize                              resizeKnobSize;
-  TUIEdgeInsets                       _contentInset;
+  CGPoint         _unroundedContentOffset;
+  CGSize          _contentSize;
+  CGSize          resizeKnobSize;
+  TUIEdgeInsets   _contentInset;
 	
 	id _delegate;
 	TUIScrollKnob *_verticalScrollKnob;
