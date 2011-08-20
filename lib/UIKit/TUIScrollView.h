@@ -27,7 +27,7 @@ typedef enum {
 } TUIScrollViewIndicatorStyle;
 
 typedef enum {
-  /** Never show scrollers (not particularly useful) */
+  /** Never show scrollers */
   TUIScrollViewIndicatorVisibleNever,
   /** Show scrollers only during an animated scroll (not particularly useful yet) */
   TUIScrollViewIndicatorVisibleWhenScrolling,
