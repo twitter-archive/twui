@@ -69,9 +69,8 @@ enum {
 		
 		_scrollViewFlags.bounceEnabled = (FORCE_ENABLE_BOUNCE || AtLeastLion || [[NSUserDefaults standardUserDefaults] boolForKey:@"ForceEnableScrollBouncing"]);
 		
-		_scrollViewFlags.scrollIndicatorVisibility = TUIScrollViewIndicatorVisibleDefault;
-		_scrollViewFlags.showsHorizontalScrollIndicator = 1;
-		_scrollViewFlags.showsVerticalScrollIndicator = 1;
+		_scrollViewFlags.verticalScrollIndicatorVisibility = TUIScrollViewIndicatorVisibleDefault;
+		_scrollViewFlags.horizontalScrollIndicatorVisibility = TUIScrollViewIndicatorVisibleDefault;
 		
 		_horizontalScrollKnob = [[TUIScrollKnob alloc] initWithFrame:CGRectZero];
 		_horizontalScrollKnob.scrollView = self;
@@ -128,29 +127,55 @@ enum {
 }
 
 /**
- * @brief Obtain the scroll indiciator visibility
+ * @brief Obtain the vertical scroll indiciator visibility
  * 
  * The scroll indicator visibiliy determines when scroll indicators are displayed.
- * Note that this property does not override #showsHorizontalScrollIndicator or
- * #showsVerticalScrollIndicator.
+ * Note that scroll indicators are never displayed if the content in the scroll view
+ * is not large enough to require them.
  * 
- * @return scroll indicator visibility
+ * @return vertical scroll indicator visibility
  */
--(TUIScrollViewIndicatorVisibility)scrollIndicatorVisibility {
-  return _scrollViewFlags.scrollIndicatorVisibility;
+-(TUIScrollViewIndicatorVisibility)verticalScrollIndicatorVisibility {
+  return _scrollViewFlags.verticalScrollIndicatorVisibility;
 }
 
 /**
- * @brief Set the scroll indiciator visibility
+ * @brief Set the vertical scroll indiciator visibility
  * 
  * The scroll indicator visibiliy determines when scroll indicators are displayed.
- * Note that this property does not override #showsHorizontalScrollIndicator or
- * #showsVerticalScrollIndicator.
+ * Note that scroll indicators are never displayed if the content in the scroll view
+ * is not large enough to require them.
  * 
- * @param visibility scroll indicator visibility
+ * @param visibility vertical scroll indicator visibility
  */
--(void)setScrollIndicatorVisibility:(TUIScrollViewIndicatorVisibility)visibility {
-   _scrollViewFlags.scrollIndicatorVisibility = visibility;
+-(void)setVerticalScrollIndicatorVisibility:(TUIScrollViewIndicatorVisibility)visibility {
+   _scrollViewFlags.verticalScrollIndicatorVisibility = visibility;
+}
+
+/**
+ * @brief Obtain the horizontal scroll indiciator visibility
+ * 
+ * The scroll indicator visibiliy determines when scroll indicators are displayed.
+ * Note that scroll indicators are never displayed if the content in the scroll view
+ * is not large enough to require them.
+ * 
+ * @return horizontal scroll indicator visibility
+ */
+-(TUIScrollViewIndicatorVisibility)horizontalScrollIndicatorVisibility {
+  return _scrollViewFlags.horizontalScrollIndicatorVisibility;
+}
+
+/**
+ * @brief Set the horizontal scroll indiciator visibility
+ * 
+ * The scroll indicator visibiliy determines when scroll indicators are displayed.
+ * Note that scroll indicators are never displayed if the content in the scroll view
+ * is not large enough to require them.
+ * 
+ * @param visibility horizontal scroll indicator visibility
+ */
+-(void)setHorizontalScrollIndicatorVisibility:(TUIScrollViewIndicatorVisibility)visibility {
+   _scrollViewFlags.horizontalScrollIndicatorVisibility = visibility;
 }
 
 - (BOOL)isScrollEnabled
@@ -161,26 +186,6 @@ enum {
 - (void)setScrollEnabled:(BOOL)b
 {
 	_scrollViewFlags.scrollDisabled = !b;
-}
-
-- (BOOL)showsHorizontalScrollIndicator
-{
-	return _scrollViewFlags.showsHorizontalScrollIndicator;
-}
-
-- (BOOL)showsVerticalScrollIndicator
-{
-	return _scrollViewFlags.showsVerticalScrollIndicator;
-}
-
-- (void)setShowsHorizontalScrollIndicator:(BOOL)b
-{
-	_scrollViewFlags.showsHorizontalScrollIndicator = b;
-}
-
-- (void)setShowsVerticalScrollIndicator:(BOOL)b
-{
-	_scrollViewFlags.showsVerticalScrollIndicator = b;
 }
 
 - (TUIEdgeInsets)contentInset
@@ -305,11 +310,11 @@ enum {
 }
 
 - (BOOL)_verticalScrollKnobNeededForContentSize:(CGSize)size {
-  return (size.height > self.bounds.size.height) && _scrollViewFlags.showsVerticalScrollIndicator;
+  return (size.height > self.bounds.size.height);
 }
 
 - (BOOL)_horizontalScrollKnobNeededForContentSize:(CGSize)size {
-  return (size.width > self.bounds.size.width) && _scrollViewFlags.showsHorizontalScrollIndicator;
+  return (size.width > self.bounds.size.width);
 }
 
 - (void)_updateScrollKnobs {
@@ -328,18 +333,31 @@ enum {
 	BOOL hVisible = [self _horizontalScrollKnobNeededForContentSize:self.contentSize];
 	BOOL hEffectiveVisible = hVisible;
 	
-	switch(self.scrollIndicatorVisibility){
+	switch(self.verticalScrollIndicatorVisibility){
     case TUIScrollViewIndicatorVisibleNever:
       vEffectiveVisible = FALSE;
-      hEffectiveVisible = FALSE;
       break;
     case TUIScrollViewIndicatorVisibleWhenScrolling:
       vEffectiveVisible = vVisible && _scrollViewFlags.animationMode != AnimationModeNone;
-      hEffectiveVisible = hVisible && _scrollViewFlags.animationMode != AnimationModeNone;
       break;
     case TUIScrollViewIndicatorVisibleWhenMouseInside:
       vEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob);
-      hEffectiveVisible = hVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob);
+      break;
+    case TUIScrollViewIndicatorVisibleAlways:
+    default:
+      // don't alter the visibility
+      break;
+	}
+	
+	switch(self.horizontalScrollIndicatorVisibility){
+    case TUIScrollViewIndicatorVisibleNever:
+      hEffectiveVisible = FALSE;
+      break;
+    case TUIScrollViewIndicatorVisibleWhenScrolling:
+      hEffectiveVisible = vVisible && _scrollViewFlags.animationMode != AnimationModeNone;
+      break;
+    case TUIScrollViewIndicatorVisibleWhenMouseInside:
+      hEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob);
       break;
     case TUIScrollViewIndicatorVisibleAlways:
     default:
