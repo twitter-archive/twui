@@ -118,6 +118,23 @@ if(isnan(knobLength)) knobLength = 0.0;
 	[knob.layer addAnimation:animation forKey:@"opacity"];
 }
 
+-(unsigned int)scrollIndicatorStyle {
+  return _scrollKnobFlags.scrollIndicatorStyle;
+}
+
+-(void)setScrollIndicatorStyle:(unsigned int)style {
+  _scrollKnobFlags.scrollIndicatorStyle = style;
+  switch(style){
+    case TUIScrollViewIndicatorStyleLight:
+      knob.backgroundColor = [TUIColor whiteColor];
+      break;
+    case TUIScrollViewIndicatorStyleDark:
+    default:
+      knob.backgroundColor = [TUIColor blackColor];
+      break;
+  }
+}
+
 - (void)_updateKnobColor:(CGFloat)duration
 {
 	[TUIView beginAnimations:nil context:NULL];

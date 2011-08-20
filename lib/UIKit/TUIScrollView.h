@@ -18,7 +18,12 @@
 #import "TUIGeometry.h"
 
 typedef enum {
-    TUIScrollViewIndicatorStyleDefault,
+  /** Dark scroll indicator style suitable for light background */
+  TUIScrollViewIndicatorStyleDark,
+  /** Light scroll indicator style suitable for dark backgrounds */
+  TUIScrollViewIndicatorStyleLight,
+  /** Default scroll indicator style (dark) */
+  TUIScrollViewIndicatorStyleDefault = TUIScrollViewIndicatorStyleDark
 } TUIScrollViewIndicatorStyle;
 
 typedef enum {
@@ -31,7 +36,7 @@ typedef enum {
   /** Always show scrollers */
   TUIScrollViewIndicatorVisibleAlways,
   /** Default scroller visibility (always) */
-  TUIScrollViewIndicatorVisibleDefault = TUIScrollViewIndicatorVisibleAlways,
+  TUIScrollViewIndicatorVisibleDefault = TUIScrollViewIndicatorVisibleAlways
 } TUIScrollViewIndicatorVisibility;
 
 @protocol TUIScrollViewDelegate;

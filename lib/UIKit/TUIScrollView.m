@@ -123,6 +123,8 @@ enum {
 - (void)setScrollIndicatorStyle:(TUIScrollViewIndicatorStyle)s
 {
 	_scrollViewFlags.scrollIndicatorStyle = s;
+	_verticalScrollKnob.scrollIndicatorStyle = s;
+	_horizontalScrollKnob.scrollIndicatorStyle = s;
 }
 
 /**
