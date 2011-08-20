@@ -34,6 +34,7 @@ enum {
 };
 
 enum {
+  AnimationModeNone,
 	AnimationModeThrow,
 	AnimationModeScrollTo,
 	AnimationModeScrollContinuous,
@@ -65,6 +66,7 @@ enum {
 		
 		_scrollViewFlags.bounceEnabled = (FORCE_ENABLE_BOUNCE || AtLeastLion || [[NSUserDefaults standardUserDefaults] boolForKey:@"ForceEnableScrollBouncing"]);
 		
+		_scrollViewFlags.scrollIndicatorVisibility = TUIScrollViewIndicatorVisibilityMouseInside;
 		_scrollViewFlags.showsHorizontalScrollIndicator = 1;
 		_scrollViewFlags.showsVerticalScrollIndicator = 1;
 		
@@ -110,14 +112,40 @@ enum {
 	_scrollViewFlags.delegateScrollViewDidEndDragging = [_delegate respondsToSelector:@selector(scrollViewDidEndDragging:)];
 }
 
-- (TUIScrollViewIndicatorStyle)indicatorStyle
+- (TUIScrollViewIndicatorStyle)scrollIndicatorStyle
 {
-	return _scrollViewFlags.indicatorStyle;
+	return _scrollViewFlags.scrollIndicatorStyle;
 }
 
-- (void)setIndicatorStyle:(TUIScrollViewIndicatorStyle)s
+- (void)setScrollIndicatorStyle:(TUIScrollViewIndicatorStyle)s
 {
-	_scrollViewFlags.indicatorStyle = s;
+	_scrollViewFlags.scrollIndicatorStyle = s;
+}
+
+/**
+ * @brief Obtain the scroll indiciator visibility
+ * 
+ * The scroll indicator visibiliy determines when scroll indicators are displayed.
+ * Note that this property does not override #showsHorizontalScrollIndicator or
+ * #showsVerticalScrollIndicator.
+ * 
+ * @return scroll indicator visibility
+ */
+-(TUIScrollViewIndicatorVisibility)scrollIndicatorVisibility {
+  return _scrollViewFlags.scrollIndicatorVisibility;
+}
+
+/**
+ * @brief Set the scroll indiciator visibility
+ * 
+ * The scroll indicator visibiliy determines when scroll indicators are displayed.
+ * Note that this property does not override #showsHorizontalScrollIndicator or
+ * #showsVerticalScrollIndicator.
+ * 
+ * @param visibility scroll indicator visibility
+ */
+-(void)setScrollIndicatorVisibility:(TUIScrollViewIndicatorVisibility)visibility {
+   _scrollViewFlags.scrollIndicatorVisibility = visibility;
 }
 
 - (BOOL)isScrollEnabled
@@ -198,6 +226,7 @@ enum {
 		[scrollTimer release];
 		scrollTimer = nil;
 	}
+	_scrollViewFlags.animationMode = AnimationModeNone;
 	_bounce.bouncing = 0;
 	[self _updateBounce];
 }
@@ -278,29 +307,52 @@ enum {
 	BOOL vVisible = (self.contentSize.height > self.bounds.size.height) && _scrollViewFlags.showsVerticalScrollIndicator;
 	BOOL hVisible = (self.contentSize.width > self.bounds.size.width) && _scrollViewFlags.showsHorizontalScrollIndicator;
 	
+	switch(self.scrollIndicatorVisibility){
+    case TUIScrollViewIndicatorVisibilityNever:
+      vVisible = FALSE;
+      hVisible = FALSE;
+      break;
+    case TUIScrollViewIndicatorVisibilityScroll:
+      vVisible = vVisible && _scrollViewFlags.animationMode != AnimationModeNone;
+      hVisible = hVisible && _scrollViewFlags.animationMode != AnimationModeNone;
+      break;
+    case TUIScrollViewIndicatorVisibilityMouseInside:
+      vVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _mouseInside > 0);
+      hVisible = hVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _mouseInside > 0);
+      break;
+    case TUIScrollViewIndicatorVisibilityAlways:
+    default:
+      // don't alter the visibility
+      break;
+	}
+	
 //	float bounceX = (-self.bounceOffset.x - self.pullOffset.x) * 1.2;
 	float bounceY = (-self.bounceOffset.y - self.pullOffset.y) * 1.2;
 	
-	_verticalScrollKnob.frame = CGRectMake(round(-offset.x + bounds.size.width - knobSize), // x
-										   round(-offset.y + (hVisible?knobSize:0) + resizeKnobSize.height + bounceY), // y
-										   knobSize, // width
-										   bounds.size.height - (hVisible?knobSize:0) - resizeKnobSize.height); // height
+	_verticalScrollKnob.frame = CGRectMake(
+    round(-offset.x + bounds.size.width - knobSize), // x
+    round(-offset.y + (hVisible?knobSize:0) + resizeKnobSize.height + bounceY), // y
+    knobSize, // width
+    bounds.size.height - (hVisible?knobSize:0) - resizeKnobSize.height // height
+  );
 
-	_horizontalScrollKnob.frame = CGRectMake(round(-offset.x), // x
-											 round(-offset.y), // y
-											 bounds.size.width - (vVisible?knobSize:0) - resizeKnobSize.width, // width
-											 knobSize); // height
-
-	_verticalScrollKnob.hidden = !vVisible;
-	_horizontalScrollKnob.hidden = !hVisible;
-	
-	_horizontalScrollKnob.alpha = 1.0;
-	_verticalScrollKnob.alpha = 1.0;
-	
+	_horizontalScrollKnob.frame = CGRectMake(
+    round(-offset.x), // x
+    round(-offset.y), // y
+    bounds.size.width - (vVisible?knobSize:0) - resizeKnobSize.width, // width
+    knobSize // height
+  );
+  
+  _verticalScrollKnob.hidden = !vVisible;
+  _verticalScrollKnob.alpha = 1.0;
+  _horizontalScrollKnob.hidden = !hVisible;
+  _horizontalScrollKnob.alpha = 1.0;
+  
 	if(vVisible)
 		[_verticalScrollKnob setNeedsLayout];
 	if(hVisible)
 		[_horizontalScrollKnob setNeedsLayout];
+	
 }
 
 - (void)layoutSubviews
@@ -859,6 +911,20 @@ static float clampBounce(float x) {
 			}
 		}
 	}
+}
+
+-(void)mouseEntered:(NSEvent *)event onSubview:(TUIView *)subview {
+  [super mouseEntered:event onSubview:subview];
+  if(++_mouseInside == 1){
+    [self _updateScrollKnobs];
+  }
+}
+
+-(void)mouseExited:(NSEvent *)event fromSubview:(TUIView *)subview {
+  [super mouseExited:event fromSubview:subview];
+  if(--_mouseInside < 1){
+    [self _updateScrollKnobs];
+  }
 }
 
 - (BOOL)performKeyAction:(NSEvent *)event

@@ -127,8 +127,8 @@
   NSInteger sectionIndex = -1;
   
   // determine the current index path the cell is occupying
-  if((currentPath = [self indexPathForRowAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) == nil){
-    if((sectionIndex = [self indexOfSectionWithHeaderAtPoint:CGPointMake(location.x, location.y + visible.origin.y)]) > 0){
+  if((currentPath = [self indexPathForRowAtOffset:location.y + visible.origin.y]) == nil){
+    if((sectionIndex = [self indexOfSectionWithHeaderAtOffset:location.y + visible.origin.y]) > 0){
       if(sectionIndex <= cell.indexPath.section){
         // if we're on a section header (but not the first one, which can't move) which is above the origin
         // index path we insert after the last index in the section above

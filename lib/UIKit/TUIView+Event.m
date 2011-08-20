@@ -162,14 +162,22 @@
 
 - (void)mouseEntered:(NSEvent *)event
 {
-	if(_viewFlags.delegateMouseEntered)
+  if(self.superview != nil){
+    [self.superview mouseEntered:event onSubview:self];
+  }
+	if(_viewFlags.delegateMouseEntered){
 		[_viewDelegate view:self mouseEntered:event];
+	}
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
-	if(_viewFlags.delegateMouseExited)
+  if(self.superview != nil){
+    [self.superview mouseExited:event fromSubview:self];
+  }
+	if(_viewFlags.delegateMouseExited){
 		[_viewDelegate view:self mouseExited:event];
+	}
 }
 
 - (void)viewWillStartLiveResize
@@ -213,12 +221,16 @@
 
 - (void)mouseEntered:(NSEvent *)event onSubview:(TUIView *)subview
 {
-	
+  if(self.superview != nil){
+    [self.superview mouseEntered:event onSubview:subview];
+  }
 }
 
 - (void)mouseExited:(NSEvent *)event fromSubview:(TUIView *)subview
 {
-	
+  if(self.superview != nil){
+    [self.superview mouseExited:event fromSubview:subview];
+  }
 }
 
 @end

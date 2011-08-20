@@ -21,6 +21,14 @@ typedef enum {
     TUIScrollViewIndicatorStyleDefault,
 } TUIScrollViewIndicatorStyle;
 
+typedef enum {
+    TUIScrollViewIndicatorVisibilityNever,
+    TUIScrollViewIndicatorVisibilityScroll,
+    TUIScrollViewIndicatorVisibilityMouseInside,
+    TUIScrollViewIndicatorVisibilityAlways,
+    TUIScrollViewIndicatorVisibilityDefault = TUIScrollViewIndicatorVisibilityAlways,
+} TUIScrollViewIndicatorVisibility;
+
 @protocol TUIScrollViewDelegate;
 
 @class TUIScrollKnob;
@@ -49,10 +57,10 @@ typedef enum {
 
 @interface TUIScrollView : TUIView
 {
-	CGPoint _unroundedContentOffset;
-	CGSize	_contentSize;
-	CGSize resizeKnobSize;
-	TUIEdgeInsets _contentInset;
+  CGPoint                             _unroundedContentOffset;
+  CGSize                              _contentSize;
+  CGSize                              resizeKnobSize;
+  TUIEdgeInsets                       _contentInset;
 	
 	id _delegate;
 	TUIScrollKnob *_verticalScrollKnob;
@@ -92,7 +100,8 @@ typedef enum {
 		BOOL pulling; // horizontal pulling not done yet, this flag should be split
 	} _pull;
 	
-	CGPoint _dragScrollLocation;
+	CGPoint    _dragScrollLocation;
+	NSInteger  _mouseInside;
 	
 	BOOL x;
 	
@@ -103,7 +112,8 @@ typedef enum {
 		unsigned int gestureBegan:1;
 		unsigned int animationMode:2;
 		unsigned int scrollDisabled:1;
-		unsigned int indicatorStyle:2;
+		unsigned int scrollIndicatorStyle:2;
+		unsigned int scrollIndicatorVisibility:2;
 		unsigned int showsHorizontalScrollIndicator:1;
 		unsigned int showsVerticalScrollIndicator:1;
 		unsigned int delegateScrollViewDidScroll:1;
@@ -120,7 +130,8 @@ typedef enum {
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic) BOOL showsHorizontalScrollIndicator;
 @property (nonatomic) BOOL showsVerticalScrollIndicator;
-@property (nonatomic) TUIScrollViewIndicatorStyle indicatorStyle;
+@property (nonatomic) TUIScrollViewIndicatorStyle scrollIndicatorStyle;
+@property (nonatomic) TUIScrollViewIndicatorVisibility scrollIndicatorVisibility;
 @property (nonatomic) float decelerationRate;
 
 - (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;

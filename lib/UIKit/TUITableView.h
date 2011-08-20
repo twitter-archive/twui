@@ -132,9 +132,11 @@ typedef enum {
 - (NSIndexSet *)indexesOfSectionsInRect:(CGRect)rect;
 - (NSIndexSet *)indexesOfSectionHeadersInRect:(CGRect)rect;
 - (TUIFastIndexPath *)indexPathForCell:(TUITableViewCell *)cell;                      // returns nil if cell is not visible
-- (NSArray *)indexPathsForRowsInRect:(CGRect)rect;                              // returns nil if rect not valid 
+- (NSArray *)indexPathsForRowsInRect:(CGRect)rect;                                    // returns nil if rect not valid
 - (TUIFastIndexPath *)indexPathForRowAtPoint:(CGPoint)point;
+- (TUIFastIndexPath *)indexPathForRowAtOffset:(CGFloat)offset;
 - (NSInteger)indexOfSectionWithHeaderAtPoint:(CGPoint)point;
+- (NSInteger)indexOfSectionWithHeaderAtOffset:(CGFloat)offset;
 
 - (void)enumerateIndexPathsUsingBlock:(void (^)(TUIFastIndexPath *indexPath, BOOL *stop))block;
 - (void)enumerateIndexPathsWithOptions:(NSEnumerationOptions)options usingBlock:(void (^)(TUIFastIndexPath *indexPath, BOOL *stop))block;
