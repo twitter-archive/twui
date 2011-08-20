@@ -41,7 +41,10 @@ enum {
 };
 
 @interface TUIScrollView (Private)
+- (BOOL)_verticalScrollKnobNeededForContentSize:(CGSize)size;
+- (BOOL)_horizonatlScrollKnobNeededForContentSize:(CGSize)size;
 - (void)_updateScrollKnobs;
+- (void)_updateScrollKnobsAnimated:(BOOL)animated;
 - (void)_updateBounce;
 - (void)_startTimer:(int)scrollMode;
 @end
@@ -66,7 +69,7 @@ enum {
 		
 		_scrollViewFlags.bounceEnabled = (FORCE_ENABLE_BOUNCE || AtLeastLion || [[NSUserDefaults standardUserDefaults] boolForKey:@"ForceEnableScrollBouncing"]);
 		
-		_scrollViewFlags.scrollIndicatorVisibility = TUIScrollViewIndicatorVisibilityMouseInside;
+		_scrollViewFlags.scrollIndicatorVisibility = TUIScrollViewIndicatorVisibleDefault;
 		_scrollViewFlags.showsHorizontalScrollIndicator = 1;
 		_scrollViewFlags.showsVerticalScrollIndicator = 1;
 		
@@ -229,6 +232,7 @@ enum {
 	_scrollViewFlags.animationMode = AnimationModeNone;
 	_bounce.bouncing = 0;
 	[self _updateBounce];
+	[self _updateScrollKnobsAnimated:TRUE];
 }
 
 - (void)willMoveToWindow:(TUINSWindow *)newWindow
@@ -298,29 +302,44 @@ enum {
 	}
 }
 
-- (void)_updateScrollKnobs
-{
+- (BOOL)_verticalScrollKnobNeededForContentSize:(CGSize)size {
+  return (size.height > self.bounds.size.height) && _scrollViewFlags.showsVerticalScrollIndicator;
+}
+
+- (BOOL)_horizontalScrollKnobNeededForContentSize:(CGSize)size {
+  return (size.width > self.bounds.size.width) && _scrollViewFlags.showsHorizontalScrollIndicator;
+}
+
+- (void)_updateScrollKnobs {
+  [self _updateScrollKnobsAnimated:FALSE];
+}
+
+- (void)_updateScrollKnobsAnimated:(BOOL)animated {
+  // note: the animated option is currently ignored.
+  
 	CGPoint offset = _unroundedContentOffset;
 	CGRect bounds = self.bounds;
 	CGFloat knobSize = 12;
 	
-	BOOL vVisible = (self.contentSize.height > self.bounds.size.height) && _scrollViewFlags.showsVerticalScrollIndicator;
-	BOOL hVisible = (self.contentSize.width > self.bounds.size.width) && _scrollViewFlags.showsHorizontalScrollIndicator;
+	BOOL vVisible = [self _verticalScrollKnobNeededForContentSize:self.contentSize];
+	BOOL vEffectiveVisible = vVisible;
+	BOOL hVisible = [self _horizontalScrollKnobNeededForContentSize:self.contentSize];
+	BOOL hEffectiveVisible = hVisible;
 	
 	switch(self.scrollIndicatorVisibility){
-    case TUIScrollViewIndicatorVisibilityNever:
-      vVisible = FALSE;
-      hVisible = FALSE;
+    case TUIScrollViewIndicatorVisibleNever:
+      vEffectiveVisible = FALSE;
+      hEffectiveVisible = FALSE;
       break;
-    case TUIScrollViewIndicatorVisibilityScroll:
-      vVisible = vVisible && _scrollViewFlags.animationMode != AnimationModeNone;
-      hVisible = hVisible && _scrollViewFlags.animationMode != AnimationModeNone;
+    case TUIScrollViewIndicatorVisibleWhenScrolling:
+      vEffectiveVisible = vVisible && _scrollViewFlags.animationMode != AnimationModeNone;
+      hEffectiveVisible = hVisible && _scrollViewFlags.animationMode != AnimationModeNone;
       break;
-    case TUIScrollViewIndicatorVisibilityMouseInside:
-      vVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _mouseInside > 0);
-      hVisible = hVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _mouseInside > 0);
+    case TUIScrollViewIndicatorVisibleWhenMouseInside:
+      vEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob);
+      hEffectiveVisible = hVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob);
       break;
-    case TUIScrollViewIndicatorVisibilityAlways:
+    case TUIScrollViewIndicatorVisibleAlways:
     default:
       // don't alter the visibility
       break;
@@ -335,7 +354,7 @@ enum {
     knobSize, // width
     bounds.size.height - (hVisible?knobSize:0) - resizeKnobSize.height // height
   );
-
+  
 	_horizontalScrollKnob.frame = CGRectMake(
     round(-offset.x), // x
     round(-offset.y), // y
@@ -343,10 +362,10 @@ enum {
     knobSize // height
   );
   
-  _verticalScrollKnob.hidden = !vVisible;
   _verticalScrollKnob.alpha = 1.0;
-  _horizontalScrollKnob.hidden = !hVisible;
+  _verticalScrollKnob.hidden = !vEffectiveVisible;
   _horizontalScrollKnob.alpha = 1.0;
+  _horizontalScrollKnob.hidden = !hEffectiveVisible;
   
 	if(vVisible)
 		[_verticalScrollKnob setNeedsLayout];
@@ -416,8 +435,9 @@ static CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
 	p.x = round(-p.x);
 	p.y = round(-p.y - self.bounceOffset.y - self.pullOffset.y);
 	[((CAScrollLayer *)self.layer) scrollToPoint:p];
-	if(_scrollViewFlags.delegateScrollViewDidScroll)
+	if(_scrollViewFlags.delegateScrollViewDidScroll){
 		[_delegate scrollViewDidScroll:self];
+	}
 }
 
 - (void)setContentOffset:(CGPoint)p
@@ -913,17 +933,35 @@ static float clampBounce(float x) {
 	}
 }
 
+-(void)mouseDown:(NSEvent *)event onSubview:(TUIView *)subview {
+  if(subview == _verticalScrollKnob || subview == _horizontalScrollKnob){
+    _scrollViewFlags.mouseDownInScrollKnob = TRUE;
+    [self _updateScrollKnobsAnimated:TRUE];
+  }
+}
+
+-(void)mouseUp:(NSEvent *)event fromSubview:(TUIView *)subview {
+  if(subview == _verticalScrollKnob || subview == _horizontalScrollKnob){
+    _scrollViewFlags.mouseDownInScrollKnob = FALSE;
+    [self _updateScrollKnobsAnimated:TRUE];
+  }
+}
+
 -(void)mouseEntered:(NSEvent *)event onSubview:(TUIView *)subview {
   [super mouseEntered:event onSubview:subview];
-  if(_mouseInside++ < 1){
-    [self _updateScrollKnobs];
+  if(!_scrollViewFlags.mouseInside){
+    _scrollViewFlags.mouseInside = TRUE;
+    [self _updateScrollKnobsAnimated:TRUE];
   }
 }
 
 -(void)mouseExited:(NSEvent *)event fromSubview:(TUIView *)subview {
   [super mouseExited:event fromSubview:subview];
-  if(--_mouseInside < 1){
-    [self _updateScrollKnobs];
+  CGPoint location = [self localPointForEvent:event];
+  CGRect visible = [self visibleRect];
+  if(_scrollViewFlags.mouseInside && ![self pointInside:CGPointMake(location.x, location.y + visible.origin.y) withEvent:event]){
+    _scrollViewFlags.mouseInside = FALSE;
+    [self _updateScrollKnobsAnimated:TRUE];
   }
 }
 

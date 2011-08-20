@@ -175,12 +175,15 @@ if(isnan(knobLength)) knobLength = 0.0;
 
 		[scrollView setContentOffset:contentOffset animated:YES];
 	}
+	
+	[super mouseDown:event];
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
 	_scrollKnobFlags.active = 0;
 	[self _updateKnobColor:0.08];
+	[super mouseUp:event];
 }
 
 #define KNOB_CALCULATIONS_REVERSE(OFFSET, LENGTH) \

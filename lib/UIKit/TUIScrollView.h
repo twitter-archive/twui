@@ -22,11 +22,16 @@ typedef enum {
 } TUIScrollViewIndicatorStyle;
 
 typedef enum {
-    TUIScrollViewIndicatorVisibilityNever,
-    TUIScrollViewIndicatorVisibilityScroll,
-    TUIScrollViewIndicatorVisibilityMouseInside,
-    TUIScrollViewIndicatorVisibilityAlways,
-    TUIScrollViewIndicatorVisibilityDefault = TUIScrollViewIndicatorVisibilityAlways,
+  /** Never show scrollers (not particularly useful) */
+  TUIScrollViewIndicatorVisibleNever,
+  /** Show scrollers only during an animated scroll (not particularly useful yet) */
+  TUIScrollViewIndicatorVisibleWhenScrolling,
+  /** Show scrollers only when the mouse is inside the scroll view */
+  TUIScrollViewIndicatorVisibleWhenMouseInside,
+  /** Always show scrollers */
+  TUIScrollViewIndicatorVisibleAlways,
+  /** Default scroller visibility (always) */
+  TUIScrollViewIndicatorVisibleDefault = TUIScrollViewIndicatorVisibleAlways,
 } TUIScrollViewIndicatorVisibility;
 
 @protocol TUIScrollViewDelegate;
@@ -100,14 +105,15 @@ typedef enum {
 		BOOL pulling; // horizontal pulling not done yet, this flag should be split
 	} _pull;
 	
-	CGPoint    _dragScrollLocation;
-	NSInteger  _mouseInside;
+	CGPoint  _dragScrollLocation;
 	
 	BOOL x;
 	
 	struct {
 		unsigned int didChangeContentInset:1;
 		unsigned int bounceEnabled:1;
+		unsigned int mouseInside:1;
+		unsigned int mouseDownInScrollKnob:1;
 		unsigned int ignoreNextScrollPhaseNormal_10_7:1;
 		unsigned int gestureBegan:1;
 		unsigned int animationMode:2;
