@@ -478,7 +478,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
  * @param offset y-coordinate offset in the table view
  * @return index path of the row at @p offset
  */
-- (TUIFastIndexPath *)indexPathForRowAtOffset:(CGFloat)offset {
+- (TUIFastIndexPath *)indexPathForRowAtVerticalOffset:(CGFloat)offset {
   
 	NSInteger sectionIndex = 0;
   for(TUITableViewSection *section in _sectionInfo){
@@ -534,7 +534,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
  * @param offset y-coordinate offset in the table view
  * @return index of the section whose header is at @p offset
  */
-- (NSInteger)indexOfSectionWithHeaderAtOffset:(CGFloat)offset {
+- (NSInteger)indexOfSectionWithHeaderAtVerticalOffset:(CGFloat)offset {
   
 	NSInteger sectionIndex = 0;
   for(TUITableViewSection *section in _sectionInfo){
