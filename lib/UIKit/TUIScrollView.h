@@ -131,8 +131,8 @@ typedef enum {
 		unsigned int scrollDisabled:1;
 		unsigned int scrollIndicatorStyle:2;
 		unsigned int verticalScrollIndicatorVisibility:2;
-		unsigned int verticalScrollIndicatorShowing:1;
 		unsigned int horizontalScrollIndicatorVisibility:2;
+		unsigned int verticalScrollIndicatorShowing:1;
 		unsigned int horizontalScrollIndicatorShowing:1;
 		unsigned int delegateScrollViewDidScroll:1;
 		unsigned int delegateScrollViewWillBeginDragging:1;
@@ -152,6 +152,8 @@ typedef enum {
 @property (nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property (nonatomic) TUIScrollViewIndicatorVisibility horizontalScrollIndicatorVisibility;
 @property (nonatomic) TUIScrollViewIndicatorVisibility verticalScrollIndicatorVisibility;
+@property (readonly, nonatomic) BOOL verticalScrollIndicatorShowing;
+@property (readonly, nonatomic) BOOL horizontalScrollIndicatorShowing;
 @property (nonatomic) TUIScrollViewIndicatorStyle scrollIndicatorStyle;
 @property (nonatomic) float decelerationRate;
 
@@ -164,6 +166,7 @@ typedef enum {
 - (void)endContinuousScrollAnimated:(BOOL)animated;
 
 @property (nonatomic, readonly) CGRect visibleRect;
+@property (nonatomic, readonly) TUIEdgeInsets scrollIndicatorInsets;
 
 - (void)flashScrollIndicators;
 

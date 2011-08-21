@@ -182,6 +182,22 @@ enum {
    _scrollViewFlags.horizontalScrollIndicatorVisibility = visibility;
 }
 
+/**
+ * @brief Determine if the vertical scroll indicator is currently showing
+ * @return showing or not
+ */
+-(BOOL)verticalScrollIndicatorShowing {
+  return _scrollViewFlags.verticalScrollIndicatorShowing;
+}
+
+/**
+ * @brief Determine if the horizontal scroll indicator is currently showing
+ * @return showing or not
+ */
+-(BOOL)horizontalScrollIndicatorShowing {
+  return _scrollViewFlags.horizontalScrollIndicatorShowing;
+}
+
 - (BOOL)isScrollEnabled
 {
 	return !_scrollViewFlags.scrollDisabled;
@@ -220,6 +236,19 @@ enum {
 	offset.y = -offset.y;
 	b.origin = offset;
 	return b;
+}
+
+/**
+ * @brief Obtain the insets for currently visible scroll indicators
+ * 
+ * The insets describe the margins needed for content not to overlap the any
+ * scroll indicators which are currently visible.  You can apply these insets
+ * to #visibleRect to obtain a content frame what avoids the scroll indicators.
+ * 
+ * @return scroll indicator insets
+ */
+-(TUIEdgeInsets)scrollIndicatorInsets {
+  return TUIEdgeInsetsMake(0, 0, (_scrollViewFlags.horizontalScrollIndicatorShowing) ? _horizontalScrollKnob.frame.size.height : 0, (_scrollViewFlags.verticalScrollIndicatorShowing) ? _verticalScrollKnob.frame.size.width : 0);
 }
 
 - (void)_startTimer:(int)scrollMode
