@@ -413,15 +413,15 @@ enum {
   
   // notify the delegate about changes in vertical scroll indiciator visibility
   if(vWasVisible != vEffectiveVisible){
-    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
-      [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorVertical];
+    if(_scrollViewFlags.delegateScrollViewDidShowScrollIndicator){
+      [self.delegate scrollView:self didShowScrollIndicator:TUIScrollViewIndicatorVertical];
     }
   }
   
   // notify the delegate about changes in horizontal scroll indiciator visibility
   if(hWasVisible != hEffectiveVisible){
-    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
-      [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorHorizontal];
+    if(_scrollViewFlags.delegateScrollViewDidShowScrollIndicator){
+      [self.delegate scrollView:self didShowScrollIndicator:TUIScrollViewIndicatorHorizontal];
     }
   }
   
