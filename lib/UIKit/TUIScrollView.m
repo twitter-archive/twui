@@ -390,15 +390,19 @@ enum {
   
   // notify the delegate about changes in vertical scroll indiciator visibility
   if(vWasVisible != vEffectiveVisible){
-    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
+    if(vEffectiveVisible && _scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
       [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorVertical];
+    }else if(!vEffectiveVisible && _scrollViewFlags.delegateScrollViewWillHideScrollIndicator){
+      [self.delegate scrollView:self willHideScrollIndicator:TUIScrollViewIndicatorVertical];
     }
   }
   
   // notify the delegate about changes in horizontal scroll indiciator visibility
   if(hWasVisible != hEffectiveVisible){
-    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
+    if(hEffectiveVisible && _scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
       [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorHorizontal];
+    }else if(!hEffectiveVisible && _scrollViewFlags.delegateScrollViewWillHideScrollIndicator){
+      [self.delegate scrollView:self willHideScrollIndicator:TUIScrollViewIndicatorHorizontal];
     }
   }
   
@@ -413,22 +417,25 @@ enum {
   
   // notify the delegate about changes in vertical scroll indiciator visibility
   if(vWasVisible != vEffectiveVisible){
-    if(_scrollViewFlags.delegateScrollViewDidShowScrollIndicator){
+    if(vEffectiveVisible && _scrollViewFlags.delegateScrollViewDidShowScrollIndicator){
       [self.delegate scrollView:self didShowScrollIndicator:TUIScrollViewIndicatorVertical];
+    }else if(!vEffectiveVisible && _scrollViewFlags.delegateScrollViewDidHideScrollIndicator){
+      [self.delegate scrollView:self didHideScrollIndicator:TUIScrollViewIndicatorVertical];
     }
   }
   
   // notify the delegate about changes in horizontal scroll indiciator visibility
   if(hWasVisible != hEffectiveVisible){
-    if(_scrollViewFlags.delegateScrollViewDidShowScrollIndicator){
+    if(hEffectiveVisible && _scrollViewFlags.delegateScrollViewDidShowScrollIndicator){
       [self.delegate scrollView:self didShowScrollIndicator:TUIScrollViewIndicatorHorizontal];
+    }else if(!hEffectiveVisible && _scrollViewFlags.delegateScrollViewDidHideScrollIndicator){
+      [self.delegate scrollView:self didHideScrollIndicator:TUIScrollViewIndicatorHorizontal];
     }
   }
   
-  
-	if(vVisible)
+	if(vEffectiveVisible)
 		[_verticalScrollKnob setNeedsLayout];
-	if(hVisible)
+	if(hEffectiveVisible)
 		[_horizontalScrollKnob setNeedsLayout];
 	
 }
