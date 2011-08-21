@@ -112,6 +112,10 @@ enum {
 	_scrollViewFlags.delegateScrollViewDidScroll = [_delegate respondsToSelector:@selector(scrollViewDidScroll:)];
 	_scrollViewFlags.delegateScrollViewWillBeginDragging = [_delegate respondsToSelector:@selector(scrollViewWillBeginDragging:)];
 	_scrollViewFlags.delegateScrollViewDidEndDragging = [_delegate respondsToSelector:@selector(scrollViewDidEndDragging:)];
+	_scrollViewFlags.delegateScrollViewWillShowScrollIndicator = [_delegate respondsToSelector:@selector(scrollView:willShowScrollIndicator:)];
+	_scrollViewFlags.delegateScrollViewDidShowScrollIndicator = [_delegate respondsToSelector:@selector(scrollView:didShowScrollIndicator:)];
+	_scrollViewFlags.delegateScrollViewWillHideScrollIndicator = [_delegate respondsToSelector:@selector(scrollView:willHideScrollIndicator:)];
+	_scrollViewFlags.delegateScrollViewDidHideScrollIndicator = [_delegate respondsToSelector:@selector(scrollView:didHideScrollIndicator:)];
 }
 
 - (TUIScrollViewIndicatorStyle)scrollIndicatorStyle
@@ -328,8 +332,10 @@ enum {
 	CGRect bounds = self.bounds;
 	CGFloat knobSize = 12;
 	
+	BOOL vWasVisible = _scrollViewFlags.verticalScrollIndicatorShowing;
 	BOOL vVisible = [self _verticalScrollKnobNeededForContentSize:self.contentSize];
 	BOOL vEffectiveVisible = vVisible;
+	BOOL hWasVisible = _scrollViewFlags.horizontalScrollIndicatorShowing;
 	BOOL hVisible = [self _horizontalScrollKnobNeededForContentSize:self.contentSize];
 	BOOL hEffectiveVisible = hVisible;
 	
@@ -382,10 +388,43 @@ enum {
     knobSize // height
   );
   
+  // notify the delegate about changes in vertical scroll indiciator visibility
+  if(vWasVisible != vEffectiveVisible){
+    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
+      [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorVertical];
+    }
+  }
+  
+  // notify the delegate about changes in horizontal scroll indiciator visibility
+  if(hWasVisible != hEffectiveVisible){
+    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
+      [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorHorizontal];
+    }
+  }
+  
   _verticalScrollKnob.alpha = 1.0;
   _verticalScrollKnob.hidden = !vEffectiveVisible;
   _horizontalScrollKnob.alpha = 1.0;
   _horizontalScrollKnob.hidden = !hEffectiveVisible;
+  
+  // update scroll indiciator visible state
+  _scrollViewFlags.verticalScrollIndicatorShowing = vEffectiveVisible;
+  _scrollViewFlags.horizontalScrollIndicatorShowing = hEffectiveVisible;
+  
+  // notify the delegate about changes in vertical scroll indiciator visibility
+  if(vWasVisible != vEffectiveVisible){
+    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
+      [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorVertical];
+    }
+  }
+  
+  // notify the delegate about changes in horizontal scroll indiciator visibility
+  if(hWasVisible != hEffectiveVisible){
+    if(_scrollViewFlags.delegateScrollViewWillShowScrollIndicator){
+      [self.delegate scrollView:self willShowScrollIndicator:TUIScrollViewIndicatorHorizontal];
+    }
+  }
+  
   
 	if(vVisible)
 		[_verticalScrollKnob setNeedsLayout];

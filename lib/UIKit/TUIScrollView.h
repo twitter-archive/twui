@@ -39,6 +39,11 @@ typedef enum {
   TUIScrollViewIndicatorVisibleDefault = TUIScrollViewIndicatorVisibleAlways
 } TUIScrollViewIndicatorVisibility;
 
+typedef enum {
+  TUIScrollViewIndicatorVertical,
+  TUIScrollViewIndicatorHorizontal,
+} TUIScrollViewIndicator;
+
 @protocol TUIScrollViewDelegate;
 
 @class TUIScrollKnob;
@@ -126,10 +131,16 @@ typedef enum {
 		unsigned int scrollDisabled:1;
 		unsigned int scrollIndicatorStyle:2;
 		unsigned int verticalScrollIndicatorVisibility:2;
+		unsigned int verticalScrollIndicatorShowing:1;
 		unsigned int horizontalScrollIndicatorVisibility:2;
+		unsigned int horizontalScrollIndicatorShowing:1;
 		unsigned int delegateScrollViewDidScroll:1;
 		unsigned int delegateScrollViewWillBeginDragging:1;
 		unsigned int delegateScrollViewDidEndDragging:1;
+		unsigned int delegateScrollViewWillShowScrollIndicator:1;
+		unsigned int delegateScrollViewDidShowScrollIndicator:1;
+		unsigned int delegateScrollViewWillHideScrollIndicator:1;
+		unsigned int delegateScrollViewDidHideScrollIndicator:1;
 	} _scrollViewFlags;
 }
 
@@ -172,5 +183,10 @@ typedef enum {
 - (void)scrollViewDidScroll:(TUIScrollView *)scrollView;
 - (void)scrollViewWillBeginDragging:(TUIScrollView *)scrollView;
 - (void)scrollViewDidEndDragging:(TUIScrollView *)scrollView;
+
+- (void)scrollView:(TUIScrollView *)scrollView willShowScrollIndicator:(TUIScrollViewIndicator)indicator;
+- (void)scrollView:(TUIScrollView *)scrollView didShowScrollIndicator:(TUIScrollViewIndicator)indicator;
+- (void)scrollView:(TUIScrollView *)scrollView willHideScrollIndicator:(TUIScrollViewIndicator)indicator;
+- (void)scrollView:(TUIScrollView *)scrollView didHideScrollIndicator:(TUIScrollViewIndicator)indicator;
 
 @end
