@@ -30,6 +30,7 @@
 @synthesize shadowColor;
 @synthesize shadowOffset;
 @synthesize shadowBlur;
+@synthesize verticalAlignment;
 
 - (void)_resetFrame
 {
@@ -62,12 +63,34 @@
 	[super dealloc];
 }
 
+- (void)_buildFrameWithEffectiveFrame:(CGRect)effectiveFrame
+{
+	_ct_path = CGPathCreateMutable();
+	CGPathAddRect((CGMutablePathRef)_ct_path, NULL, effectiveFrame);
+	_ct_frame = CTFramesetterCreateFrame(_ct_framesetter, CFRangeMake(0, 0), _ct_path, NULL);
+}
+
 - (void)_buildFrame
 {
 	if(!_ct_path) {
-		_ct_path = CGPathCreateMutable();
-		CGPathAddRect((CGMutablePathRef)_ct_path, NULL, frame);
-		_ct_frame = CTFramesetterCreateFrame(_ct_framesetter, CFRangeMake(0, 0), _ct_path, NULL);
+		[self _buildFrameWithEffectiveFrame:frame];
+		
+		// TUITextVerticalAlignmentTop is easy since that's how Core Text always draws. For Middle and Bottom we have to shift the CTFrame down.
+		if(verticalAlignment != TUITextVerticalAlignmentTop) {
+			CGRect effectiveFrame = frame;
+			
+			CGSize size = AB_CTFrameGetSize(_ct_frame);
+			if(verticalAlignment == TUITextVerticalAlignmentMiddle) {
+				effectiveFrame.origin.y -= size.height / 2;
+			} else if(verticalAlignment == TUITextVerticalAlignmentBottom) {
+				effectiveFrame.origin.y -= size.height;
+			}
+			
+			effectiveFrame = CGRectIntegral(effectiveFrame);
+			
+			[self _resetFrame];
+			[self _buildFrameWithEffectiveFrame:effectiveFrame];
+		}
 	}
 }
 
@@ -373,6 +396,15 @@
 - (void)setPreDrawBlocksEnabled:(BOOL)enabled
 {
 	_flags.preDrawBlocksEnabled = enabled;
+}
+
+- (void)setVerticalAlignment:(TUITextVerticalAlignment)alignment
+{
+	if(verticalAlignment == alignment) return;
+	
+	verticalAlignment = alignment;
+	
+	[self _resetFrame];
 }
 
 @end
