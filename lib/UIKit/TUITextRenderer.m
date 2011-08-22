@@ -31,12 +31,8 @@
 @synthesize shadowOffset;
 @synthesize shadowBlur;
 
-- (void)_resetFramesetter
+- (void)_resetFrame
 {
-	if(_ct_framesetter) {
-		CFRelease(_ct_framesetter);
-		_ct_framesetter = NULL;
-	}
 	if(_ct_frame) {
 		CFRelease(_ct_frame);
 		_ct_frame = NULL;
@@ -45,6 +41,16 @@
 		CGPathRelease(_ct_path);
 		_ct_path = NULL;
 	}
+}
+
+- (void)_resetFramesetter
+{
+	if(_ct_framesetter) {
+		CFRelease(_ct_framesetter);
+		_ct_framesetter = NULL;
+	}
+	
+	[self _resetFrame];
 }
 
 - (void)dealloc
@@ -56,14 +62,22 @@
 	[super dealloc];
 }
 
-- (void)_buildFramesetter
+- (void)_buildFrame
 {
-	if(!_ct_framesetter) {
-		_ct_framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)attributedString);
+	if(!_ct_path) {
 		_ct_path = CGPathCreateMutable();
 		CGPathAddRect((CGMutablePathRef)_ct_path, NULL, frame);
 		_ct_frame = CTFramesetterCreateFrame(_ct_framesetter, CFRangeMake(0, 0), _ct_path, NULL);
 	}
+}
+
+- (void)_buildFramesetter
+{
+	if(!_ct_framesetter) {
+		_ct_framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)attributedString);
+	}
+	
+	[self _buildFrame];
 }
 
 - (CTFramesetterRef)ctFramesetter
@@ -308,7 +322,7 @@
 - (void)setFrame:(CGRect)f
 {
 	frame = f;
-	[self _resetFramesetter];
+	[self _resetFrame];
 }
 
 - (void)reset
