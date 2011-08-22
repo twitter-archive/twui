@@ -26,6 +26,7 @@
 
 + (TUIImage *)imageWithData:(NSData *)data;
 + (TUIImage *)imageWithCGImage:(CGImageRef)imageRef;
++ (TUIImage *)imageWithNSImage:(NSImage *)image;
 
 + (TUIImage *)_imageWithABImage:(id)abimage __attribute__((deprecated)); // don't use this
 

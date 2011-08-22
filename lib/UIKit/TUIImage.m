@@ -93,6 +93,11 @@
 	return i;
 }
 
++ (TUIImage *)imageWithNSImage:(NSImage *)image
+{
+	return [self imageWithCGImage:[image CGImageForProposedRect:NULL context:NULL hints:nil]];
+}
+
 - (id)initWithCGImage:(CGImageRef)imageRef
 {
 	if((self = [super init]))
