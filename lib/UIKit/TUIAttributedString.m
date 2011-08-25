@@ -110,12 +110,12 @@ NSString * const TUIAttributedStringPreDrawBlockName = @"TUIAttributedStringPreD
 
 - (void)setLineHeight:(CGFloat)f inRange:(NSRange)range
 {
-	CTParagraphStyleSetting setting;
-	setting.spec = kCTParagraphStyleSpecifierLineSpacing;
-	setting.valueSize = sizeof(CGFloat);
-	setting.value = &(CGFloat){f};
+	CTParagraphStyleSetting settings[] = {
+        { kCTParagraphStyleSpecifierMinimumLineHeight, sizeof(f), &f },
+        { kCTParagraphStyleSpecifierMaximumLineHeight, sizeof(f), &f },
+    };
 	
-	CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(&setting, 1);
+	CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(settings, sizeof(settings) / sizeof(settings[0]));
 	[self addAttributes:[NSDictionary dictionaryWithObjectsAndKeys:(id)paragraphStyle, kCTParagraphStyleAttributeName, nil] range:range];
 	CFRelease(paragraphStyle);
 }
