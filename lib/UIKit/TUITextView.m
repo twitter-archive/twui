@@ -221,7 +221,8 @@ static CAAnimation *ThrobAnimation()
 	
 	if(doMask) {
 		CGContextSaveGState(ctx);
-		CGContextClipToRoundRect(ctx, self.bounds, floor(rect.size.height / 2));
+		CGFloat radius = floor(rect.size.height / 2);
+		CGContextClipToRoundRect(ctx, CGRectInset(textRect, 0.0f, -radius), radius);
 	}
 	
 	[renderer draw];
