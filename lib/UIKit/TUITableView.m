@@ -63,6 +63,7 @@ typedef struct {
 - (void)dealloc
 {
 	if(rowInfo) free(rowInfo);
+	NSLog(@"RELEASE HEADER: %@ (%@)", _headerView, _headerView.superview);
 	[_headerView release];
 	[super dealloc];
 }
@@ -263,6 +264,31 @@ typedef struct {
 		return CGRectMake(0, y, self.bounds.size.width, height);
 	}
 	return CGRectZero;
+}
+
+/**
+ * @brief Clear current section info.
+ * 
+ * This method should be used instead of simply releasing the section info
+ * array so that cleanup can be performed.
+ */
+-(void)_clearSectionInfo {
+  
+	// remove any visible headers, they should be re-added when the table is laid out
+	for(TUITableViewSection *section in _sectionInfo){
+	  TUIView *headerView;
+	  if((headerView = [section headerView]) != nil){
+	    [headerView removeFromSuperview];
+	  }
+	}
+	
+	// clear visible section headers
+	[_visibleSectionHeaders removeAllIndexes];
+  
+  // clear the section info array
+  [_sectionInfo release];
+  _sectionInfo = nil;
+  
 }
 
 - (NSArray *)_freshSectionInfo
@@ -657,6 +683,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	CGRect bounds = self.bounds;
 
 	if(!_sectionInfo || !CGSizeEqualToSize(bounds.size, _lastSize)) {
+	  
 		// save scroll position
 		CGFloat previousOffset = 0.0f;
 		TUIFastIndexPath *savedIndexPath = nil;
@@ -682,8 +709,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 			}
 		}
 		
-		
-		[_sectionInfo release];
+		[self _clearSectionInfo];
 		_sectionInfo = [[self _freshSectionInfo] retain]; // calculates new contentHeight here
 		self.contentSize = CGSizeMake(self.bounds.size.width, _contentHeight);
 		
