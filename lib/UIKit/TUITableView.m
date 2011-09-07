@@ -145,6 +145,7 @@ typedef struct {
 @end
 
 @interface TUITableView (Private)
+- (void)_updateSectionInfo;
 - (void)_updateDerepeaterViews;
 @end
 
@@ -267,43 +268,38 @@ typedef struct {
 }
 
 /**
- * @brief Clear current section info.
+ * @brief Update section info
  * 
- * This method should be used instead of simply releasing the section info
- * array so that cleanup can be performed.
+ * The previous section info is released and new section info is created.
  */
--(void)_clearSectionInfo {
+- (void)_updateSectionInfo {
   
-	// remove any visible headers, they should be re-added when the table is laid out
-	for(TUITableViewSection *section in _sectionInfo){
-	  TUIView *headerView;
-	  if((headerView = [section headerView]) != nil){
-	    [headerView removeFromSuperview];
-	  }
-	}
-	
-	// clear visible section headers
-	[_visibleSectionHeaders removeAllIndexes];
+  if(_sectionInfo != nil){
+    
+    // remove any visible headers, they should be re-added when the table is laid out
+    for(TUITableViewSection *section in _sectionInfo){
+      TUIView *headerView;
+      if((headerView = [section headerView]) != nil){
+        [headerView removeFromSuperview];
+      }
+    }
+    
+    // clear visible section headers
+    [_visibleSectionHeaders removeAllIndexes];
+    // clear the section info array
+    [_sectionInfo release];
+    
+  }
   
-  // clear the section info array
-  [_sectionInfo release];
-  _sectionInfo = nil;
-  
-}
-
-- (NSArray *)_freshSectionInfo
-{
 	NSInteger numberOfSections = 1;
-	
 	if(_tableFlags.dataSourceNumberOfSectionsInTableView){
 		numberOfSections = [_dataSource numberOfSectionsInTableView:self];
 	}
 	
-	NSMutableArray *sections = [NSMutableArray arrayWithCapacity:numberOfSections];
+	NSMutableArray *sections = [[NSMutableArray alloc] initWithCapacity:numberOfSections];
 	
-	int s;
 	CGFloat offset = [_headerView bounds].size.height - self.contentInset.top;
-	for(s = 0; s < numberOfSections; ++s) {
+	for(int s = 0; s < numberOfSections; ++s) {
 		TUITableViewSection *section = [[TUITableViewSection alloc] initWithNumberOfRows:[_dataSource tableView:self numberOfRowsInSection:s] sectionIndex:s tableView:self];
 		[section _setupRowHeights];
 		section.sectionOffset = offset;
@@ -313,8 +309,8 @@ typedef struct {
 	}
 	
 	_contentHeight = offset - self.contentInset.bottom;
+	_sectionInfo = sections;
 	
-	return sections;
 }
 
 - (void)_enqueueReusableCell:(TUITableViewCell *)cell
@@ -709,8 +705,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 			}
 		}
 		
-		[self _clearSectionInfo];
-		_sectionInfo = [[self _freshSectionInfo] retain]; // calculates new contentHeight here
+		[self _updateSectionInfo]; // clean up any previous section info and recreate it
 		self.contentSize = CGSizeMake(self.bounds.size.width, _contentHeight);
 		
 		_lastSize = bounds.size;
