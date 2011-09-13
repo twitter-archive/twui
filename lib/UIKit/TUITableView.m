@@ -144,6 +144,7 @@ typedef struct {
 @end
 
 @interface TUITableView (Private)
+- (void)_updateSectionInfo;
 - (void)_updateDerepeaterViews;
 @end
 
@@ -265,19 +266,39 @@ typedef struct {
 	return CGRectZero;
 }
 
-- (NSArray *)_freshSectionInfo
-{
+/**
+ * @brief Update section info
+ * 
+ * The previous section info is released and new section info is created.
+ */
+- (void)_updateSectionInfo {
+  
+  if(_sectionInfo != nil){
+    
+    // remove any visible headers, they should be re-added when the table is laid out
+    for(TUITableViewSection *section in _sectionInfo){
+      TUIView *headerView;
+      if((headerView = [section headerView]) != nil){
+        [headerView removeFromSuperview];
+      }
+    }
+    
+    // clear visible section headers
+    [_visibleSectionHeaders removeAllIndexes];
+    // clear the section info array
+    [_sectionInfo release];
+    
+  }
+  
 	NSInteger numberOfSections = 1;
-	
 	if(_tableFlags.dataSourceNumberOfSectionsInTableView){
 		numberOfSections = [_dataSource numberOfSectionsInTableView:self];
 	}
 	
-	NSMutableArray *sections = [NSMutableArray arrayWithCapacity:numberOfSections];
+	NSMutableArray *sections = [[NSMutableArray alloc] initWithCapacity:numberOfSections];
 	
-	int s;
 	CGFloat offset = [_headerView bounds].size.height - self.contentInset.top;
-	for(s = 0; s < numberOfSections; ++s) {
+	for(int s = 0; s < numberOfSections; ++s) {
 		TUITableViewSection *section = [[TUITableViewSection alloc] initWithNumberOfRows:[_dataSource tableView:self numberOfRowsInSection:s] sectionIndex:s tableView:self];
 		[section _setupRowHeights];
 		section.sectionOffset = offset;
@@ -287,8 +308,8 @@ typedef struct {
 	}
 	
 	_contentHeight = offset - self.contentInset.bottom;
+	_sectionInfo = sections;
 	
-	return sections;
 }
 
 - (void)_enqueueReusableCell:(TUITableViewCell *)cell
@@ -470,6 +491,32 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 }
 
 /**
+ * @brief Obtain the index path of the row at the specified y-coordinate offset
+ * 
+ * Unlike #indexPathForRowAtPoint:, this method does not consider the x-coordinate.
+ * If the offset is not valid or no row exists at that offset, nil is returned.
+ * 
+ * @param offset y-coordinate offset in the table view
+ * @return index path of the row at @p offset
+ */
+- (TUIFastIndexPath *)indexPathForRowAtVerticalOffset:(CGFloat)offset {
+  
+	NSInteger sectionIndex = 0;
+  for(TUITableViewSection *section in _sectionInfo){
+    for(NSInteger row = 0; row < [section numberOfRows]; row++){
+      TUIFastIndexPath *indexPath = [TUIFastIndexPath indexPathForRow:row inSection:sectionIndex];
+      CGRect cellRect = [self rectForRowAtIndexPath:indexPath];
+      if(offset >= cellRect.origin.y && offset <= (cellRect.origin.y + cellRect.size.height)){
+        return indexPath;
+      }
+    }
+		++sectionIndex;
+  }
+	
+	return nil;
+}
+
+/**
  * @brief Obtain the index of a section whose header is at the specified point
  * 
  * If the point is not valid or no header exists at that point, a negative value
@@ -488,7 +535,37 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
       CGFloat height = [section headerHeight];
       CGFloat y = _contentHeight - offset - height;
       CGRect frame = CGRectMake(0, y, self.bounds.size.width, height);
-      if(CGRectContainsPoint(frame, point)){
+      if(point.y > frame.origin.y && point.y < (frame.origin.y + frame.size.height)){
+        return sectionIndex;
+      }
+    }
+    sectionIndex++;
+  }
+	
+	return -1;
+}
+
+/**
+ * @brief Obtain the index of a section whose header is at the specified y-coordinate offset
+ * 
+ * Unlike #indexOfSectionWithHeaderAtPoint:, this method does not consider the x-coordinate.
+ * If the offset is not valid or no header exists at that offset, a negative value
+ * is returned.
+ * 
+ * @param offset y-coordinate offset in the table view
+ * @return index of the section whose header is at @p offset
+ */
+- (NSInteger)indexOfSectionWithHeaderAtVerticalOffset:(CGFloat)offset {
+  
+	NSInteger sectionIndex = 0;
+  for(TUITableViewSection *section in _sectionInfo){
+    TUIView *headerView;
+    if((headerView = section.headerView) != nil){
+      CGFloat offset = [section sectionOffset];
+      CGFloat height = [section headerHeight];
+      CGFloat y = _contentHeight - offset - height;
+      CGRect frame = CGRectMake(0, y, self.bounds.size.width, height);
+      if(offset >= frame.origin.y && offset <= (frame.origin.y + frame.size.height)){
         return sectionIndex;
       }
     }
@@ -601,6 +678,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	CGRect bounds = self.bounds;
 
 	if(!_sectionInfo || !CGSizeEqualToSize(bounds.size, _lastSize)) {
+	  
 		// save scroll position
 		CGFloat previousOffset = 0.0f;
 		TUIFastIndexPath *savedIndexPath = nil;
@@ -626,9 +704,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 			}
 		}
 		
-		
-		[_sectionInfo release];
-		_sectionInfo = [[self _freshSectionInfo] retain]; // calculates new contentHeight here
+		[self _updateSectionInfo]; // clean up any previous section info and recreate it
 		self.contentSize = CGSizeMake(self.bounds.size.width, _contentHeight);
 		
 		_lastSize = bounds.size;
@@ -741,6 +817,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		for(TUIFastIndexPath *i in _visibleItems) {
 			TUITableViewCell *cell = [_visibleItems objectForKey:i];
 			cell.frame = [self rectForRowAtIndexPath:i];
+			cell.layer.zPosition = 0;
 			[cell setNeedsLayout];
 		}
 	}
@@ -780,17 +857,23 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		} else {
 			TUITableViewCell *cell = [_dataSource tableView:self cellForRowAtIndexPath:i];
 			[self.nsView invalidateHoverForView:cell];
+			
 			cell.frame = [self rectForRowAtIndexPath:i];
+			cell.layer.zPosition = 0;
+			
 			[cell setNeedsLayout];
 			[cell prepareForDisplay];
+			
 			if([i isEqual:_selectedIndexPath]) {
 				[cell setSelected:YES animated:NO];
 			} else {
 				[cell setSelected:NO animated:NO];
 			}
+			
 			if(_tableFlags.delegateTableViewWillDisplayCellForRowAtIndexPath) {
 				[_delegate tableView:self willDisplayCell:cell forRowAtIndexPath:i];
 			}
+			
 			[self addSubview:cell];
 			
 			if([_indexPathShouldBeFirstResponder isEqual:i]) {

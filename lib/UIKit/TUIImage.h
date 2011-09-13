@@ -18,7 +18,7 @@
 
 @interface TUIImage : NSObject
 {
-	CGImageRef _imageRef;
+  CGImageRef  _imageRef;
 }
 
 + (TUIImage *)imageNamed:(NSString *)name;

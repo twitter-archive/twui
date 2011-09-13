@@ -323,7 +323,7 @@ static CAAnimation *ThrobAnimation()
 			
 			[[renderer backingStore] endEditing];
 			[renderer reset]; // make sure we reset so that the renderer uses our new attributes
-			
+
 			[self setNeedsDisplay];
 			
 			self.lastCheckResults = results;
