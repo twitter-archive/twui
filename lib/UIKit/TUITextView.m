@@ -185,9 +185,6 @@ static CAAnimation *ThrobAnimation()
 	b.origin.y += contentInset.bottom;
 	b.size.width -= contentInset.left + contentInset.right;
 	b.size.height -= contentInset.bottom + contentInset.top;
-	if([self singleLine]) {
-		b.size.width = 2000; // big enough
-	}
 	return b;
 }
 
@@ -214,9 +211,11 @@ static CAAnimation *ThrobAnimation()
 	BOOL doMask = singleLine;
 	
 	CGRect textRect = [self textRect];
-	if(!CGRectEqualToRect(textRect, _lastTextRect)) {
-		renderer.frame = textRect;
-		_lastTextRect = textRect;
+	CGRect rendererFrame = textRect;
+	if(singleLine) rendererFrame.size.width = 2000.0f;
+	if(!CGRectEqualToRect(rendererFrame, _lastTextRect)) {
+		renderer.frame = rendererFrame;
+		_lastTextRect = rendererFrame;
 	}
 	
 	if(doMask) {
@@ -231,8 +230,8 @@ static CAAnimation *ThrobAnimation()
 		CGContextRestoreGState(ctx);
 	}
 	
-	BOOL key = [self _isKey];
 	NSRange selection = [renderer selectedRange];
+	BOOL key = [self _isKey];
 	if(key && selection.length == 0) {
 		cursor.hidden = NO;
 		
@@ -265,7 +264,6 @@ static CAAnimation *ThrobAnimation()
 		
 		[cursor.layer removeAnimationForKey:@"opacity"];
 		[cursor.layer addAnimation:ThrobAnimation() forKey:@"opacity"];
-		
 	} else {
 		cursor.hidden = YES;
 	}
@@ -291,7 +289,9 @@ static CAAnimation *ThrobAnimation()
 		dispatch_async(dispatch_get_main_queue(), ^{
 			// we only care about the most recent results, ignore anything older
 			if(sequenceNumber != lastCheckToken) return;
-						
+			
+			if([self.lastCheckResults isEqualToArray:results]) return;
+			
 			[[renderer backingStore] beginEditing];
 			
 			NSRange wholeStringRange = NSMakeRange(0, [self.text length]);
@@ -323,7 +323,7 @@ static CAAnimation *ThrobAnimation()
 			
 			[[renderer backingStore] endEditing];
 			[renderer reset]; // make sure we reset so that the renderer uses our new attributes
-
+			
 			[self setNeedsDisplay];
 			
 			self.lastCheckResults = results;
