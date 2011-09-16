@@ -19,7 +19,7 @@
 #import "TUITextViewEditor.h"
 #import "TUITextRenderer+Event.h"
 
-@interface TUITextView ()
+@interface TUITextView () <TUITextRendererDelegate>
 - (void)_checkSpelling;
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem;
 
@@ -67,6 +67,7 @@
 		self.backgroundColor = [TUIColor clearColor];
 		
 		renderer = [[[self textEditorClass] alloc] init];
+		renderer.delegate = self;
 		self.textRenderers = [NSArray arrayWithObject:renderer];
 		
 		cursor = [[TUIView alloc] initWithFrame:CGRectZero];
@@ -118,6 +119,10 @@
 	delegate = d;
 	_textViewFlags.delegateTextViewDidChange = [delegate respondsToSelector:@selector(textViewDidChange:)];
 	_textViewFlags.delegateDoCommandBySelector = [delegate respondsToSelector:@selector(textView:doCommandBySelector:)];
+	_textViewFlags.delegateWillBecomeFirstResponder = [delegate respondsToSelector:@selector(textViewWillBecomeFirstResponder:)];
+	_textViewFlags.delegateDidBecomeFirstResponder = [delegate respondsToSelector:@selector(textViewDidBecomeFirstResponder:)];
+	_textViewFlags.delegateWillResignFirstResponder = [delegate respondsToSelector:@selector(textViewWillResignFirstResponder:)];
+	_textViewFlags.delegateDidResignFirstResponder = [delegate respondsToSelector:@selector(textViewDidResignFirstResponder:)];
 }
 
 - (TUIResponder *)initialFirstResponder
@@ -414,6 +419,29 @@ static CAAnimation *ThrobAnimation()
 	}
 	
 	return NO;
+}
+
+
+#pragma mark TUITextRendererDelegate
+
+- (void)textRendererWillBecomeFirstResponder:(TUITextRenderer *)textRenderer
+{
+	if(_textViewFlags.delegateWillBecomeFirstResponder) [delegate textViewWillBecomeFirstResponder:self];
+}
+
+- (void)textRendererDidBecomeFirstResponder:(TUITextRenderer *)textRenderer
+{
+	if(_textViewFlags.delegateDidBecomeFirstResponder) [delegate textViewDidBecomeFirstResponder:self];
+}
+
+- (void)textRendererWillResignFirstResponder:(TUITextRenderer *)textRenderer
+{
+	if(_textViewFlags.delegateWillResignFirstResponder) [delegate textViewWillResignFirstResponder:self];
+}
+
+- (void)textRendererDidResignFirstResponder:(TUITextRenderer *)textRenderer
+{
+	if(_textViewFlags.delegateDidResignFirstResponder) [delegate textViewDidResignFirstResponder:self];
 }
 
 @end

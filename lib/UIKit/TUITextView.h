@@ -52,6 +52,10 @@
 	struct {
 		unsigned int delegateTextViewDidChange:1;
 		unsigned int delegateDoCommandBySelector:1;
+		unsigned int delegateWillBecomeFirstResponder:1;
+		unsigned int delegateDidBecomeFirstResponder:1;
+		unsigned int delegateWillResignFirstResponder:1;
+		unsigned int delegateDidResignFirstResponder:1;
 	} _textViewFlags;
 }
 
@@ -86,6 +90,11 @@
 
 - (void)textViewDidChange:(TUITextView *)textView;
 - (BOOL)textView:(TUITextView *)textView doCommandBySelector:(SEL)commandSelector; // return YES if the implementation consumes the selector, NO if it should be passed up to super
+
+- (void)textViewWillBecomeFirstResponder:(TUITextView *)textView;
+- (void)textViewDidBecomeFirstResponder:(TUITextView *)textView;
+- (void)textViewWillResignFirstResponder:(TUITextView *)textView;
+- (void)textViewDidResignFirstResponder:(TUITextView *)textView;
 
 @end
 

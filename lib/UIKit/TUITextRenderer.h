@@ -65,6 +65,12 @@ typedef enum {
 		unsigned int drawMaskDragSelection:1;
 		unsigned int backgroundDrawingEnabled:1;
 		unsigned int preDrawBlocksEnabled:1;
+		
+		unsigned int delegateActiveRangesForTextRenderer:1;
+		unsigned int delegateWillBecomeFirstResponder:1;
+		unsigned int delegateDidBecomeFirstResponder:1;
+		unsigned int delegateWillResignFirstResponder:1;
+		unsigned int delegateDidResignFirstResponder:1;
 	} _flags;
 }
 
