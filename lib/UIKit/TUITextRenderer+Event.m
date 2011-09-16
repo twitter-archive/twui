@@ -48,6 +48,12 @@
 - (void)setDelegate:(id<TUITextRendererDelegate>)d
 {
 	delegate = d;
+	
+	_flags.delegateActiveRangesForTextRenderer = [delegate respondsToSelector:@selector(activeRangesForTextRenderer:)];
+	_flags.delegateWillBecomeFirstResponder = [delegate respondsToSelector:@selector(textRendererWillBecomeFirstResponder:)];
+	_flags.delegateDidBecomeFirstResponder = [delegate respondsToSelector:@selector(textRendererDidBecomeFirstResponder:)];
+	_flags.delegateWillResignFirstResponder = [delegate respondsToSelector:@selector(textRendererWillResignFirstResponder:)];
+	_flags.delegateDidResignFirstResponder = [delegate respondsToSelector:@selector(textRendererDidResignFirstResponder:)];
 }
 
 - (CGPoint)localPointForEvent:(NSEvent *)event
@@ -147,8 +153,12 @@
 	}
 	
 	CFIndex eventIndex = [self stringIndexForEvent:event];
-	id<ABActiveTextRange> hitActiveRange = [self rangeInRanges:[delegate activeRangesForTextRenderer:self]
-								   forStringIndex:eventIndex];
+	NSArray *ranges = nil;
+	if(_flags.delegateActiveRangesForTextRenderer) {
+		ranges = [delegate activeRangesForTextRenderer:self];
+	}
+	
+	id<ABActiveTextRange> hitActiveRange = [self rangeInRanges:ranges forStringIndex:eventIndex];
 	
 	if([event clickCount] > 1)
 		goto normal; // we want double-click-drag-select-by-word, not drag selected text
@@ -285,9 +295,21 @@ normal:
 	return YES;
 }
 
+- (BOOL)becomeFirstResponder
+{
+	// TODO: obviously these shouldn't be called at exactly the same time...
+	if(_flags.delegateWillBecomeFirstResponder) [delegate textRendererWillBecomeFirstResponder:self];
+	if(_flags.delegateDidBecomeFirstResponder) [delegate textRendererDidBecomeFirstResponder:self];
+	
+	return YES;
+}
+
 - (BOOL)resignFirstResponder
 {
+	// TODO: obviously these shouldn't be called at exactly the same time...
+	if(_flags.delegateWillResignFirstResponder) [delegate textRendererWillResignFirstResponder:self];
 	[self resetSelection];
+	if(_flags.delegateDidResignFirstResponder) [delegate textRendererDidResignFirstResponder:self];
 	return YES;
 }
 
