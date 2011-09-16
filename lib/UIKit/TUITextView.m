@@ -307,7 +307,7 @@ static CAAnimation *ThrobAnimation()
 			NSMutableArray *autocorrectedResults = [NSMutableArray array];
 			for(NSTextCheckingResult *result in results) {
 				// Don't check the word they're typing. It's just annoying.
-				BOOL isActiveWord = (result.range.location + result.range.length == selectionRange.location) && selectionRange.length == 0;
+				BOOL isActiveWord = (selectionRange.location - (result.range.location + result.range.length)) < 2 && selectionRange.length == 0;
 				if(isActiveWord) continue;
 				
 				if(result.resultType == NSTextCheckingTypeCorrection) {
