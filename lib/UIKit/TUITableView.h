@@ -122,6 +122,9 @@ typedef enum {
  */
 - (void)reloadDataMaintainingVisibleIndexPath:(TUIFastIndexPath *)indexPath relativeOffset:(CGFloat)relativeOffset;
 
+// Forces a re-calculation and re-layout of the table. This is most useful for animating the relayout. It is potentially _more_ expensive than -reloadData since it has to allow for animating.
+- (void)reloadLayout;
+
 - (NSInteger)numberOfSections;
 - (NSInteger)numberOfRowsInSection:(NSInteger)section;
 

@@ -1019,6 +1019,17 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	}
 }
 
+- (void)reloadLayout
+{
+	[_sectionInfo release];
+	_sectionInfo = nil; // will be regenerated on next layout
+	
+	[self _preLayoutCells];
+	[super layoutSubviews]; // this will munge with the contentOffset
+	[self _layoutSectionHeaders:YES];
+	[self _layoutCells:YES];
+}
+
 - (void)scrollToRowAtIndexPath:(TUIFastIndexPath *)indexPath atScrollPosition:(TUITableViewScrollPosition)scrollPosition animated:(BOOL)animated
 {
 	CGRect v = [self visibleRect];
