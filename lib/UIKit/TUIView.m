@@ -332,6 +332,68 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	return toolTipDelay;
 }
 
+- (TUIViewContentMode)contentMode
+{
+	if(_layer.contentsGravity == kCAGravityCenter) {
+		return TUIViewContentModeCenter;
+	} else if(_layer.contentsGravity == kCAGravityTop) {
+		return TUIViewContentModeTop;
+	} else if(_layer.contentsGravity == kCAGravityBottom) {
+		return TUIViewContentModeBottom;
+	} else if(_layer.contentsGravity == kCAGravityLeft) {
+		return TUIViewContentModeLeft;
+	} else if(_layer.contentsGravity == kCAGravityRight) {
+		return TUIViewContentModeRight;
+	} else if(_layer.contentsGravity == kCAGravityTopLeft) {
+		return TUIViewContentModeTopLeft;
+	} else if(_layer.contentsGravity == kCAGravityTopRight) {
+		return TUIViewContentModeTopRight;
+	} else if(_layer.contentsGravity == kCAGravityBottomLeft) {
+		return TUIViewContentModeBottomLeft;
+	} else if(_layer.contentsGravity == kCAGravityBottomRight) {
+		return TUIViewContentModeBottomRight;
+	} else if(_layer.contentsGravity == kCAGravityResize) {
+		return TUIViewContentModeScaleToFill;
+	} else if(_layer.contentsGravity == kCAGravityResizeAspect) {
+		return TUIViewContentModeScaleAspectFit;
+	} else if(_layer.contentsGravity == kCAGravityResizeAspectFill) {
+		return TUIViewContentModeScaleAspectFill;
+	} else {
+		return TUIViewContentModeScaleToFill;
+	}
+}
+
+- (void)setContentMode:(TUIViewContentMode)contentMode
+{
+	if(contentMode == TUIViewContentModeCenter) {
+		_layer.contentsGravity = kCAGravityCenter;
+	} else if(contentMode == TUIViewContentModeTop) {
+		_layer.contentsGravity = kCAGravityTop;
+	} else if(contentMode == TUIViewContentModeBottom) {
+		_layer.contentsGravity = kCAGravityBottom;
+	} else if(contentMode == TUIViewContentModeLeft) {
+		_layer.contentsGravity = kCAGravityLeft;
+	} else if(contentMode == TUIViewContentModeRight) {
+		_layer.contentsGravity = kCAGravityRight;
+	} else if(contentMode == TUIViewContentModeTopLeft) {
+		_layer.contentsGravity = kCAGravityTopLeft;
+	} else if(contentMode == TUIViewContentModeTopRight) {
+		_layer.contentsGravity = kCAGravityTopRight;
+	} else if(contentMode == TUIViewContentModeBottomLeft) {
+		_layer.contentsGravity = kCAGravityBottomLeft;
+	} else if(contentMode == TUIViewContentModeBottomRight) {
+		_layer.contentsGravity = kCAGravityBottomRight;
+	} else if(contentMode == TUIViewContentModeScaleToFill) {
+		_layer.contentsGravity = kCAGravityResize;
+	} else if(contentMode == TUIViewContentModeScaleAspectFit) {
+		_layer.contentsGravity = kCAGravityResizeAspect;
+	} else if(contentMode == TUIViewContentModeScaleAspectFill) {
+		_layer.contentsGravity = kCAGravityResizeAspectFill;
+	} else {
+		NSAssert1(NO, @"%lu is not a valid contentMode.", contentMode);
+	}
+}
+
 @end
 
 

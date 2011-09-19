@@ -42,6 +42,21 @@ typedef enum {
 	TUIViewAnimationTransitionNone,
 } TUIViewAnimationTransition;
 
+typedef enum {
+    TUIViewContentModeCenter,
+    TUIViewContentModeTop,
+    TUIViewContentModeBottom,
+    TUIViewContentModeLeft,
+    TUIViewContentModeRight,
+    TUIViewContentModeTopLeft,
+    TUIViewContentModeTopRight,
+    TUIViewContentModeBottomLeft,
+    TUIViewContentModeBottomRight,
+	TUIViewContentModeScaleToFill,
+    TUIViewContentModeScaleAspectFit,
+    TUIViewContentModeScaleAspectFill,
+} TUIViewContentMode;
+
 @class TUIView;
 @class TUINSView;
 @class TUINSWindow;
@@ -166,6 +181,8 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
  Default is 1.5s
  */
 @property (nonatomic, assign) NSTimeInterval toolTipDelay;
+
+@property (nonatomic, assign) TUIViewContentMode contentMode;
 
 /**
  Make this view the first responder. Returns NO if it fails.
