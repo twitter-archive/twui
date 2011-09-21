@@ -68,6 +68,8 @@ enum {
 		decelerationRate = 0.88;
 		
 		_scrollViewFlags.bounceEnabled = (FORCE_ENABLE_BOUNCE || AtLeastLion || [[NSUserDefaults standardUserDefaults] boolForKey:@"ForceEnableScrollBouncing"]);
+		_scrollViewFlags.alwaysBounceVertical = FALSE;
+		_scrollViewFlags.alwaysBounceHorizontal = FALSE;
 		
 		_scrollViewFlags.verticalScrollIndicatorVisibility = TUIScrollViewIndicatorVisibleDefault;
 		_scrollViewFlags.horizontalScrollIndicatorVisibility = TUIScrollViewIndicatorVisibleDefault;
@@ -556,6 +558,76 @@ static CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
 	return -self.contentSize.height + visible.size.height;
 }
 
+/**
+ * @brief Whether the scroll view bounces past the edge of content and back again
+ * 
+ * If the value of this property is YES, the scroll view bounces when it encounters a boundary of the content. Bouncing visually indicates
+ * that scrolling has reached an edge of the content. If the value is NO, scrolling stops immediately at the content boundary without bouncing.
+ * The default value varies based on the current AppKit version, user preferences, and other factors.
+ * 
+ * @return bounces or not
+ */
+-(BOOL)bounces {
+  return _scrollViewFlags.bounceEnabled;
+}
+
+/**
+ * @brief Whether the scroll view bounces past the edge of content and back again
+ * 
+ * If the value of this property is YES, the scroll view bounces when it encounters a boundary of the content. Bouncing visually indicates
+ * that scrolling has reached an edge of the content. If the value is NO, scrolling stops immediately at the content boundary without bouncing.
+ * The default value varies based on the current AppKit version, user preferences, and other factors.
+ * 
+ * @return bounces or not
+ */
+-(void)setBounces:(BOOL)bounces {
+  _scrollViewFlags.bounceEnabled = bounces;
+}
+
+/**
+ * @brief Always bounce content vertically
+ * 
+ * If this property is set to YES and bounces is YES, vertical dragging is allowed even if the content is smaller than the bounds of the scroll view. The default value is NO.
+ * 
+ * @return always bounce vertically or not
+ */
+-(BOOL)alwaysBounceVertical {
+  return _scrollViewFlags.alwaysBounceVertical;
+}
+
+/**
+ * @brief Always bounce content vertically
+ * 
+ * If this property is set to YES and bounces is YES, vertical dragging is allowed even if the content is smaller than the bounds of the scroll view. The default value is NO.
+ * 
+ * @param always always bounce vertically or not
+ */
+-(void)setAlwaysBounceVertical:(BOOL)always {
+  _scrollViewFlags.alwaysBounceVertical = always;
+}
+
+/**
+ * @brief Always bounce content horizontally
+ * 
+ * If this property is set to YES and bounces is YES, horizontal dragging is allowed even if the content is smaller than the bounds of the scroll view. The default value is NO.
+ * 
+ * @return always bounce vertically or not
+ */
+-(BOOL)alwaysBounceHorizontal {
+  return _scrollViewFlags.alwaysBounceHorizontal;
+}
+
+/**
+ * @brief Always bounce content horizontally
+ * 
+ * If this property is set to YES and bounces is YES, horizontal dragging is allowed even if the content is smaller than the bounds of the scroll view. The default value is NO.
+ * 
+ * @param always always bounce vertically or not
+ */
+-(void)setAlwaysBounceHorizontal:(BOOL)always {
+  _scrollViewFlags.alwaysBounceHorizontal = always;
+}
+
 - (BOOL)isScrollingToTop
 {
 	if(scrollTimer) {
@@ -940,14 +1012,18 @@ static float clampBounce(float x) {
 				double dy = 0.0;
 				
 				if(isContinuous) {
-					dx = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventPointDeltaAxis2);
-					dy = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventPointDeltaAxis1);
+				  if(_scrollViewFlags.alwaysBounceHorizontal || [self _horizontalScrollKnobNeededForContentSize:self.contentSize])
+            dx = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventPointDeltaAxis2);
+				  if(_scrollViewFlags.alwaysBounceVertical || [self _verticalScrollKnobNeededForContentSize:self.contentSize])
+				    dy = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventPointDeltaAxis1);
 				} else {
 					CGEventSourceRef source = CGEventCreateSourceFromEvent(cgEvent);
 					if(source) {
 						const double pixelsPerLine = CGEventSourceGetPixelsPerLine(source);
-						dx = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventFixedPtDeltaAxis2) * pixelsPerLine;
-						dy = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventFixedPtDeltaAxis1) * pixelsPerLine;
+						if(_scrollViewFlags.alwaysBounceHorizontal || [self _horizontalScrollKnobNeededForContentSize:self.contentSize])
+              dx = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventFixedPtDeltaAxis2) * pixelsPerLine;
+            if(_scrollViewFlags.alwaysBounceVertical || [self _verticalScrollKnobNeededForContentSize:self.contentSize])
+              dy = CGEventGetDoubleValueField(cgEvent, kCGScrollWheelEventFixedPtDeltaAxis1) * pixelsPerLine;
 						CFRelease(source);
 					} else {
 						NSLog(@"Critical: NULL source from CGEventCreateSourceFromEvent");

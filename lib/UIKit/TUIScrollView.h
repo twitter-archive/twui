@@ -123,6 +123,8 @@ typedef enum {
 	struct {
 		unsigned int didChangeContentInset:1;
 		unsigned int bounceEnabled:1;
+		unsigned int alwaysBounceVertical:1;
+		unsigned int alwaysBounceHorizontal:1;
 		unsigned int mouseInside:1;
 		unsigned int mouseDownInScrollKnob:1;
 		unsigned int ignoreNextScrollPhaseNormal_10_7:1;
@@ -146,6 +148,9 @@ typedef enum {
 
 @property (nonatomic) CGPoint contentOffset;
 @property (nonatomic) CGSize contentSize;
+@property (nonatomic) BOOL bounces;
+@property (nonatomic) BOOL alwaysBounceVertical;
+@property (nonatomic) BOOL alwaysBounceHorizontal;
 @property (nonatomic) CGSize resizeKnobSize;
 @property (nonatomic) TUIEdgeInsets contentInset;
 @property (nonatomic, assign) id<TUIScrollViewDelegate> delegate;
