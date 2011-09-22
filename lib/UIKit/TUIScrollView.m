@@ -402,7 +402,7 @@ enum {
       break;
 	}
 	
-//	float bounceX = (-self.bounceOffset.x - self.pullOffset.x) * 1.2;
+	float bounceX = (-self.bounceOffset.x - self.pullOffset.x) * 1.2;
 	float bounceY = (-self.bounceOffset.y - self.pullOffset.y) * 1.2;
 	
 	_verticalScrollKnob.frame = CGRectMake(
@@ -514,22 +514,26 @@ static CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
 
 - (CGPoint)pullOffset
 {
-	if(_scrollViewFlags.bounceEnabled)
-		return _pull.pulling?CGPointMake(_pull.x, _pull.y):CGPointZero;
-	return CGPointZero;
+	if(_scrollViewFlags.bounceEnabled){
+		return _pull.pulling ? CGPointMake(_pull.x, _pull.y) : CGPointZero;
+	}else{
+	  return CGPointZero;
+	}
 }
 
 - (CGPoint)bounceOffset
 {
-	if(_scrollViewFlags.bounceEnabled)
-		return _bounce.bouncing?CGPointMake(_bounce.x, _bounce.y):CGPointZero;
-	return CGPointZero;
+	if(_scrollViewFlags.bounceEnabled){
+		return _bounce.bouncing ? CGPointMake(_bounce.x, _bounce.y) : CGPointZero;
+	}else{
+	  return CGPointZero;
+	}
 }
 
 - (void)_setContentOffset:(CGPoint)p
 {
 	_unroundedContentOffset = p;
-	p.x = round(-p.x);
+	p.x = round(-p.x + self.bounceOffset.x - self.pullOffset.x);
 	p.y = round(-p.y - self.bounceOffset.y - self.pullOffset.y);
 	[((CAScrollLayer *)self.layer) scrollToPoint:p];
 	if(_scrollViewFlags.delegateScrollViewDidScroll){
@@ -696,7 +700,7 @@ static float clampBounce(float x) {
 - (void)_startBounce
 {
 	if(!_bounce.bouncing) {
-		_bounce.bouncing = 1;
+		_bounce.bouncing = TRUE;
 		_bounce.x = 0.0f;
 		_bounce.y = 0.0f;
 		_bounce.vx = clampBounce(-_throw.vx);
@@ -717,7 +721,7 @@ static float clampBounce(float x) {
 		float dampiness = 0.3;
 		
 		// spring
-		F.x = -_bounce.x * tightness * 0.0; // no bounce for now
+		F.x = -_bounce.x * tightness;
 		F.y = -_bounce.y * tightness;
 		
 		// damper
@@ -734,7 +738,7 @@ static float clampBounce(float x) {
 		
 		_bounce.t = t;
 		
-		if(fabsf(_bounce.vy) < 1.0 && fabsf(_bounce.y) < 1.0) {
+		if(fabsf(_bounce.vy) < 1.0 && fabsf(_bounce.y) < 1.0 && fabsf(_bounce.vx) < 1.0 && fabsf(_bounce.x) < 1.0) {
 			[self _stopTimer];
 		}
 		
@@ -762,7 +766,6 @@ static float clampBounce(float x) {
 			o.y = o.y - _throw.vy * dt;
 			
 			CGPoint fixedOffset = [self _fixProposedContentOffset:o];
-			o.x = fixedOffset.x;
 			if(!CGPointEqualToPoint(fixedOffset, o)) {
 				[self _startBounce];
 			}
@@ -897,20 +900,25 @@ static float clampBounce(float x) {
 
 - (void)beginGestureWithEvent:(NSEvent *)event
 {
-	if(_scrollViewFlags.delegateScrollViewWillBeginDragging)
+  
+	if(_scrollViewFlags.delegateScrollViewWillBeginDragging){
 		[_delegate scrollViewWillBeginDragging:self];
+	}
 	
 	if(_scrollViewFlags.bounceEnabled) {
 		_throw.throwing = 0;
 		_scrollViewFlags.gestureBegan = 1; // this won't happen if window isn't key on 10.6, lame
 	}
+	
 }
 
 - (void)_startThrow
 {
+  
 	if(!_pull.pulling) {
-		if(fabsf(_lastScroll.dy) < 2.0)
+		if(fabsf(_lastScroll.dy) < 2.0 && fabsf(_lastScroll.dx) < 2.0){
 			return; // don't bother throwing
+		}
 	}
 	
 	if(!_throw.throwing) {
@@ -918,8 +926,7 @@ static float clampBounce(float x) {
 		
 		CFAbsoluteTime t = CFAbsoluteTimeGetCurrent();
 		CFTimeInterval dt = t - _lastScroll.t;
-		if(dt < 1/60.0)
-			dt = 1/60.0;
+		if(dt < 1 / 60.0) dt = 1 / 60.0;
 		_throw.vx = _lastScroll.dx / dt;
 		_throw.vy = _lastScroll.dy / dt;
 		_throw.t = t;
@@ -929,36 +936,45 @@ static float clampBounce(float x) {
 		if(_pull.pulling) {
 			_pull.pulling = NO;
 			
-			if(signbit(_throw.vy) != signbit(_pull.y)) {
+			if(signbit(_throw.vx) != signbit(_pull.x))
 				_throw.vx = 0.0;
+			if(signbit(_throw.vy) != signbit(_pull.y))
 				_throw.vy = 0.0;
-			}
 			
 			[self _startBounce];
+			
+			_bounce.x = _pull.x;
 			_bounce.y = _pull.y;
 			
 			if(_scrollViewFlags.didChangeContentInset) {
 				_scrollViewFlags.didChangeContentInset = 0;
+				_bounce.x += _contentInset.left;
 				_bounce.y += _contentInset.top;
+				_unroundedContentOffset.x += _contentInset.left;
 				_unroundedContentOffset.y -= _contentInset.top;
 			}
+			
 		}
+		
 	}
+	
 }
 
 - (void)endGestureWithEvent:(NSEvent *)event
 {
-	if(_scrollViewFlags.delegateScrollViewDidEndDragging)
+  
+	if(_scrollViewFlags.delegateScrollViewDidEndDragging){
 		[_delegate scrollViewDidEndDragging:self];
+	}
 	
 	if(_scrollViewFlags.bounceEnabled) {
 		_scrollViewFlags.gestureBegan = 0;
 		[self _startThrow];
-		
 		if(AtLeastLion) {
 			_scrollViewFlags.ignoreNextScrollPhaseNormal_10_7 = 1;
 		}
 	}
+	
 }
 
 - (void)scrollWheel:(NSEvent *)event
@@ -1045,36 +1061,43 @@ static float clampBounce(float x) {
 				
 				BOOL pulling = NO;
 				{
-					CGPoint pullO = o;
-					pullO.y += (_pull.pulling?_pull.y:0);
-					CGPoint fixedOffset = [self _fixProposedContentOffset:pullO];
+					CGPoint pull = o;
+					pull.x += (_pull.pulling ? _pull.x : 0);
+					pull.y += (_pull.pulling ? _pull.y : 0);
+					CGPoint fixedOffset = [self _fixProposedContentOffset:pull];
 					o.x = fixedOffset.x;
-					pulling = !CGPointEqualToPoint(fixedOffset, o);
+					o.y = fixedOffset.y;
+					pulling = !CGPointEqualToPoint(fixedOffset, pull);
 				}
 				
 				if(_scrollViewFlags.gestureBegan) {
 					if(_pull.pulling) {
 						
 						float maxManualPull = 30.0;
-						float counterPull = pow(M_E, -1/maxManualPull * fabsf(_pull.y));
+						CGPoint counterPull = CGPointMake(
+						  pow(M_E, -1.0 / maxManualPull * fabsf(_pull.x)),
+						  pow(M_E, -1.0 / maxManualPull * fabsf(_pull.y))
+            );
 						
-						if(signbit(_pull.y) == signbit(dy)) // if un-pulling, don't restrict. [REDACTED] doesn't do this and it feels weird - rubber band fights you *both* ways
-							counterPull = 1.0; // don't counter
+            // if un-pulling, don't restrict. [REDACTED] doesn't do this and it feels weird - rubber band fights you *both* ways
+						if(signbit(_pull.x) != signbit(dx))
+							counterPull.x = 1; // don't counter
+						if(signbit(_pull.y) == signbit(dy))
+							counterPull.y = 1; // don't counter
 						
-						BOOL shouldEndPull = pulling;
-						
-						if(shouldEndPull) {
+						if(!pulling) { // end pull
 							_pull.pulling = NO;
 						} else {
-							_pull.y -= dy * counterPull;
+							_pull.x += dx * counterPull.x;
+							_pull.y -= dy * counterPull.y;
 						}
+						
 					} else {
-						
-						BOOL shouldStartPull = pulling;
-						
-						if(shouldStartPull) {
+						if(pulling) { // start pull
 							_pull.pulling = YES;
-							_pull.y = 0.0;
+							_pull.x  = 0.0;
+							_pull.x += dx;
+							_pull.y  = 0.0;
 							_pull.y -= dy;
 						}
 					}

@@ -110,11 +110,11 @@ typedef enum {
 		BOOL bouncing;
 	} _bounce;
 	
-	struct {
-		float x;
-		float y;
-		BOOL pulling; // horizontal pulling not done yet, this flag should be split
-	} _pull;
+  struct {
+    float x;
+    float y;
+    BOOL  pulling;
+  } _pull;
 	
 	CGPoint  _dragScrollLocation;
 	
