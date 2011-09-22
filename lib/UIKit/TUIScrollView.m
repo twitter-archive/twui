@@ -402,11 +402,13 @@ enum {
       break;
 	}
 	
-	float bounceX = (-self.bounceOffset.x + self.pullOffset.x) * 1.2;
-	float bounceY = (-self.bounceOffset.y - self.pullOffset.y) * 1.2;
+	float pullX = (-self.bounceOffset.x + self.pullOffset.x);
+	float pullY = (-self.bounceOffset.y - self.pullOffset.y);
+	float bounceX = pullX * 1.2;
+	float bounceY = pullY * 1.2;
 	
 	_verticalScrollKnob.frame = CGRectMake(
-    round(-offset.x + bounds.size.width - knobSize), // x
+    round(-offset.x + bounds.size.width - knobSize - pullX), // x
     round(-offset.y + (hVisible ? knobSize : 0) + resizeKnobSize.height + bounceY), // y
     knobSize, // width
     bounds.size.height - (hVisible ? knobSize : 0) - resizeKnobSize.height // height
@@ -414,7 +416,7 @@ enum {
   
 	_horizontalScrollKnob.frame = CGRectMake(
     round(-offset.x - bounceX), // x
-    round(-offset.y), // y
+    round(-offset.y + pullY), // y
     bounds.size.width - (vVisible ? knobSize : 0) - resizeKnobSize.width, // width
     knobSize // height
   );
