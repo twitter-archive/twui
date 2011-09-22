@@ -96,8 +96,9 @@ if(isnan(knobLength)) knobLength = 0.0;
 		frame.origin.y = 0.0;
 		frame.size.width = knobLength;
 		frame.size.height = trackBounds.size.height;
-		knob.frame = ABRectRoundOrigin(CGRectInset(frame, 2, 4));
+		knob.frame = ABRectRoundOrigin(CGRectInset(frame, 4, 2));
 	}
+	
 }
 
 - (void)layoutSubviews
