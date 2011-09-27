@@ -39,6 +39,7 @@
 #import "TUIStringDrawing.h"
 #import "TUIViewController.h"
 #import "TUICGAdditions.h"
+#import "CoreText+Additions.h"
 
 extern CGContextRef TUIGraphicsGetCurrentContext(void);
 extern void TUIGraphicsPushContext(CGContextRef context);
