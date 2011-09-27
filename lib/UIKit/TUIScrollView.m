@@ -41,12 +41,15 @@ enum {
 };
 
 @interface TUIScrollView (Private)
+
+- (BOOL)_pulling;
 - (BOOL)_verticalScrollKnobNeededForContentSize:(CGSize)size;
 - (BOOL)_horizonatlScrollKnobNeededForContentSize:(CGSize)size;
 - (void)_updateScrollKnobs;
 - (void)_updateScrollKnobsAnimated:(BOOL)animated;
 - (void)_updateBounce;
 - (void)_startTimer:(int)scrollMode;
+
 @end
 
 @implementation TUIScrollView
@@ -219,13 +222,10 @@ enum {
 {
 	if(!TUIEdgeInsetsEqualToEdgeInsets(i, _contentInset)) {
 		_contentInset = i;
-		
-		if(_pull.pulling) {
+		if(self._pulling){
 			_scrollViewFlags.didChangeContentInset = 1;
-		} else {
-			if(!self.dragging) {
-				self.contentOffset = self.contentOffset;
-			}
+		}else if(!self.dragging) {
+      self.contentOffset = self.contentOffset;
 		}
 	}
 }
@@ -514,10 +514,19 @@ static CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
 	return p;
 }
 
+/**
+ * @internal
+ * @brief Determine if we are pulling on either axis
+ * @return pulling or not
+ */
+- (BOOL)_pulling {
+  return _pull.xPulling || _pull.yPulling;
+}
+
 - (CGPoint)pullOffset
 {
 	if(_scrollViewFlags.bounceEnabled){
-		return _pull.pulling ? CGPointMake(_pull.x, _pull.y) : CGPointZero;
+		return CGPointMake((_pull.xPulling) ? _pull.x : 0, (_pull.yPulling) ? _pull.y : 0);
 	}else{
 	  return CGPointZero;
 	}
@@ -778,7 +787,7 @@ static float clampBounce(float x) {
 			_throw.vy *= decelerationRate;
 			_throw.t = t;
 			
-			if(_throw.throwing && !_pull.pulling && !_bounce.bouncing) {
+			if(_throw.throwing && !self._pulling && !_bounce.bouncing) {
 				// may happen in the case where our we scrolled, then stopped, then lifted finger (didn't do a system-started throw, but timer started anyway to do something else)
 				// todo - handle this before it happens, but keep this sanity check
 				if(MAX(fabsf(_throw.vx), fabsf(_throw.vy)) < 0.1) {
@@ -917,11 +926,9 @@ static float clampBounce(float x) {
 - (void)_startThrow
 {
   
-	if(!_pull.pulling) {
-		if(fabsf(_lastScroll.dy) < 2.0 && fabsf(_lastScroll.dx) < 2.0){
-			return; // don't bother throwing
-		}
-	}
+  if(fabsf(_lastScroll.dy) < 2.0 && fabsf(_lastScroll.dx) < 2.0){
+    return; // don't bother throwing
+  }
 	
 	if(!_throw.throwing) {
 		_throw.throwing = 1;
@@ -936,8 +943,9 @@ static float clampBounce(float x) {
 		
 		[self _startTimer:AnimationModeThrow];
 		
-		if(_pull.pulling) {
-			_pull.pulling = NO;
+		if(self._pulling) {
+			_pull.xPulling = NO;
+			_pull.yPulling = NO;
 			
 			if(signbit(_throw.vx) != signbit(_pull.x))
 				_throw.vx = 0.0;
@@ -1064,8 +1072,8 @@ static float clampBounce(float x) {
 				BOOL yPulling = FALSE;
 				{
 					CGPoint pull = o;
-					pull.x += (_pull.xPulling ? _pull.x : 0);
-					pull.y += (_pull.yPulling ? _pull.y : 0);
+					pull.x += ((_pull.xPulling) ? _pull.x : 0);
+					pull.y += ((_pull.yPulling) ? _pull.y : 0);
 					CGPoint fixedOffset = [self _fixProposedContentOffset:pull];
 					o.x = fixedOffset.x;
 					o.y = fixedOffset.y;
@@ -1074,37 +1082,36 @@ static float clampBounce(float x) {
 				}
 				
 				if(_scrollViewFlags.gestureBegan){
-					if(_pull.pulling){
-						
-						float maxManualPull = 30.0;
-						CGPoint counterPull = CGPointMake(
-						  pow(M_E, -1.0 / maxManualPull * fabsf(_pull.x)),
-						  pow(M_E, -1.0 / maxManualPull * fabsf(_pull.y))
-            );
-						
-            // if un-pulling, don't restrict. [REDACTED] doesn't do this and it feels weird - rubber band fights you *both* ways
+          float maxManualPull = 30.0;
+          
+					if(_pull.xPulling){
+						CGFloat xCounter = pow(M_E, -1.0 / maxManualPull * fabsf(_pull.x));
+						// don't counter on un-pull
 						if(signbit(_pull.x) != signbit(dx))
-							counterPull.x = 1; // don't counter
-						if(signbit(_pull.y) == signbit(dy))
-							counterPull.y = 1; // don't counter
-						
+							xCounter = 1;
+						// update x-axis pulling
 						if(xPulling)
-							_pull.x += dx * counterPull.x;
-						if(yPulling)
-							_pull.y -= dy * counterPull.y;
-						
-					}else{
-						if(xPulling)
-							_pull.x = dx;
-						if(yPulling)
-							_pull.y = -dy;
+							_pull.x += dx * xCounter;
+					}else if(xPulling){
+            _pull.x = dx;
 					}
+					
+					if(_pull.yPulling){
+						CGFloat yCounter = pow(M_E, -1.0 / maxManualPull * fabsf(_pull.y));
+						// don't counter on un-pull
+						if(signbit(_pull.y) == signbit(dy))
+							yCounter = 1; // don't counter
+						// update y-axis pulling
+						if(yPulling)
+							_pull.y -= dy * yCounter;
+					}else if(yPulling){
+            _pull.y = -dy;
+					}
+					
+          _pull.xPulling = xPulling;
+          _pull.yPulling = yPulling;
 				}
 				
-        _pull.xPulling = xPulling;
-        _pull.yPulling = yPulling;
-        _pull.pulling  = xPulling || yPulling;
-        
 				[self setContentOffset:o];
 				break;
 			}

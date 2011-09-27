@@ -115,7 +115,6 @@ typedef enum {
     float y;
     BOOL  xPulling;
     BOOL  yPulling;
-    BOOL  pulling;
   } _pull;
 	
 	CGPoint  _dragScrollLocation;
