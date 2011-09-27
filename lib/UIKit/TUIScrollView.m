@@ -967,31 +967,6 @@ static float clampBounce(float x) {
       _unroundedContentOffset.y -= _contentInset.top;
     }
     
-		/*
-		if(self._pulling) {
-			_pull.xPulling = NO;
-			_pull.yPulling = NO;
-			
-			if(signbit(_throw.vx) != signbit(_pull.x))
-				_throw.vx = 0.0;
-			if(signbit(_throw.vy) != signbit(_pull.y))
-				_throw.vy = 0.0;
-			
-			[self _startBounce];
-			
-			_bounce.x = _pull.x;
-			_bounce.y = _pull.y;
-			
-			if(_scrollViewFlags.didChangeContentInset) {
-				_scrollViewFlags.didChangeContentInset = 0;
-				_bounce.x += _contentInset.left;
-				_bounce.y += _contentInset.top;
-				_unroundedContentOffset.x -= _contentInset.left;
-				_unroundedContentOffset.y -= _contentInset.top;
-			}
-			
-		}
-		*/
 	}
 	
 }
