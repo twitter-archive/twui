@@ -321,12 +321,17 @@
 - (CGSize)sizeConstrainedToWidth:(CGFloat)width
 {
 	if(attributedString) {
+		CTFrameRef oldCTFrame = _ct_frame != NULL ? CFRetain(_ct_frame) : NULL;
+		CGPathRef oldCGPath = _ct_path != NULL ? CGPathRetain(_ct_path) : NULL;
+		
 		CGRect oldFrame = frame;
 		self.frame = CGRectMake(0.0f, 0.0f, width, 1000000.0f);
 
 		CGSize size = [self size];
 		
-		self.frame = oldFrame;
+		frame = oldFrame;
+		_ct_frame = oldCTFrame;
+		_ct_path = oldCGPath;
 		
 		return size;
 	}
