@@ -705,7 +705,7 @@ static float clampBounce(float x) {
 		_bounce.bouncing = TRUE;
 		_bounce.x = 0.0f;
 		_bounce.y = 0.0f;
-		_bounce.vx = clampBounce(_throw.vx);
+		_bounce.vx = clampBounce( _throw.vx);
 		_bounce.vy = clampBounce(-_throw.vy);
 		_bounce.t = _throw.t;
 	}
@@ -1057,24 +1057,24 @@ static float clampBounce(float x) {
 				
 				CGPoint o = _unroundedContentOffset;
 				
-				if(!_pull.pulling) {
-					o.x = o.x + dx;
-					o.y = o.y - dy;
-				}
+				if(!_pull.xPulling) o.x = o.x + dx;
+				if(!_pull.yPulling) o.y = o.y - dy;
 				
-				BOOL pulling = NO;
+				BOOL xPulling = FALSE;
+				BOOL yPulling = FALSE;
 				{
 					CGPoint pull = o;
-					pull.x += (_pull.pulling ? _pull.x : 0);
-					pull.y += (_pull.pulling ? _pull.y : 0);
+					pull.x += (_pull.xPulling ? _pull.x : 0);
+					pull.y += (_pull.yPulling ? _pull.y : 0);
 					CGPoint fixedOffset = [self _fixProposedContentOffset:pull];
 					o.x = fixedOffset.x;
 					o.y = fixedOffset.y;
-					pulling = !CGPointEqualToPoint(fixedOffset, pull);
+					xPulling = fixedOffset.x != pull.x;
+					yPulling = fixedOffset.y != pull.y;
 				}
 				
-				if(_scrollViewFlags.gestureBegan) {
-					if(_pull.pulling) {
+				if(_scrollViewFlags.gestureBegan){
+					if(_pull.pulling){
 						
 						float maxManualPull = 30.0;
 						CGPoint counterPull = CGPointMake(
@@ -1088,24 +1088,23 @@ static float clampBounce(float x) {
 						if(signbit(_pull.y) == signbit(dy))
 							counterPull.y = 1; // don't counter
 						
-						if(!pulling) { // end pull
-							_pull.pulling = NO;
-						} else {
+						if(xPulling)
 							_pull.x += dx * counterPull.x;
+						if(yPulling)
 							_pull.y -= dy * counterPull.y;
-						}
 						
-					} else {
-						if(pulling) { // start pull
-							_pull.pulling = YES;
-							_pull.x  = 0.0;
-							_pull.x += dx;
-							_pull.y  = 0.0;
-							_pull.y -= dy;
-						}
+					}else{
+						if(xPulling)
+							_pull.x = dx;
+						if(yPulling)
+							_pull.y = -dy;
 					}
 				}
 				
+        _pull.xPulling = xPulling;
+        _pull.yPulling = yPulling;
+        _pull.pulling  = xPulling || yPulling;
+        
 				[self setContentOffset:o];
 				break;
 			}

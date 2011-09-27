@@ -113,6 +113,8 @@ typedef enum {
   struct {
     float x;
     float y;
+    BOOL  xPulling;
+    BOOL  yPulling;
     BOOL  pulling;
   } _pull;
 	
