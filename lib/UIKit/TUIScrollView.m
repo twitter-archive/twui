@@ -402,8 +402,8 @@ enum {
       break;
 	}
 	
-	float pullX = (-self.bounceOffset.x + self.pullOffset.x);
-	float pullY = (-self.bounceOffset.y - self.pullOffset.y);
+	float pullX =  self.bounceOffset.x + self.pullOffset.x;
+	float pullY = -self.bounceOffset.y - self.pullOffset.y;
 	float bounceX = pullX * 1.2;
 	float bounceY = pullY * 1.2;
 	
@@ -509,7 +509,7 @@ static CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
 - (CGPoint)contentOffset
 {
 	CGPoint p = _unroundedContentOffset;
-	p.x = roundf(p.x);
+	p.x = roundf(p.x + self.bounceOffset.x + self.pullOffset.x);
 	p.y = roundf(p.y + self.bounceOffset.y + self.pullOffset.y);
 	return p;
 }
@@ -535,7 +535,7 @@ static CGPoint PointLerp(CGPoint a, CGPoint b, CGFloat t)
 - (void)_setContentOffset:(CGPoint)p
 {
 	_unroundedContentOffset = p;
-	p.x = round(-p.x + self.bounceOffset.x - self.pullOffset.x);
+	p.x = round(-p.x - self.bounceOffset.x - self.pullOffset.x);
 	p.y = round(-p.y - self.bounceOffset.y - self.pullOffset.y);
 	[((CAScrollLayer *)self.layer) scrollToPoint:p];
 	if(_scrollViewFlags.delegateScrollViewDidScroll){
@@ -705,7 +705,7 @@ static float clampBounce(float x) {
 		_bounce.bouncing = TRUE;
 		_bounce.x = 0.0f;
 		_bounce.y = 0.0f;
-		_bounce.vx = clampBounce(-_throw.vx);
+		_bounce.vx = clampBounce(_throw.vx);
 		_bounce.vy = clampBounce(-_throw.vy);
 		_bounce.t = _throw.t;
 	}
@@ -929,6 +929,7 @@ static float clampBounce(float x) {
 		CFAbsoluteTime t = CFAbsoluteTimeGetCurrent();
 		CFTimeInterval dt = t - _lastScroll.t;
 		if(dt < 1 / 60.0) dt = 1 / 60.0;
+		
 		_throw.vx = _lastScroll.dx / dt;
 		_throw.vy = _lastScroll.dy / dt;
 		_throw.t = t;
@@ -952,7 +953,7 @@ static float clampBounce(float x) {
 				_scrollViewFlags.didChangeContentInset = 0;
 				_bounce.x += _contentInset.left;
 				_bounce.y += _contentInset.top;
-				_unroundedContentOffset.x += _contentInset.left;
+				_unroundedContentOffset.x -= _contentInset.left;
 				_unroundedContentOffset.y -= _contentInset.top;
 			}
 			
