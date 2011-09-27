@@ -926,12 +926,14 @@ static float clampBounce(float x) {
 - (void)_startThrow
 {
   
-  if(fabsf(_lastScroll.dy) < 2.0 && fabsf(_lastScroll.dx) < 2.0){
-    return; // don't bother throwing
+  if(!self._pulling){
+    if(fabsf(_lastScroll.dy) < 2.0 && fabsf(_lastScroll.dx) < 2.0){
+      return; // don't bother throwing
+    }
   }
 	
 	if(!_throw.throwing) {
-		_throw.throwing = 1;
+		_throw.throwing = TRUE;
 		
 		CFAbsoluteTime t = CFAbsoluteTimeGetCurrent();
 		CFTimeInterval dt = t - _lastScroll.t;
@@ -943,6 +945,29 @@ static float clampBounce(float x) {
 		
 		[self _startTimer:AnimationModeThrow];
 		
+		if(_pull.xPulling) {
+			_pull.xPulling = NO;
+			if(signbit(_throw.vx) != signbit(_pull.x)) _throw.vx = 0.0;
+			[self _startBounce];
+			_bounce.x = _pull.x;
+		}
+		
+		if(_pull.yPulling) {
+			_pull.yPulling = NO;
+			if(signbit(_throw.vy) != signbit(_pull.y)) _throw.vy = 0.0;
+			[self _startBounce];
+			_bounce.y = _pull.y;
+		}
+		
+    if(self._pulling && _scrollViewFlags.didChangeContentInset){
+      _scrollViewFlags.didChangeContentInset = 0;
+      _bounce.x += _contentInset.left;
+      _bounce.y += _contentInset.top;
+      _unroundedContentOffset.x -= _contentInset.left;
+      _unroundedContentOffset.y -= _contentInset.top;
+    }
+    
+		/*
 		if(self._pulling) {
 			_pull.xPulling = NO;
 			_pull.yPulling = NO;
@@ -966,7 +991,7 @@ static float clampBounce(float x) {
 			}
 			
 		}
-		
+		*/
 	}
 	
 }
