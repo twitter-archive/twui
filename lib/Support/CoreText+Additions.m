@@ -147,16 +147,23 @@ void AB_CTFrameGetRectsForRangeWithAggregationType(CTFrameRef frame, CFRange ran
 	CGRect bounds;
 	CGPathIsRect(CTFrameGetPath(frame), &bounds);
 	
+	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
+	CFIndex linesCount = [lines count];
+	CGPoint lineOrigins[linesCount];
+	CTFrameGetLineOrigins(frame, CFRangeMake(0, linesCount), lineOrigins);
+	
+	AB_CTLinesGetRectsForRangeWithAggregationType(lines, lineOrigins, bounds, range, aggregationType, rects, rectCount);
+}
+
+void AB_CTLinesGetRectsForRangeWithAggregationType(NSArray *lines, CGPoint *lineOrigins, CGRect bounds, CFRange range, AB_CTLineRectAggregationType aggregationType, CGRect rects[], CFIndex *rectCount)
+{
 	CFIndex maxRects = *rectCount;
 	CFIndex rectIndex = 0;
 	
 	CFIndex startIndex = range.location;
 	CFIndex endIndex = startIndex + range.length;
 	
-	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
 	CFIndex linesCount = [lines count];
-	CGPoint lineOrigins[linesCount];
-	CTFrameGetLineOrigins(frame, CFRangeMake(0, linesCount), lineOrigins);
 	
 	for(CFIndex i = 0; i < linesCount; ++i) {
 		CTLineRef line = (CTLineRef)[lines objectAtIndex:i];
@@ -167,7 +174,7 @@ void AB_CTFrameGetRectsForRangeWithAggregationType(CTFrameRef frame, CFRange ran
 		lineWidth = lineWidth;
 		
 		// If we have more than 1 line, we want to find the real height of the line by measuring the distance between the current line and previous line. If it's only 1 line, then we'll guess the line's height.
-		BOOL useRealHeight = i > 0 && i < linesCount;
+		BOOL useRealHeight = i < linesCount - 1;
 		CGFloat neighborLineY = i > 0 ? lineOrigins[i - 1].y : (linesCount > i ? lineOrigins[i + 1].y : 0.0f);
 		CGFloat lineHeight = ceil(useRealHeight ? abs(neighborLineY - lineOrigin.y) : ascent + descent + leading);
 		CGFloat line_y = round(useRealHeight ? lineOrigin.y + bounds.origin.y - lineHeight/2 + descent : lineOrigin.y - descent + bounds.origin.y);
@@ -177,7 +184,7 @@ void AB_CTFrameGetRectsForRangeWithAggregationType(CTFrameRef frame, CFRange ran
 		CFIndex lineEndIndex = lineStartIndex + lineRange.length;
 		BOOL containsStartIndex = RangeContainsIndex(lineRange, startIndex);
 		BOOL containsEndIndex = RangeContainsIndex(lineRange, endIndex);
-
+		
 		if(containsStartIndex && containsEndIndex) {
 			CGFloat startOffset = CTLineGetOffsetForStringIndex(line, startIndex, NULL);
 			CGFloat endOffset = CTLineGetOffsetForStringIndex(line, endIndex, NULL);
