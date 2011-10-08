@@ -81,9 +81,9 @@
 			
 			CGSize size = AB_CTFrameGetSize(_ct_frame);
 			if(verticalAlignment == TUITextVerticalAlignmentMiddle) {
-				effectiveFrame.origin.y -= size.height / 2;
+				effectiveFrame.origin.y = size.height/2 - frame.size.height/2;
 			} else if(verticalAlignment == TUITextVerticalAlignmentBottom) {
-				effectiveFrame.origin.y -= size.height;
+				effectiveFrame.origin.y = size.height;
 			}
 			
 			effectiveFrame = CGRectIntegral(effectiveFrame);
