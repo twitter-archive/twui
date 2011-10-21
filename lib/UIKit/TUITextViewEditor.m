@@ -24,4 +24,10 @@
 	}
 }
 
+- (BOOL)becomeFirstResponder
+{
+	self.selectedRange = NSMakeRange(self.text.length, 0);
+	return [super becomeFirstResponder];
+}
+
 @end
