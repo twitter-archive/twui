@@ -1093,23 +1093,17 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 
 - (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition
 {
-  
-	if([indexPath isEqual:[self indexPathForSelectedRow]]) {
-		// just scroll to visible
-	} else {
-		[self deselectRowAtIndexPath:[self indexPathForSelectedRow] animated:animated];
+	[self deselectRowAtIndexPath:[self indexPathForSelectedRow] animated:animated];
 		
-		TUITableViewCell *cell = [self cellForRowAtIndexPath:indexPath]; // may be nil
-		[cell setSelected:YES animated:animated];
-		[_selectedIndexPath release]; // should already be nil
-		_selectedIndexPath = [indexPath retain];
-		[cell setNeedsDisplay];
-		
-		// only notify when the selection actually changes
-    if([self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
-      [self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
-    }
-		
+	TUITableViewCell *cell = [self cellForRowAtIndexPath:indexPath]; // may be nil
+	[cell setSelected:YES animated:animated];
+	[_selectedIndexPath release]; // should already be nil
+	_selectedIndexPath = [indexPath retain];
+	[cell setNeedsDisplay];
+	
+	// only notify when the selection actually changes
+	if(![indexPath isEqual:[self indexPathForSelectedRow]] && [self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
+		[self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
 	}
 	
 	[self _makeRowAtIndexPathFirstResponder:indexPath];
