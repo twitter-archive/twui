@@ -22,6 +22,7 @@
 @interface TUITextView () <TUITextRendererDelegate>
 - (void)_checkSpelling;
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem;
+- (CGRect)_cursorRect;
 
 @property (nonatomic, retain) NSArray *lastCheckResults;
 @property (nonatomic, retain) NSTextCheckingResult *selectedTextCheckingResult;
@@ -207,22 +208,51 @@ static CAAnimation *ThrobAnimation()
 
 - (void)drawRect:(CGRect)rect
 {
+	static const CGFloat singleLineWidth = 20000.0f;
+	
 	CGContextRef ctx = TUIGraphicsGetCurrentContext();
 	
 	if(drawFrame)
 		drawFrame(self, rect);
 	
 	BOOL singleLine = [self singleLine];
-	BOOL doMask = singleLine;
-	
 	CGRect textRect = [self textRect];
 	CGRect rendererFrame = textRect;
-	if(singleLine) rendererFrame.size.width = 2000.0f;
-	if(!CGRectEqualToRect(rendererFrame, _lastTextRect)) {
-		renderer.frame = rendererFrame;
-		_lastTextRect = rendererFrame;
+	if(singleLine) {
+		rendererFrame.size.width = singleLineWidth;
 	}
 	
+	renderer.frame = rendererFrame;
+	
+	BOOL showCursor = [self _isKey] && [renderer selectedRange].length == 0;
+	if(showCursor) {
+		cursor.hidden = NO;
+		[cursor.layer removeAnimationForKey:@"opacity"];
+		[cursor.layer addAnimation:ThrobAnimation() forKey:@"opacity"];
+	} else {
+		cursor.hidden = YES;
+	}
+	
+	// Single-line text views scroll horizontally with the cursor.
+	CGRect cursorFrame = [self _cursorRect];
+	CGFloat offset = 0.0f;
+	if(singleLine) {
+		if(CGRectGetMaxX(cursorFrame) > CGRectGetWidth(textRect)) {
+			offset = CGRectGetMinX(cursorFrame) - CGRectGetWidth(textRect);
+			rendererFrame = CGRectMake(-offset, rendererFrame.origin.y, CGRectGetWidth(rendererFrame), CGRectGetHeight(rendererFrame));
+			cursorFrame = CGRectOffset(cursorFrame, -offset - CGRectGetWidth(cursorFrame) - 5.0f, 0.0f);
+			
+			renderer.frame = rendererFrame;
+		}
+	}
+	
+	if(showCursor) {
+		[TUIView setAnimationsEnabled:NO block:^{
+			cursor.frame = cursorFrame;
+		}];
+	}
+	
+	BOOL doMask = singleLine;
 	if(doMask) {
 		CGContextSaveGState(ctx);
 		CGFloat radius = floor(rect.size.height / 2);
@@ -234,44 +264,35 @@ static CAAnimation *ThrobAnimation()
 	if(doMask) {
 		CGContextRestoreGState(ctx);
 	}
-	
-	NSRange selection = [renderer selectedRange];
-	BOOL key = [self _isKey];
-	if(key && selection.length == 0) {
-		cursor.hidden = NO;
-		
-		BOOL fakeMetrics = ([[renderer backingStore] length] == 0);
-		
-		if(fakeMetrics) {
-			// setup fake stuff - fake character with font
-			TUIAttributedString *fake = [TUIAttributedString stringWithString:@"M"];
-			fake.font = self.font;
-			renderer.attributedString = fake;
-			selection = NSMakeRange(0, 0);
-		}
+}
 
-		// Ugh. So this seems to be a decent approximation for the height of the cursor. It doesn't always match the native cursor but what ev.
-		CGRect r = CGRectIntegral([renderer firstRectForCharacterRange:ABCFRangeFromNSRange(selection)]);
-		r.size.width = 2.0f;
-		CGRect fontBoundingBox = CTFontGetBoundingBox(self.font.ctFont);
-		r.size.height = round(fontBoundingBox.origin.y + fontBoundingBox.size.height);
-		r.origin.y += floor(self.font.leading);
-//		NSLog(@"ascent: %f, descent: %f, leading: %f, cap height: %f, x-height: %f, bounding: %@", self.font.ascender, self.font.descender, self.font.leading, self.font.capHeight, self.font.xHeight, NSStringFromRect(CTFontGetBoundingBox(self.font.ctFont)));
-		
-		[TUIView setAnimationsEnabled:NO block:^{
-			cursor.frame = r;
-		}];
-		
-		if(fakeMetrics) {
-			// restore
-			renderer.attributedString = [renderer backingStore];
-		}
-		
-		[cursor.layer removeAnimationForKey:@"opacity"];
-		[cursor.layer addAnimation:ThrobAnimation() forKey:@"opacity"];
-	} else {
-		cursor.hidden = YES;
+- (CGRect)_cursorRect
+{
+	BOOL fakeMetrics = ([[renderer backingStore] length] == 0);
+	NSRange selection = [renderer selectedRange];
+	
+	if(fakeMetrics) {
+		// setup fake stuff - fake character with font
+		TUIAttributedString *fake = [TUIAttributedString stringWithString:@"M"];
+		fake.font = self.font;
+		renderer.attributedString = fake;
+		selection = NSMakeRange(0, 0);
 	}
+	
+	// Ugh. So this seems to be a decent approximation for the height of the cursor. It doesn't always match the native cursor but what ev.
+	CGRect r = CGRectIntegral([renderer firstRectForCharacterRange:ABCFRangeFromNSRange(selection)]);
+	r.size.width = 2.0f;
+	CGRect fontBoundingBox = CTFontGetBoundingBox(self.font.ctFont);
+	r.size.height = round(fontBoundingBox.origin.y + fontBoundingBox.size.height);
+	r.origin.y += floor(self.font.leading);
+	//NSLog(@"ascent: %f, descent: %f, leading: %f, cap height: %f, x-height: %f, bounding: %@", self.font.ascender, self.font.descender, self.font.leading, self.font.capHeight, self.font.xHeight, NSStringFromRect(CTFontGetBoundingBox(self.font.ctFont)));
+	
+	if(fakeMetrics) {
+		// restore
+		renderer.attributedString = [renderer backingStore];
+	}
+	
+	return r;
 }
 
 - (void)_textDidChange
