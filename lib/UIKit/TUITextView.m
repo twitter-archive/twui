@@ -26,6 +26,7 @@
 
 @property (nonatomic, retain) NSArray *lastCheckResults;
 @property (nonatomic, retain) NSTextCheckingResult *selectedTextCheckingResult;
+@property (nonatomic, retain) NSMutableDictionary *autocorrectedResults;
 @end
 
 @implementation TUITextView
@@ -42,6 +43,7 @@
 @synthesize lastCheckResults;
 @synthesize selectedTextCheckingResult;
 @synthesize autocorrectionEnabled;
+@synthesize autocorrectedResults;
 
 - (void)_updateDefaultAttributes
 {
@@ -77,6 +79,8 @@
 		[self addSubview:cursor];
 		[cursor release];
 		
+		self.autocorrectedResults = [NSMutableDictionary dictionary];
+		
 		self.font = [TUIFont fontWithName:@"HelveticaNeue" size:12];
 		self.textColor = [TUIColor blackColor];
 		[self _updateDefaultAttributes];
@@ -93,6 +97,7 @@
 	[placeholder release];
 	[lastCheckResults release];
 	[selectedTextCheckingResult release];
+	[autocorrectedResults release];
 	[super dealloc];
 }
 
@@ -325,16 +330,16 @@ static CAAnimation *ThrobAnimation()
 			[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:wholeStringRange];
 			
 			NSRange selectionRange = [self selectedRange];
-			NSMutableArray *autocorrectedResults = [NSMutableArray array];
+			NSMutableArray *autocorrectedResultsThisRound = [NSMutableArray array];
 			for(NSTextCheckingResult *result in results) {
 				// Don't check the word they're typing. It's just annoying.
-				BOOL isActiveWord = (selectionRange.location - (result.range.location + result.range.length)) < 2 && selectionRange.length == 0;
+				BOOL isActiveWord = selectionRange.location - (result.range.location + result.range.length) < 1 && selectionRange.length == 0;
 				if(isActiveWord) continue;
 				
 				if(result.resultType == NSTextCheckingTypeCorrection) {
+					[self.autocorrectedResults setObject:[[[renderer backingStore] string] substringWithRange:result.range] forKey:result];
 					[[renderer backingStore] replaceCharactersInRange:result.range withString:result.replacementString];
-					
-					[autocorrectedResults addObject:result];
+					[autocorrectedResultsThisRound addObject:result];
 				} else if(result.resultType == NSTextCheckingTypeSpelling) {
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
@@ -342,7 +347,7 @@ static CAAnimation *ThrobAnimation()
 			}
 			
 			// We need to go back and remove any misspelled markers from the results that we autocorrected.
-			for(NSTextCheckingResult *result in autocorrectedResults) {
+			for(NSTextCheckingResult *result in autocorrectedResultsThisRound) {
 				[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:result.range];
 				[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:result.range];
 			}
@@ -367,9 +372,28 @@ static CAAnimation *ThrobAnimation()
 		}
 	}
 	
+	if(selectedTextCheckingResult == nil) {
+		for(NSTextCheckingResult *result in self.autocorrectedResults) {
+			if(stringIndex >= result.range.location && stringIndex <= result.range.location + result.range.length) {
+				self.selectedTextCheckingResult = result;
+				break;
+			}
+		}
+	}
+	
 	if(selectedTextCheckingResult == nil) return nil;
 		
 	NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
+	if(selectedTextCheckingResult.resultType == NSTextCheckingTypeCorrection) {
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Change Back to \"%@\"", @""), [self.autocorrectedResults objectForKey:selectedTextCheckingResult]] action:@selector(_replaceAutocorrectedWord:) keyEquivalent:@""];
+		[menuItem setTarget:self];
+		[menuItem setRepresentedObject:selectedTextCheckingResult];
+		[menu addItem:menuItem];
+		[menuItem release];
+		
+		[menu addItem:[NSMenuItem separatorItem]];
+	}
+	
 	NSArray *guesses = [[NSSpellChecker sharedSpellChecker] guessesForWordRange:selectedTextCheckingResult.range inString:[self text] language:nil inSpellDocumentWithTag:0];
 	if(guesses.count > 0) {
 		for(NSString *guess in guesses) {
@@ -395,6 +419,21 @@ static CAAnimation *ThrobAnimation()
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:selectedTextCheckingResult.range];
 	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:replacement];
+	[[renderer backingStore] endEditing];
+	[renderer reset];
+	
+	[self _textDidChange];
+	
+	self.selectedTextCheckingResult = nil;
+}
+
+- (void)_replaceAutocorrectedWord:(NSMenuItem *)menuItem
+{
+	NSTextCheckingResult *result = [menuItem representedObject];
+	[[renderer backingStore] beginEditing];
+	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
+	[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:selectedTextCheckingResult.range];
+	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:[self.autocorrectedResults objectForKey:result]];
 	[[renderer backingStore] endEditing];
 	[renderer reset];
 	

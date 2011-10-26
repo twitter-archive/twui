@@ -41,6 +41,7 @@
 	NSArray *lastCheckResults;
 	NSTextCheckingResult *selectedTextCheckingResult;
 	BOOL autocorrectionEnabled;
+	NSMutableDictionary *autocorrectedResults;
 
 	TUIEdgeInsets contentInset;
 
