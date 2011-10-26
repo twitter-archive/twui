@@ -1109,10 +1109,9 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		[cell setNeedsDisplay];
 		
 		// only notify when the selection actually changes
-    if([self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
-      [self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
-    }
-		
+		if([self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
+		  [self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
+		}
 	}
 	
 	[self _makeRowAtIndexPathFirstResponder:indexPath];
