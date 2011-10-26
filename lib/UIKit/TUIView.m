@@ -283,7 +283,8 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	CA_COLOR_OVERLAY_DEBUG \
 	TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext(); \
 	layer.contents = (id)image.CGImage; \
-	TUIGraphicsPopContext();
+	TUIGraphicsPopContext(); \
+	if(self.drawInBackground) [CATransaction flush];
 
 	CGRect rectToDraw = self.bounds;
 	if(!CGRectEqualToRect(_context.dirtyRect, CGRectZero)) {
@@ -310,40 +311,10 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	if(self.drawInBackground) {
 		layer.contents = nil;
 		
-		void (^backgroundDrawBlock)(void) = ^{
-			
-			if(drawRect) {
-				// drawRect is implemented via a block
-				PRE_DRAW
-				drawRect(self, rectToDraw);
-				TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext();
-				TUIGraphicsPopContext();
-				dispatch_async(dispatch_get_main_queue(), ^{
-					layer.contents = (id)image.CGImage;
-					[CATransaction flush];
-				});
-			} else if((drawRectIMP != dontCallThisBasicDrawRectIMP) && ![self _disableDrawRect]) {
-				// drawRect is overridden by subclass
-				PRE_DRAW
-				drawRectIMP(self, drawRectSEL, rectToDraw);
-				TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext();
-				layer.contents = (id)image.CGImage;
-				TUIGraphicsPopContext();
-				[CATransaction flush];
-				dispatch_async(dispatch_get_main_queue(), ^{
-//					layer.contents = (id)image.CGImage;
-//					[CATransaction flush];
-					
-				});
-			} else {
-				// drawRect isn't overridden by subclass, don't call, let the CA machinery just handle backgroundColor (fast path)
-			}
-		};
-		
 		if(self.drawQueue != nil) {
-			[self.drawQueue addOperationWithBlock:backgroundDrawBlock];
+			[self.drawQueue addOperationWithBlock:drawBlock];
 		} else {
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), backgroundDrawBlock);
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), drawBlock);
 		}
 	} else {
 		drawBlock();
