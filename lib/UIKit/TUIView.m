@@ -62,6 +62,7 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 @synthesize layout;
 @synthesize toolTip;
 @synthesize toolTipDelay;
+@synthesize drawQueue;
 
 + (void)initialize
 {
@@ -95,6 +96,7 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 	[accessibilityHint release];
 	[accessibilityLabel release];
 	[accessibilityValue release];
+	[drawQueue release];
 	if(_context.context) {
 		CGContextRelease(_context.context);
 		_context.context = NULL;
@@ -282,25 +284,69 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext(); \
 	layer.contents = (id)image.CGImage; \
 	TUIGraphicsPopContext();
-	
+
 	CGRect rectToDraw = self.bounds;
 	if(!CGRectEqualToRect(_context.dirtyRect, CGRectZero)) {
 		rectToDraw = _context.dirtyRect;
 		_context.dirtyRect = CGRectZero;
 	}
 	
-	if(drawRect) {
-		// drawRect is implemented via a block
-		PRE_DRAW
-		drawRect(self, rectToDraw);
-		POST_DRAW
-	} else if((drawRectIMP != dontCallThisBasicDrawRectIMP) && ![self _disableDrawRect]) {
-		// drawRect is overridden by subclass
-		PRE_DRAW
-		drawRectIMP(self, drawRectSEL, rectToDraw);
-		POST_DRAW
+	void (^drawBlock)(void) = ^{
+		if(drawRect) {
+			// drawRect is implemented via a block
+			PRE_DRAW
+			drawRect(self, rectToDraw);
+			POST_DRAW
+		} else if((drawRectIMP != dontCallThisBasicDrawRectIMP) && ![self _disableDrawRect]) {
+			// drawRect is overridden by subclass
+			PRE_DRAW
+			drawRectIMP(self, drawRectSEL, rectToDraw);
+			POST_DRAW
+		} else {
+			// drawRect isn't overridden by subclass, don't call, let the CA machinery just handle backgroundColor (fast path)
+		}
+	};
+	
+	if(self.drawInBackground) {
+		layer.contents = nil;
+		
+		void (^backgroundDrawBlock)(void) = ^{
+			
+			if(drawRect) {
+				// drawRect is implemented via a block
+				PRE_DRAW
+				drawRect(self, rectToDraw);
+				TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext();
+				TUIGraphicsPopContext();
+				dispatch_async(dispatch_get_main_queue(), ^{
+					layer.contents = (id)image.CGImage;
+					[CATransaction flush];
+				});
+			} else if((drawRectIMP != dontCallThisBasicDrawRectIMP) && ![self _disableDrawRect]) {
+				// drawRect is overridden by subclass
+				PRE_DRAW
+				drawRectIMP(self, drawRectSEL, rectToDraw);
+				TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext();
+				layer.contents = (id)image.CGImage;
+				TUIGraphicsPopContext();
+				[CATransaction flush];
+				dispatch_async(dispatch_get_main_queue(), ^{
+//					layer.contents = (id)image.CGImage;
+//					[CATransaction flush];
+					
+				});
+			} else {
+				// drawRect isn't overridden by subclass, don't call, let the CA machinery just handle backgroundColor (fast path)
+			}
+		};
+		
+		if(self.drawQueue != nil) {
+			[self.drawQueue addOperationWithBlock:backgroundDrawBlock];
+		} else {
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), backgroundDrawBlock);
+		}
 	} else {
-		// drawRect isn't overridden by subclass, don't call, let the CA machinery just handle backgroundColor (fast path)
+		drawBlock();
 	}
 }
 
@@ -325,6 +371,16 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 {
 	[self layoutSubviews];
 	[self _blockLayout];
+}
+
+- (BOOL)drawInBackground
+{
+	return _viewFlags.drawInBackground;
+}
+
+- (void)setDrawInBackground:(BOOL)drawInBackground
+{
+	_viewFlags.drawInBackground = drawInBackground;
 }
 
 - (NSTimeInterval)toolTipDelay

@@ -111,6 +111,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 		unsigned int pasteboardDraggingIsDragging:1;
 		unsigned int dragDistanceLock:1;
 		unsigned int clearsContextBeforeDrawing:1;
+		unsigned int drawInBackground:1;
 		
 		unsigned int delegateMouseEntered:1;
 		unsigned int delegateMouseExited:1;
@@ -123,6 +124,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 	NSString *accessibilityValue;
 	TUIAccessibilityTraits accessibilityTraits;
 	CGRect accessibilityFrame;
+	NSOperationQueue *drawQueue;
 }
 
 /**
@@ -183,6 +185,20 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 @property (nonatomic, assign) NSTimeInterval toolTipDelay;
 
 @property (nonatomic, assign) TUIViewContentMode contentMode;
+
+/**
+ If YES, drawing will be done in a background queue. If `drawQueue` is nil, it will be performed in the DISPATCH_QUEUE_PRIORITY_DEFAULT global queue. Note that `-viewWillDisplayLayer:` will still be called on the main thread.
+ 
+ Defaults to NO.
+ */
+@property (nonatomic, assign) BOOL drawInBackground;
+
+/**
+ The queue in which drawing should be performed. Only used if `drawInBackground` is YES.
+ 
+ Defaults to nil.
+ */
+@property (nonatomic, retain) NSOperationQueue *drawQueue;
 
 /**
  Make this view the first responder. Returns NO if it fails.
