@@ -58,7 +58,6 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 @implementation TUIView
 
 @dynamic subviews;
-@synthesize drawRect;
 @synthesize layout;
 @synthesize toolTip;
 @synthesize toolTipDelay;
@@ -841,6 +840,11 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	CGContextRef ctx = TUIGraphicsGetCurrentContext();
 	[self.backgroundColor set];
 	CGContextFillRect(ctx, self.bounds);
+}
+
+- (TUIViewDrawRect)drawRect
+{
+	return drawRect;
 }
 
 - (void)setDrawRect:(TUIViewDrawRect)d

@@ -157,11 +157,6 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 @property (nonatomic,readonly,retain) CALayer *layer;
 
 /**
- Supply a block as an alternative to subclassing and overriding -drawRect:
- */
-@property (nonatomic, copy) TUIViewDrawRect drawRect;
-
-/**
  Supply a block as an alternative to overriding -layoutSubviews
  */
 @property (nonatomic, copy) TUIViewLayout layout;
@@ -312,6 +307,11 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 @end
 
 @interface TUIView (TUIViewRendering)
+
+/**
+ Supply a block as an alternative to subclassing and overriding -drawRect:
+ */
+@property (nonatomic, copy) TUIViewDrawRect drawRect;
 
 /**
  Forces an immediate update of the backing view's layer.contents. May be inside an animation block to cross-fade.
