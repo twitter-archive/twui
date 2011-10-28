@@ -100,12 +100,12 @@
 	if((self.userInteractionEnabled == NO) || (self.hidden == YES) || (self.alpha <= 0.0f))
 		return nil;
 	
-	TUITextRenderer *textRenderer = [self textRendererAtPoint:point];
-	if(textRenderer != nil) {
-		return textRenderer;
-	}
-	
 	if([self pointInside:point withEvent:nil]) {
+		TUITextRenderer *textRenderer = [self textRendererAtPoint:point];
+		if(textRenderer != nil) {
+			return textRenderer;
+		}
+		
 		NSArray *s = [self sortedSubviews];
 		for(TUIView *v in [s reverseObjectEnumerator]) {
 			TUIView *hit = [v accessibilityHitTest:[self convertPoint:point toView:v]];
