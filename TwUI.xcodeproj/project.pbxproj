@@ -84,6 +84,8 @@
 		887F272F13F9969800D75DE6 /* TUITableViewSectionHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 887F272B13F9969800D75DE6 /* TUITableViewSectionHeader.m */; };
 		887F273013F9969800D75DE6 /* TUITableViewSectionHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 887F272B13F9969800D75DE6 /* TUITableViewSectionHeader.m */; };
 		887F273113F9969800D75DE6 /* TUITableViewSectionHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 887F272B13F9969800D75DE6 /* TUITableViewSectionHeader.m */; };
+		88A4AFDE145A16CA0071CF22 /* TUITextRenderer+Accessibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 88A4AFDC145A16C90071CF22 /* TUITextRenderer+Accessibility.h */; };
+		88A4AFDF145A16CA0071CF22 /* TUITextRenderer+Accessibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 88A4AFDD145A16C90071CF22 /* TUITextRenderer+Accessibility.m */; };
 		88CC1F2F13E365B600827793 /* TUIControl+Accessibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 88CC1F2D13E365B500827793 /* TUIControl+Accessibility.h */; };
 		88CC1F3013E365B600827793 /* TUIControl+Accessibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 88CC1F2D13E365B500827793 /* TUIControl+Accessibility.h */; };
 		88CC1F3113E365B600827793 /* TUIControl+Accessibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 88CC1F2D13E365B500827793 /* TUIControl+Accessibility.h */; };
@@ -274,6 +276,8 @@
 		886EBA7E13D64393006DE018 /* TUIControl+Private.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TUIControl+Private.m"; sourceTree = "<group>"; };
 		887F272A13F9969800D75DE6 /* TUITableViewSectionHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TUITableViewSectionHeader.h; sourceTree = "<group>"; };
 		887F272B13F9969800D75DE6 /* TUITableViewSectionHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TUITableViewSectionHeader.m; sourceTree = "<group>"; };
+		88A4AFDC145A16C90071CF22 /* TUITextRenderer+Accessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TUITextRenderer+Accessibility.h"; sourceTree = "<group>"; };
+		88A4AFDD145A16C90071CF22 /* TUITextRenderer+Accessibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TUITextRenderer+Accessibility.m"; sourceTree = "<group>"; };
 		88CC1F2D13E365B500827793 /* TUIControl+Accessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TUIControl+Accessibility.h"; sourceTree = "<group>"; };
 		88CC1F2E13E365B500827793 /* TUIControl+Accessibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TUIControl+Accessibility.m"; sourceTree = "<group>"; };
 		88CC1F3513E3684400827793 /* TUIButton+Accessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TUIButton+Accessibility.h"; sourceTree = "<group>"; };
@@ -612,6 +616,8 @@
 				CBB74C7B13BE6E1900C85CB5 /* TUITextRenderer+KeyBindings.m */,
 				CBB74C7C13BE6E1900C85CB5 /* TUITextRenderer.h */,
 				CBB74C7D13BE6E1900C85CB5 /* TUITextRenderer.m */,
+				88A4AFDC145A16C90071CF22 /* TUITextRenderer+Accessibility.h */,
+				88A4AFDD145A16C90071CF22 /* TUITextRenderer+Accessibility.m */,
 				CBB74C7E13BE6E1900C85CB5 /* TUITextView.h */,
 				CBB74C7F13BE6E1900C85CB5 /* TUITextView.m */,
 				88EFFB4F13F417E200CF91A9 /* TUITextViewEditor.h */,
@@ -711,6 +717,7 @@
 				88CC1F3713E3684700827793 /* TUIButton+Accessibility.h in Headers */,
 				88EFFB5113F417E200CF91A9 /* TUITextViewEditor.h in Headers */,
 				88D25F5513F5D96500CFAAA9 /* TUITableView+Cell.h in Headers */,
+				88A4AFDE145A16CA0071CF22 /* TUITextRenderer+Accessibility.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -987,6 +994,7 @@
 				88EFFB5413F417E200CF91A9 /* TUITextViewEditor.m in Sources */,
 				88D25F5813F5D96500CFAAA9 /* TUITableView+Cell.m in Sources */,
 				887F272F13F9969800D75DE6 /* TUITableViewSectionHeader.m in Sources */,
+				88A4AFDF145A16CA0071CF22 /* TUITextRenderer+Accessibility.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
