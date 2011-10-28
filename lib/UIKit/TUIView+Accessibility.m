@@ -96,9 +96,25 @@
 #pragma mark NSAccessibility
 
 - (id)accessibilityHitTest:(NSPoint)point
-{
-	TUIView *h = [self hitTest:point withEvent:nil];
-	return h;
+{	
+	if((self.userInteractionEnabled == NO) || (self.hidden == YES) || (self.alpha <= 0.0f))
+		return nil;
+	
+	TUITextRenderer *textRenderer = [self textRendererAtPoint:point];
+	if(textRenderer != nil) {
+		return textRenderer;
+	}
+	
+	if([self pointInside:point withEvent:nil]) {
+		NSArray *s = [self sortedSubviews];
+		for(TUIView *v in [s reverseObjectEnumerator]) {
+			TUIView *hit = [v accessibilityHitTest:[self convertPoint:point toView:v]];
+			if(hit)
+				return hit;
+		}
+		return self; // leaf
+	}
+	return nil;
 }
 
 - (BOOL)accessibilityIsIgnored
@@ -202,6 +218,10 @@
 - (NSArray *)accessibleSubviews
 {
 	NSMutableArray *accessibleSubviews = [NSMutableArray array];
+	for(TUITextRenderer *renderer in self.textRenderers) {
+		[accessibleSubviews addObject:renderer];
+	}
+	
 	for(TUIView *view in self.subviews) {
 		if([view isAccessibilityElement]) {
 			[accessibleSubviews addObject:view];
