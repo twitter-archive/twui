@@ -251,6 +251,8 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 - (CGSize)sizeThatFits:(CGSize)size;
 - (void)sizeToFit;                       // calls sizeThatFits: with current view bounds and changes bounds size.
 
+- (NSArray *)sortedSubviews;
+
 @end
 
 @interface TUIView (TUIViewHierarchy)
