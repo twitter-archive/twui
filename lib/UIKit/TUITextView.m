@@ -19,6 +19,40 @@
 #import "TUITextViewEditor.h"
 #import "TUITextRenderer+Event.h"
 
+@interface TUITextViewAutocorrectedPair : NSObject <NSCopying>
+@property (nonatomic, retain) NSTextCheckingResult *correctionResult;
+@property (nonatomic, copy) NSString *originalString;
+@end
+
+@implementation TUITextViewAutocorrectedPair
+@synthesize correctionResult;
+@synthesize originalString;
+
+- (void)dealloc {
+	[correctionResult release];
+	[originalString release];
+	[super dealloc];
+}
+
+- (BOOL)isEqual:(id)object {
+	if(![object isKindOfClass:[TUITextViewAutocorrectedPair class]]) return NO;
+	
+	TUITextViewAutocorrectedPair *otherPair = object;
+	return [self.originalString isEqualToString:otherPair.originalString] && NSEqualRanges(self.correctionResult.range, otherPair.correctionResult.range);
+}
+
+- (NSUInteger)hash {
+	return [self.originalString hash] ^ self.correctionResult.range.location ^ self.correctionResult.range.length;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+	TUITextViewAutocorrectedPair *copiedPair = [[[self class] alloc] init];
+	copiedPair.correctionResult = self.correctionResult;
+	copiedPair.originalString = self.originalString;
+	return copiedPair;
+}
+@end
+
 @interface TUITextView () <TUITextRendererDelegate>
 - (void)_checkSpelling;
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem;
@@ -344,10 +378,18 @@ static CAAnimation *ThrobAnimation()
 				
 				if(result.resultType == NSTextCheckingTypeCorrection) {
 					NSString *oldString = [[[renderer backingStore] string] substringWithRange:result.range];
-					[self.autocorrectedResults setObject:oldString forKey:result];
+					TUITextViewAutocorrectedPair *correctionPair = [[[TUITextViewAutocorrectedPair alloc] init] autorelease];
+					correctionPair.correctionResult = result;
+					correctionPair.originalString = oldString;
+					
+					// Don't redo corrections that the user undid.
+					if([self.autocorrectedResults objectForKey:correctionPair] != nil) continue;
+					
+					[self.autocorrectedResults setObject:oldString forKey:correctionPair];
 					[[renderer backingStore] replaceCharactersInRange:result.range withString:result.replacementString];
 					[autocorrectedResultsThisRound addObject:result];
 					
+					// the replacement could have changed the length of the string, so adjust the selection to account for that
 					NSInteger lengthChange = result.replacementString.length - oldString.length;
 					[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
 				} else if(result.resultType == NSTextCheckingTypeSpelling) {
@@ -382,10 +424,13 @@ static CAAnimation *ThrobAnimation()
 		}
 	}
 	
+	TUITextViewAutocorrectedPair *matchingAutocorrectPair = nil;
 	if(selectedTextCheckingResult == nil) {
-		for(NSTextCheckingResult *result in self.autocorrectedResults) {
+		for(TUITextViewAutocorrectedPair *correctionPair in self.autocorrectedResults) {
+			NSTextCheckingResult *result = correctionPair.correctionResult;
 			if(stringIndex >= result.range.location && stringIndex <= result.range.location + result.range.length) {
 				self.selectedTextCheckingResult = result;
+				matchingAutocorrectPair = correctionPair;
 				break;
 			}
 		}
@@ -394,10 +439,10 @@ static CAAnimation *ThrobAnimation()
 	if(selectedTextCheckingResult == nil) return nil;
 		
 	NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
-	if(selectedTextCheckingResult.resultType == NSTextCheckingTypeCorrection) {
-		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Change Back to \"%@\"", @""), [self.autocorrectedResults objectForKey:selectedTextCheckingResult]] action:@selector(_replaceAutocorrectedWord:) keyEquivalent:@""];
+	if(selectedTextCheckingResult.resultType == NSTextCheckingTypeCorrection && matchingAutocorrectPair != nil) {
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Change Back to \"%@\"", @""), matchingAutocorrectPair.originalString] action:@selector(_replaceAutocorrectedWord:) keyEquivalent:@""];
 		[menuItem setTarget:self];
-		[menuItem setRepresentedObject:selectedTextCheckingResult];
+		[menuItem setRepresentedObject:matchingAutocorrectPair.originalString];
 		[menu addItem:menuItem];
 		[menuItem release];
 		
@@ -439,11 +484,11 @@ static CAAnimation *ThrobAnimation()
 
 - (void)_replaceAutocorrectedWord:(NSMenuItem *)menuItem
 {
-	NSTextCheckingResult *result = [menuItem representedObject];
+	NSString *replacement = [menuItem representedObject];
 	[[renderer backingStore] beginEditing];
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:selectedTextCheckingResult.range];
-	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:[self.autocorrectedResults objectForKey:result]];
+	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:replacement];
 	[[renderer backingStore] endEditing];
 	[renderer reset];
 	
