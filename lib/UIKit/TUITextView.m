@@ -340,6 +340,9 @@ static CAAnimation *ThrobAnimation()
 					[self.autocorrectedResults setObject:[[[renderer backingStore] string] substringWithRange:result.range] forKey:result];
 					[[renderer backingStore] replaceCharactersInRange:result.range withString:result.replacementString];
 					[autocorrectedResultsThisRound addObject:result];
+					
+					NSInteger lengthChange = result.replacementString.length - oldString.length;
+					[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
 				} else if(result.resultType == NSTextCheckingTypeSpelling) {
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
