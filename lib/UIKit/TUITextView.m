@@ -19,7 +19,11 @@
 #import "TUITextViewEditor.h"
 #import "TUITextRenderer+Event.h"
 
-@interface TUITextViewAutocorrectedPair : NSObject <NSCopying>
+@interface TUITextViewAutocorrectedPair : NSObject <NSCopying> {
+	NSTextCheckingResult *correctionResult;
+	NSString *originalString;
+}
+
 @property (nonatomic, retain) NSTextCheckingResult *correctionResult;
 @property (nonatomic, copy) NSString *originalString;
 @end
