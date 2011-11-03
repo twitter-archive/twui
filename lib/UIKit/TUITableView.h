@@ -158,6 +158,7 @@ typedef enum {
 - (TUIFastIndexPath *)indexPathForLastRow;
 
 - (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition;
+- (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition makeFirstResponder:(BOOL)makeFirstResponder;
 - (void)deselectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated;
 
 /**

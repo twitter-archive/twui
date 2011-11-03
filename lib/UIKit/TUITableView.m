@@ -1096,7 +1096,12 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 
 - (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition
 {
-  
+	[self selectRowAtIndexPath:indexPath animated:animated scrollPosition:scrollPosition makeFirstResponder:YES];
+}
+
+- (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition makeFirstResponder:(BOOL)makeFirstResponder
+{
+	
 	if([indexPath isEqual:[self indexPathForSelectedRow]]) {
 		// just scroll to visible
 	} else {
@@ -1110,11 +1115,11 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		
 		// only notify when the selection actually changes
 		if([self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
-		  [self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
+			[self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
 		}
 	}
 	
-	[self _makeRowAtIndexPathFirstResponder:indexPath];
+	if(makeFirstResponder) [self _makeRowAtIndexPathFirstResponder:indexPath];
 	[self scrollToRowAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
 }
 
