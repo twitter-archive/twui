@@ -59,6 +59,11 @@
 	opaque = o;
 }
 
+- (void)tui_setOpaque:(BOOL)o
+{
+	opaque = o;
+}
+
 - (BOOL)isOpaque
 {
 	return opaque;
