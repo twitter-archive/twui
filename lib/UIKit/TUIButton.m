@@ -176,6 +176,11 @@ static CGRect ButtonRectCenteredInRect(CGRect a, CGRect b)
 	if(_buttonFlags.dimsInBackground)
 		alpha = key?alpha:0.5;
 	
+	if(self.backgroundColor != nil) {
+		[self.backgroundColor setFill];
+		CGContextFillRect(TUIGraphicsGetCurrentContext(), self.bounds);
+	}
+	
 	TUIImage *backgroundImage = self.currentBackgroundImage;
 	TUIImage *image = self.currentImage;
 	
