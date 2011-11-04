@@ -18,6 +18,10 @@
 #import "TUIColor.h"
 #import "TUIAccessibility.h"
 
+extern NSString * const TUIViewWillMoveToWindowNotification; // both notification's userInfo will contain the new window under the key TUIViewWindow
+extern NSString * const TUIViewDidMoveToWindowNotification;
+extern NSString * const TUIViewWindow;
+
 enum {
 	TUIViewAutoresizingNone                 = 0,
 	TUIViewAutoresizingFlexibleLeftMargin   = 1 << 0,

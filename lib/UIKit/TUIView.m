@@ -19,6 +19,10 @@
 #import "TUIView+Private.h"
 #import "TUIViewController.h"
 
+NSString * const TUIViewWillMoveToWindowNotification = @"TUIViewWillMoveToWindowNotification";
+NSString * const TUIViewDidMoveToWindowNotification = @"TUIViewDidMoveToWindowNotification";
+NSString * const TUIViewWindow = @"TUIViewWindow";
+
 CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 @class TUIViewController;
@@ -761,8 +765,20 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	}
 }
 
-- (void)willMoveToWindow:(TUINSWindow *)newWindow {}
-- (void)didMoveToWindow {}
+- (void)willMoveToWindow:(TUINSWindow *)newWindow {
+	for(TUIView *subview in self.subviews) {
+		[subview willMoveToWindow:newWindow];
+	}
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:TUIViewWillMoveToWindowNotification object:self userInfo:newWindow != nil ? [NSDictionary dictionaryWithObject:newWindow forKey:TUIViewWindow] : nil];
+}
+- (void)didMoveToWindow {
+	for(TUIView *subview in self.subviews) {
+		[subview didMoveToWindow];
+	}
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:TUIViewDidMoveToWindowNotification object:self userInfo:self.nsView.window != nil ? [NSDictionary dictionaryWithObject:self.nsView.window forKey:TUIViewWindow] : nil];
+}
 - (void)didAddSubview:(TUIView *)subview {}
 - (void)willRemoveSubview:(TUIView *)subview {}
 - (void)willMoveToSuperview:(TUIView *)newSuperview {}
@@ -944,9 +960,11 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 {
 	if(n != _nsView) {
 		[self willMoveToWindow:(TUINSWindow *)[n window]];
+		[[NSNotificationCenter defaultCenter] postNotificationName:TUIViewWillMoveToWindowNotification object:self userInfo:[n window] ? [NSDictionary dictionaryWithObject:[n window] forKey:TUIViewWindow] : nil];
 		_nsView = n;
 		[self.subviews makeObjectsPerformSelector:@selector(setNSView:) withObject:n];
 		[self didMoveToWindow];
+		[[NSNotificationCenter defaultCenter] postNotificationName:TUIViewDidMoveToWindowNotification object:self userInfo:[n window] ? [NSDictionary dictionaryWithObject:[n window] forKey:TUIViewWindow] : nil];
 	}
 }
 

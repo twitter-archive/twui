@@ -136,11 +136,17 @@
 	}
 }
 
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow {
+	[self.rootView willMoveToWindow:(TUINSWindow *) newWindow];
+}
+
 - (void)viewDidMoveToWindow
 {
 	if(self.window != nil && rootView.layer.superlayer != [self layer]) {
 		[[self layer] addSublayer:rootView.layer];
 	}
+	
+	[self.rootView didMoveToWindow];
 }
 
 - (TUIView *)viewForLocalPoint:(NSPoint)p
