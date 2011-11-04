@@ -39,6 +39,7 @@
 		_buttonFlags.buttonType = TUIButtonTypeCustom;
 		_buttonFlags.dimsInBackground = 1;
 		_buttonFlags.firstDraw = 1;
+		self.backgroundColor = [TUIColor clearColor];
 	}
 	return self;
 }
