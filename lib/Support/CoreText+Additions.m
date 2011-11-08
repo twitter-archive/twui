@@ -41,7 +41,7 @@ CGSize AB_CTFrameGetSize(CTFrameRef frame)
 		// Get the origin of the last line. We add the descent to this
 		// (below) to get the bottom edge of the last line of text.
 		CGPoint lastLineOrigin;
-		CTFrameGetLineOrigins(frame, CFRangeMake(lines.count - 1, 1), &lastLineOrigin);
+		CTFrameGetLineOrigins(frame, CFRangeMake(lines.count - 1, 0), &lastLineOrigin);
 		
 		CGPathRef framePath = CTFrameGetPath(frame);
 		CGRect frameRect = CGPathGetBoundingBox(framePath);
@@ -50,6 +50,7 @@ CGSize AB_CTFrameGetSize(CTFrameRef frame)
 		CGFloat ascent, descent, leading;
 		CTLineGetTypographicBounds(lastLine, &ascent, &descent, &leading);
 		h = CGRectGetMaxY(frameRect) - lastLineOrigin.y + descent;
+		if(lines.count > 1) h += ascent + leading;
 	}
 	
 	return CGSizeMake(ceil(w), ceil(h));
