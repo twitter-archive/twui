@@ -1097,9 +1097,9 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 - (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition
 {
   TUIFastIndexPath *oldIndexPath = [self indexPathForSelectedRow];  
-	if([indexPath isEqual:oldIndexPath]) {
-		// just scroll to visible
-	} else {
+//	if([indexPath isEqual:oldIndexPath]) {
+//		// just scroll to visible
+//	} else {
 		[self deselectRowAtIndexPath:[self indexPathForSelectedRow] animated:animated];
 		
 		TUITableViewCell *cell = [self cellForRowAtIndexPath:indexPath]; // may be nil
@@ -1112,7 +1112,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		if([self.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]){
 			[self.delegate tableView:self didSelectRowAtIndexPath:indexPath];
 		}
-	}
+//	}
 
   NSResponder *firstResponder = [self.nsWindow firstResponder];
   if(firstResponder == self || firstResponder == [self cellForRowAtIndexPath:oldIndexPath]) {
