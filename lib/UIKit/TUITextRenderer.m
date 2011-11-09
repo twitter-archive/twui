@@ -21,6 +21,10 @@
 #import "TUIKit.h"
 #import "CoreText+Additions.h"
 
+@interface TUITextRenderer ()
+@property (nonatomic, retain) NSMutableDictionary *lineRects;
+@end
+
 @implementation TUITextRenderer
 
 @synthesize attributedString;
@@ -31,6 +35,7 @@
 @synthesize shadowOffset;
 @synthesize shadowBlur;
 @synthesize verticalAlignment;
+@synthesize lineRects;
 
 - (void)_resetFrame
 {
@@ -42,6 +47,8 @@
 		CGPathRelease(_ct_path);
 		_ct_path = NULL;
 	}
+	
+	[lineRects release], lineRects = nil;
 }
 
 - (void)_resetFramesetter
@@ -220,12 +227,37 @@
 				
 				CGContextSaveGState(context);
 				
+				if(self.lineRects == nil) {
+					self.lineRects = [NSMutableDictionary dictionary];
+				}
+				
 				CFIndex rectCount = 100;
-				CGRect rects[rectCount];
-				CFRange r = {range.location, range.length};
-				AB_CTFrameGetRectsForRangeWithAggregationType(f, r, (AB_CTLineRectAggregationType)[[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue], rects, &rectCount);
+				CGRect *rects;
+				NSArray *cachedRects = [self.lineRects objectForKey:[NSValue valueWithRange:range]];
+				if(cachedRects != nil) {
+					rects = malloc(sizeof(CGRect) * cachedRects.count);
+					rectCount = cachedRects.count;
+					for(NSUInteger i = 0; i < cachedRects.count; i++) {
+						rects[i] = [[cachedRects objectAtIndex:i] rectValue];
+					}
+				} else {
+					rects = malloc(sizeof(CGRect) * rectCount);
+					CFRange r = {range.location, range.length};
+					AB_CTFrameGetRectsForRangeWithAggregationType(f, r, (AB_CTLineRectAggregationType)[[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue], rects, &rectCount);
+				}
+				
 				TUIAttributedStringPreDrawBlock block = value;
 				block(self.attributedString, range, rects, rectCount);
+				
+				if(cachedRects == nil) {
+					NSMutableArray *rectsArray = [NSMutableArray arrayWithCapacity:rectCount];
+					for(NSUInteger i = 0; i < rectCount; i++) {
+						[rectsArray addObject:[NSValue valueWithRect:rects[i]]];
+					}
+					[self.lineRects setObject:rectsArray forKey:[NSValue valueWithRange:range]];
+				}
+				
+				if(rects != NULL) free(rects), rects = NULL;
 				
 				CGContextRestoreGState(context);
 			}];
@@ -240,10 +272,32 @@
 				CGColorRef color = (CGColorRef) value;
 				CGContextSetFillColorWithColor(context, color);
 				
+				if(self.lineRects == nil) {
+					self.lineRects = [NSMutableDictionary dictionary];
+				}
+				
 				CFIndex rectCount = 100;
-				CGRect rects[rectCount];
-				CFRange r = {range.location, range.length};
-				AB_CTFrameGetRectsForRangeWithAggregationType(f, r, (AB_CTLineRectAggregationType)[[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue], rects, &rectCount);
+				CGRect *rects;
+				NSArray *cachedRects = [self.lineRects objectForKey:[NSValue valueWithRange:range]];
+				if(cachedRects != nil) {
+					rects = malloc(sizeof(CGRect) * cachedRects.count);
+					rectCount = cachedRects.count;
+					for(NSUInteger i = 0; i < cachedRects.count; i++) {
+						rects[i] = [[cachedRects objectAtIndex:i] rectValue];
+					}
+				} else {
+					rects = malloc(sizeof(CGRect) * rectCount);
+					CFRange r = {range.location, range.length};
+					AB_CTFrameGetRectsForRangeWithAggregationType(f, r, (AB_CTLineRectAggregationType)[[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue], rects, &rectCount);
+				}
+				if(cachedRects == nil) {
+					NSMutableArray *rectsArray = [NSMutableArray arrayWithCapacity:rectCount];
+					for(NSUInteger i = 0; i < rectCount; i++) {
+						[rectsArray addObject:[NSValue valueWithRect:rects[i]]];
+					}
+					[self.lineRects setObject:rectsArray forKey:[NSValue valueWithRange:range]];
+				}
+				
 				for(CFIndex i = 0; i < rectCount; ++i) {
 					CGRect r = rects[i];
 					r = CGRectInset(r, -2, -1);
@@ -251,6 +305,8 @@
 					if(r.size.width > 1)
 						CGContextFillRect(context, r);
 				}
+				
+				if(rects != NULL) free(rects), rects = NULL;
 			}];
 			
 			CGContextRestoreGState(context);
@@ -371,16 +427,27 @@
 
 - (NSArray *)rectsForCharacterRange:(CFRange)range
 {
-	CFIndex rectCount = 100;
-	CGRect rects[rectCount];
-	AB_CTFrameGetRectsForRange([self ctFrame], range, rects, &rectCount);
-	
-	NSMutableArray *wrappedRects = [NSMutableArray arrayWithCapacity:rectCount];
-	for(CFIndex i = 0; i < rectCount; i++) {
-		[wrappedRects addObject:[NSValue valueWithRect:rects[i]]];
+	if(self.lineRects == nil) {
+		self.lineRects = [NSMutableDictionary dictionary];
 	}
 	
-	return [[wrappedRects copy] autorelease];
+	NSValue *cacheKey = [NSValue valueWithRange:NSMakeRange(range.location, range.length)];
+	NSArray *cachedRects = [self.lineRects objectForKey:cacheKey];
+	if(cachedRects == nil) {
+		CFIndex rectCount = 100;
+		CGRect rects[rectCount];
+		AB_CTFrameGetRectsForRange([self ctFrame], range, rects, &rectCount);
+		
+		NSMutableArray *wrappedRects = [NSMutableArray arrayWithCapacity:rectCount];
+		for(CFIndex i = 0; i < rectCount; i++) {
+			[wrappedRects addObject:[NSValue valueWithRect:rects[i]]];
+		}
+		
+		[self.lineRects setObject:wrappedRects forKey:cacheKey];
+		cachedRects = wrappedRects;
+	}
+	
+	return cachedRects;
 }
 
 - (BOOL)backgroundDrawingEnabled

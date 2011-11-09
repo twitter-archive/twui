@@ -59,6 +59,8 @@ typedef enum {
 	CGFloat shadowBlur;
 	TUIColor *shadowColor;
 	
+	NSMutableDictionary *lineRects;
+	
 	TUITextVerticalAlignment verticalAlignment;
 	
 	struct {
