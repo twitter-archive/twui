@@ -592,7 +592,8 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 {
 	NSMutableArray *toRemove = [NSMutableArray array];
 	for(CALayer *sublayer in self.layer.sublayers) {
-		[toRemove addObject:[sublayer associatedView]];
+		TUIView *associatedView = [sublayer associatedView];
+		if(associatedView != nil) [toRemove addObject:associatedView];
 	}
 	[toRemove makeObjectsPerformSelector:@selector(removeFromSuperview)];
 	
