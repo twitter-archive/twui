@@ -227,38 +227,18 @@
 				
 				CGContextSaveGState(context);
 				
-				if(self.lineRects == nil) {
-					self.lineRects = [NSMutableDictionary dictionary];
-				}
+				AB_CTLineRectAggregationType aggregationType = (AB_CTLineRectAggregationType) [[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue];
+				NSArray *rectsArray = [self rectsForCharacterRange:CFRangeMake(range.location, range.length) aggregationType:aggregationType];
 				
-				CFIndex rectCount = 100;
-				CGRect *rects;
-				NSArray *cachedRects = [self.lineRects objectForKey:[NSValue valueWithRange:range]];
-				if(cachedRects != nil) {
-					rects = malloc(sizeof(CGRect) * cachedRects.count);
-					rectCount = cachedRects.count;
-					for(NSUInteger i = 0; i < cachedRects.count; i++) {
-						rects[i] = [[cachedRects objectAtIndex:i] rectValue];
-					}
-				} else {
-					rects = malloc(sizeof(CGRect) * rectCount);
-					CFRange r = {range.location, range.length};
-					AB_CTFrameGetRectsForRangeWithAggregationType(f, r, (AB_CTLineRectAggregationType)[[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue], rects, &rectCount);
+				CFIndex rectCount = rectsArray.count;
+				CGRect rects[rectCount];
+				for(NSUInteger i = 0; i < rectCount; i++) {
+					rects[i] = [[rectsArray objectAtIndex:i] rectValue];
 				}
 				
 				TUIAttributedStringPreDrawBlock block = value;
 				block(self.attributedString, range, rects, rectCount);
-				
-				if(cachedRects == nil) {
-					NSMutableArray *rectsArray = [NSMutableArray arrayWithCapacity:rectCount];
-					for(NSUInteger i = 0; i < rectCount; i++) {
-						[rectsArray addObject:[NSValue valueWithRect:rects[i]]];
-					}
-					[self.lineRects setObject:rectsArray forKey:[NSValue valueWithRange:range]];
-				}
-				
-				if(rects != NULL) free(rects), rects = NULL;
-				
+					
 				CGContextRestoreGState(context);
 			}];
 		}
@@ -272,30 +252,13 @@
 				CGColorRef color = (CGColorRef) value;
 				CGContextSetFillColorWithColor(context, color);
 				
-				if(self.lineRects == nil) {
-					self.lineRects = [NSMutableDictionary dictionary];
-				}
+				AB_CTLineRectAggregationType aggregationType = (AB_CTLineRectAggregationType) [[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue];
+				NSArray *rectsArray = [self rectsForCharacterRange:CFRangeMake(range.location, range.length) aggregationType:aggregationType];
 				
-				CFIndex rectCount = 100;
-				CGRect *rects;
-				NSArray *cachedRects = [self.lineRects objectForKey:[NSValue valueWithRange:range]];
-				if(cachedRects != nil) {
-					rects = malloc(sizeof(CGRect) * cachedRects.count);
-					rectCount = cachedRects.count;
-					for(NSUInteger i = 0; i < cachedRects.count; i++) {
-						rects[i] = [[cachedRects objectAtIndex:i] rectValue];
-					}
-				} else {
-					rects = malloc(sizeof(CGRect) * rectCount);
-					CFRange r = {range.location, range.length};
-					AB_CTFrameGetRectsForRangeWithAggregationType(f, r, (AB_CTLineRectAggregationType)[[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue], rects, &rectCount);
-				}
-				if(cachedRects == nil) {
-					NSMutableArray *rectsArray = [NSMutableArray arrayWithCapacity:rectCount];
-					for(NSUInteger i = 0; i < rectCount; i++) {
-						[rectsArray addObject:[NSValue valueWithRect:rects[i]]];
-					}
-					[self.lineRects setObject:rectsArray forKey:[NSValue valueWithRange:range]];
+				CFIndex rectCount = rectsArray.count;
+				CGRect rects[rectCount];
+				for(NSUInteger i = 0; i < rectCount; i++) {
+					rects[i] = [[rectsArray objectAtIndex:i] rectValue];
 				}
 				
 				for(CFIndex i = 0; i < rectCount; ++i) {
@@ -305,8 +268,6 @@
 					if(r.size.width > 1)
 						CGContextFillRect(context, r);
 				}
-				
-				if(rects != NULL) free(rects), rects = NULL;
 			}];
 			
 			CGContextRestoreGState(context);
@@ -427,6 +388,11 @@
 
 - (NSArray *)rectsForCharacterRange:(CFRange)range
 {
+	return [self rectsForCharacterRange:range aggregationType:AB_CTLineRectAggregationTypeInline];
+}
+
+- (NSArray *)rectsForCharacterRange:(CFRange)range aggregationType:(AB_CTLineRectAggregationType)aggregationType
+{
 	if(self.lineRects == nil) {
 		self.lineRects = [NSMutableDictionary dictionary];
 	}
@@ -436,7 +402,7 @@
 	if(cachedRects == nil) {
 		CFIndex rectCount = 100;
 		CGRect rects[rectCount];
-		AB_CTFrameGetRectsForRange([self ctFrame], range, rects, &rectCount);
+		AB_CTFrameGetRectsForRangeWithAggregationType([self ctFrame], range, aggregationType, rects, &rectCount);
 		
 		NSMutableArray *wrappedRects = [NSMutableArray arrayWithCapacity:rectCount];
 		for(CFIndex i = 0; i < rectCount; i++) {
