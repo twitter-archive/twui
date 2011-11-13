@@ -34,7 +34,7 @@ typedef enum {
 {
 	NSAttributedString *attributedString;
 	CGRect frame;
-	TUIView *__weak view; // weak
+	TUIView *__unsafe_unretained view; // unsafe_unretained
 	
 	CTFramesetterRef _ct_framesetter;
 	CGPathRef _ct_path;
@@ -60,7 +60,7 @@ typedef enum {
 
 @property (nonatomic, strong) NSAttributedString *attributedString;
 @property (nonatomic, assign) CGRect frame;
-@property (nonatomic, weak) TUIView *view; // weak, remember to set to nil before view goes away
+@property (nonatomic, unsafe_unretained) TUIView *view; // unsafe_unretained, remember to set to nil before view goes away
 
 @property (nonatomic, assign) CGSize shadowOffset;
 @property (nonatomic, assign) CGFloat shadowBlur;
