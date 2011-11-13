@@ -90,7 +90,7 @@ TUIImage *TUIGraphicsDrawAsImage(CGSize size, void(^draw)(void))
 NSData* TUIGraphicsDrawAsPDF(CGRect *optionalMediaBox, void(^draw)(CGContextRef))
 {
 	NSMutableData *data = [NSMutableData data];
-	CGDataConsumerRef dataConsumer = CGDataConsumerCreateWithCFData((CFMutableDataRef)data);
+	CGDataConsumerRef dataConsumer = CGDataConsumerCreateWithCFData((__bridge CFMutableDataRef)data);
 	CGContextRef ctx = CGPDFContextCreate(dataConsumer, optionalMediaBox, NULL);
 	CGPDFContextBeginPage(ctx, NULL);
 	TUIGraphicsPushContext(ctx);
