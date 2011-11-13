@@ -1215,7 +1215,6 @@
 		CB5E321913BE7099004B7899 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_PREFIX_HEADER = "Resources/TwUI-Prefix.pch";
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = libtwui;
@@ -1225,7 +1224,6 @@
 		CB5E321A13BE7099004B7899 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_PREFIX_HEADER = "Resources/TwUI-Prefix.pch";
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = libtwui;
