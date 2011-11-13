@@ -61,17 +61,17 @@ static struct TUIFastIndexPath_staticStruct {
 	TUIFastIndexPath *f = [[TUIFastIndexPath alloc] init];
 	f->row = row;
 	f->section = section;
-	return [f autorelease];
+	return f;
 }
 
 - (id)copyWithZone:(NSZone *)zone
 {
-	return [self retain];  // change me if we ever do mutable index paths
+	return self;  // change me if we ever do mutable index paths
 }
 
 - (id)initWithCoder:(NSCoder *)coder
 {
-	[self init];
+	self = [self init];
 	section = [coder decodeIntegerForKey:@"s"];
 	row = [coder decodeIntegerForKey:@"r"];
 	return self;

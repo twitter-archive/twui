@@ -116,7 +116,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
  */
 + (Class)layerClass;
 
-@property (nonatomic, assign) id<TUIViewDelegate> viewDelegate;
+@property (nonatomic, unsafe_unretained) id<TUIViewDelegate> viewDelegate;
 
 /**
  Designated initializer
@@ -137,7 +137,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
  Will always return a non-nil value. Reciever is the layer's delegate.
  @returns the reciever's backing layer.
  */
-@property (nonatomic,readonly,retain) CALayer *layer;
+@property (nonatomic,readonly,strong) CALayer *layer;
 
 /**
  Supply a block as an alternative to subclassing and overriding -drawRect:
@@ -160,7 +160,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 /**
  Tooltip will pop up if cursor hovers a view for toolTipDelay seconds
  */
-@property (nonatomic, retain) NSString *toolTip;
+@property (nonatomic, strong) NSString *toolTip;
 
 /**
  Default is 1.5s

@@ -107,12 +107,11 @@
 {
 	if(_imageRef)
 		CGImageRelease(_imageRef);
-	[super dealloc];
 }
 
 + (TUIImage *)imageWithCGImage:(CGImageRef)imageRef
 {
-	return [[[self alloc] initWithCGImage:imageRef] autorelease];
+	return [[self alloc] initWithCGImage:imageRef];
 }
 
 /**
@@ -132,7 +131,7 @@
   for(NSImageRep *rep in [image representations]){
     CGImageRef cgImage;
     if([rep isKindOfClass:[NSBitmapImageRep class]] && (cgImage = [(NSBitmapImageRep *)rep CGImage]) != nil){
-      return [[[TUIImage alloc] initWithCGImage:cgImage] autorelease];
+      return [[TUIImage alloc] initWithCGImage:cgImage];
     }
   }
 #endif
@@ -162,7 +161,7 @@
       // create an image from the context and use that to create our TUIImage
       CGImageRef cgImage;
       if((cgImage = CGBitmapContextCreateImage(context)) != NULL){
-        result = [[[TUIImage alloc] initWithCGImage:cgImage] autorelease];
+        result = [[TUIImage alloc] initWithCGImage:cgImage];
         CFRelease(cgImage);
       }
       
@@ -259,8 +258,7 @@
 - (void)dealloc
 {
 	for(int i = 0; i < 9; ++i)
-		[slices[i] release];
-	[super dealloc];
+		;
 }
 
 - (NSInteger)leftCapWidth
@@ -366,7 +364,7 @@ NSData *TUIImageJPEGRepresentation(TUIImage *image, CGFloat compressionQuality)
 
 - (id)nsImage
 {
-	return [[[NSImage alloc] initWithCGImage:self.CGImage size:NSZeroSize] autorelease];
+	return [[NSImage alloc] initWithCGImage:self.CGImage size:NSZeroSize];
 }
 
 @end

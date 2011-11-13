@@ -49,11 +49,7 @@
 
 - (void)dealloc
 {
-	[attributedString release];
 	[self _resetFramesetter];
-	[hitRange release];
-	[shadowColor release];
-	[super dealloc];
 }
 
 - (void)_buildFramesetter
@@ -292,8 +288,6 @@
 
 - (void)setAttributedString:(NSAttributedString *)a
 {
-	[a retain];
-	[attributedString release];
 	attributedString = a;
 	
 	[self _resetFramesetter];
@@ -332,7 +326,7 @@
 		[wrappedRects addObject:[NSValue valueWithRect:rects[i]]];
 	}
 	
-	return [[wrappedRects copy] autorelease];
+	return [wrappedRects copy];
 }
 
 - (BOOL)backgroundDrawingEnabled

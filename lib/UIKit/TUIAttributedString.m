@@ -26,7 +26,7 @@ NSString * const TUIAttributedStringPreDrawBlockName = @"TUIAttributedStringPreD
 
 + (TUIAttributedString *)stringWithString:(NSString *)string
 {
-	return (TUIAttributedString *)[[[NSMutableAttributedString alloc] initWithString:string] autorelease];
+	return (TUIAttributedString *)[[NSMutableAttributedString alloc] initWithString:string];
 }
 
 @end
@@ -90,7 +90,7 @@ NSString * const TUIAttributedStringPreDrawBlockName = @"TUIAttributedStringPreD
 
 - (void)setPreDrawBlock:(TUIAttributedStringPreDrawBlock)block inRange:(NSRange)range
 {
-	[self addAttribute:TUIAttributedStringPreDrawBlockName value:[[block copy] autorelease] range:range];
+	[self addAttribute:TUIAttributedStringPreDrawBlockName value:[block copy] range:range];
 }
 
 - (void)setShadow:(NSShadow *)shadow
@@ -140,7 +140,7 @@ NSParagraphStyle *ABNSParagraphStyleForTextAlignment(TUITextAlignment alignment)
 	
 	NSMutableParagraphStyle *p = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 	[p setAlignment:a];
-	return [p autorelease];
+	return p;
 }
 
 - (void)setAlignment:(TUITextAlignment)alignment lineBreakMode:(TUILineBreakMode)lineBreakMode
@@ -247,7 +247,7 @@ NSParagraphStyle *ABNSParagraphStyleForTextAlignment(TUITextAlignment alignment)
 	[shadow setShadowBlurRadius:radius];
 	[shadow setShadowOffset:offset];
 	[shadow setShadowColor:[color nsColor]];
-	return [shadow autorelease];
+	return shadow;
 }
 
 @end
