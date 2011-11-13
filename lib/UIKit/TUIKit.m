@@ -53,7 +53,7 @@ void TUIGraphicsBeginImageContextWithOptions(CGSize size, BOOL opaque, CGFloat s
 	if(size.height < 1) size.height = 1;
 	CGContextRef ctx = TUICreateGraphicsContextWithOptions(size, opaque);
 	TUIGraphicsPushContext(ctx);
-	// will release ctx on pop
+	CGContextRelease(ctx);
 }
 
 void TUIGraphicsBeginImageContext(CGSize size)
@@ -77,9 +77,7 @@ TUIImage* TUIGraphicsGetImageForView(TUIView *view)
 
 void TUIGraphicsEndImageContext(void)
 {
-	CGContextRef ctx = TUIGraphicsGetCurrentContext();
 	TUIGraphicsPopContext();
-	CGContextRelease(ctx);
 }
 
 TUIImage *TUIGraphicsDrawAsImage(CGSize size, void(^draw)(void))
