@@ -30,7 +30,7 @@ CGSize AB_CTFrameGetSize(CTFrameRef frame)
 	CGFloat w = 0.0;
 	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
 	for(id line in lines) {
-		CGSize s = AB_CTLineGetSize((CTLineRef)line);
+		CGSize s = AB_CTLineGetSize((__bridge CTLineRef)line);
 		if(s.width > w)
 			w = s.width;
 	}
