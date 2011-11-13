@@ -228,7 +228,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 @interface TUIView (TUIViewHierarchy)
 
 @property (nonatomic, readonly) TUIView *superview;
-@property (nonatomic, readonly, copy) NSArray *subviews;
+@property (nonatomic, readonly, strong) NSArray *subviews;
 
 /**
  Recursive search, handy for debugging.

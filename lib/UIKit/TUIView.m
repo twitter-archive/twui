@@ -52,16 +52,25 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 
 @interface TUIView ()
-@property (nonatomic, copy) NSArray *subviews;
+@property (nonatomic, readwrite, strong) NSMutableArray *subviews;
 @end
 
 @implementation TUIView
 
-@dynamic subviews;
+@synthesize subviews = _subviews;
 @synthesize drawRect;
 @synthesize layout;
 @synthesize toolTip;
 @synthesize toolTipDelay;
+
+- (void)setSubviews:(NSArray *)s
+{
+	[self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+	
+	for(TUIView *subview in s) {
+		[self addSubview:subview];
+	}
+}
 
 + (void)initialize
 {
@@ -483,30 +492,12 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	return [self.layer.superlayer closestAssociatedView];
 }
 
-- (NSArray *)subviews
-{
-	return [self.layer.sublayers tui_map:@selector(associatedView)];
-}
-
 - (NSInteger)deepNumberOfSubviews
 {
 	NSInteger n = [self.subviews count];
 	for(TUIView *s in self.subviews)
 		n += s.deepNumberOfSubviews;
 	return n;
-}
-
-- (void)setSubviews:(NSArray *)s
-{
-	NSMutableArray *toRemove = [NSMutableArray array];
-	for(CALayer *sublayer in self.layer.sublayers) {
-		[toRemove addObject:[sublayer associatedView]];
-	}
-	[toRemove makeObjectsPerformSelector:@selector(removeFromSuperview)];
-	
-	for(TUIView *subview in s) {
-		[self addSubview:subview];
-	}
 }
 
 - (void)_cleanupResponderChain // called when a view is about to be removed from the heirarchy
@@ -529,10 +520,12 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	if(superview) {
 		[superview willRemoveSubview:self];
 		[self willMoveToSuperview:nil];
+
+		[superview.subviews removeObjectIdenticalTo:self];
 		[self.layer removeFromSuperlayer];
 		self.nsView = nil;
+
 		[self didMoveToSuperview];
-		[self autorelease]; // 'release'?
 	}
 }
 
@@ -591,7 +584,10 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 }
 
 #define PRE_ADDSUBVIEW \
-	[view retain]; \
+	if (!_subviews) \
+		_subviews = [[NSMutableArray alloc] init]; \
+	\
+	[self.subviews addObject:view]; \
  	[view removeFromSuperview]; /* will call willAdd:nil and didAdd (nil) */ \
 	[view willMoveToSuperview:self]; \
 	view.nsView = _nsView;
