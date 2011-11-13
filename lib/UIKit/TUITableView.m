@@ -29,7 +29,7 @@ typedef struct {
 
 @interface TUITableViewSection : NSObject
 {
-	TUITableView         *_tableView;   // weak
+	__unsafe_unretained TUITableView  *_tableView;   // weak
 	TUIView              *_headerView;  // Not reusable (similar to UITableView)
 	NSInteger             sectionIndex;
 	NSUInteger            numberOfRows;

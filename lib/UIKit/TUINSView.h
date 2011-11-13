@@ -24,15 +24,16 @@
 {
 	TUIView *rootView;
 	TUIView *_hoverView;
-	TUIView *_trackingView; // dragging view, weak
 
-	TUIView *_hyperFocusView; // weak
+	__unsafe_unretained TUIView *_trackingView; // dragging view, weak
+	__unsafe_unretained TUIView *_hyperFocusView; // weak
+
 	TUIView *_hyperFadeView;
 	void(^_hyperCompletion)(BOOL);
 	
 	NSTrackingArea *_trackingArea;
 	
-	TUITextRenderer *_tempTextRendererForTextInputClient; // weak, set temporarily while NSTextInputClient dicks around
+	__unsafe_unretained TUITextRenderer *_tempTextRendererForTextInputClient; // weak, set temporarily while NSTextInputClient dicks around
 	
 	BOOL deliveringEvent;
 	BOOL inLiveResize;
