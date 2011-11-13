@@ -457,22 +457,6 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 
 @end
 
-@interface NSArray (TUIViewAdditions)
-@end
-@implementation NSArray (TUIViewAdditions)
-
-- (NSArray *)tui_map:(SEL)s
-{
-	NSMutableArray *array = [NSMutableArray arrayWithCapacity:[self count]];
-	for(id obj in self) {
-		id o = [obj performSelector:s];
-		if(o)
-			[array addObject:o];
-	}
-	return [NSArray arrayWithArray:array];
-}
-@end
-
 @implementation TUIView (TUIViewHierarchy)
 // use the accessor from the main implementation block
 @dynamic subviews;
