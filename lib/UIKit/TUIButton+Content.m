@@ -16,6 +16,7 @@
 
 #import "TUIButton.h"
 #import "TUIControl+Private.h"
+#import "TUIImage.h"
 
 @interface TUIButtonContent : NSObject
 {
