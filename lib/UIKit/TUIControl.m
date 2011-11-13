@@ -18,6 +18,7 @@
 #import "TUIControl+Private.h"
 #import "TUIView+Accessibility.h"
 #import "TUIAccessibility.h"
+#import "TUINSWindow.h"
 
 @implementation TUIControl
 
