@@ -17,6 +17,7 @@
 #import "TUITableViewCell.h"
 #import "TUITableView.h"
 #import "TUITableView+Cell.h"
+#import "TUINSWindow.h"
 
 @implementation TUITableViewCell
 
