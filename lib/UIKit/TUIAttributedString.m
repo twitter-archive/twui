@@ -116,8 +116,7 @@ NSString * const TUIAttributedStringPreDrawBlockName = @"TUIAttributedStringPreD
 	setting.value = &(CGFloat){f};
 	
 	CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(&setting, 1);
-	[self addAttributes:[NSDictionary dictionaryWithObjectsAndKeys:(id)paragraphStyle, kCTParagraphStyleAttributeName, nil] range:range];
-	CFRelease(paragraphStyle);
+	[self addAttributes:[NSDictionary dictionaryWithObjectsAndKeys:(__bridge_transfer id)paragraphStyle, kCTParagraphStyleAttributeName, nil] range:range];
 }
 
 NSParagraphStyle *ABNSParagraphStyleForTextAlignment(TUITextAlignment alignment)
@@ -191,8 +190,7 @@ NSParagraphStyle *ABNSParagraphStyleForTextAlignment(TUITextAlignment alignment)
 		kCTParagraphStyleSpecifierAlignment, sizeof(CTTextAlignment), &nativeTextAlignment,
 	};
 	CTParagraphStyleRef p = CTParagraphStyleCreate(settings, 2);
-	[self addAttribute:(NSString *)kCTParagraphStyleAttributeName value:(id)p range:[self _stringRange]];
-	CFRelease(p);
+	[self addAttribute:(NSString *)kCTParagraphStyleAttributeName value:(__bridge_transfer id)p range:[self _stringRange]];
 }
 
 - (void)setAlignment:(TUITextAlignment)alignment
