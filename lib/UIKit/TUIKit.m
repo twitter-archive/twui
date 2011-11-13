@@ -38,7 +38,11 @@ void TUIGraphicsPopContext(void)
 
 TUIImage* TUIGraphicsContextGetImage(CGContextRef ctx)
 {
-	return [TUIImage imageWithCGImage:TUICGImageFromBitmapContext(ctx)];
+	CGImageRef CGImage = TUICreateCGImageFromBitmapContext(ctx);
+	TUIImage *image = [TUIImage imageWithCGImage:CGImage];
+	CGImageRelease(CGImage);
+
+	return image;
 }
 
 void TUIGraphicsBeginImageContextWithOptions(CGSize size, BOOL opaque, CGFloat scale)
