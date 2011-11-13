@@ -145,48 +145,4 @@ static NSDictionary *CachedFontDescriptors = nil;
 	return _ctFont;
 }
 
-
-/*
- deprecated
- */
-
-+ (void)loadFontData:(NSData *)fontData
-{
-	ATSFontContainerRef container;
-	OSStatus err = ATSFontActivateFromMemory((void *)[fontData bytes], 
-											 [fontData length],
-											 kATSFontContextLocal,
-											 kATSFontFormatUnspecified,
-											 NULL,
-											 kATSOptionFlagsDefault,
-											 &container);
-	
-	if(err != noErr)
-		NSLog(@"failed to load font into memory");
-	
-	ATSFontRef fontRefs[100];
-	ItemCount fontCount;
-	err = ATSFontFindFromContainer(container,
-								   kATSOptionFlagsDefault,
-								   100,
-								   fontRefs,
-								   &fontCount);
-	
-	if(err != noErr || fontCount < 1 ){
-		NSLog(@"font could not be loaded.");
-	} else{
-		CFStringRef fontName;
-		err = ATSFontGetPostScriptName(fontRefs[0],
-									   kATSOptionFlagsDefault,
-									   &fontName);
-		NSLog(@"font %@ loaded", (__bridge id)fontName);
-	}
-}
-
-+ (void)loadBundledFonts
-{
-	[self loadFontData:[NSData dataWithContentsOfFile:[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Chicago-Bold.ttf"]]];
-	[self loadFontData:[NSData dataWithContentsOfFile:[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"pixChicago.ttf"]]];
-}
-
 @end

@@ -41,6 +41,4 @@
 
 @property (nonatomic, readonly) CTFontRef ctFont;
 
-+ (void)loadBundledFonts __attribute__((deprecated)); // don't use this
-
 @end
