@@ -104,7 +104,7 @@ static NSDictionary *CachedFontDescriptors = nil;
 				 nil]];
 		
 	}
-	CTFontRef font = CTFontCreateWithFontDescriptor((CTFontDescriptorRef)desc, fontSize, NULL);
+	CTFontRef font = CTFontCreateWithFontDescriptor((__bridge CTFontDescriptorRef)desc, fontSize, NULL);
 	TUIFont *uiFont = [[TUIFont alloc] initWithCTFont:font];
 	CFRelease(font);
 	
@@ -176,11 +176,11 @@ static NSDictionary *CachedFontDescriptors = nil;
 	if(err != noErr || fontCount < 1 ){
 		NSLog(@"font could not be loaded.");
 	} else{
-		NSString *fontName;
+		CFStringRef fontName;
 		err = ATSFontGetPostScriptName(fontRefs[0],
 									   kATSOptionFlagsDefault,
-									   (CFStringRef *)(&fontName));
-		NSLog(@"font %@ loaded", fontName);
+									   &fontName);
+		NSLog(@"font %@ loaded", (__bridge id)fontName);
 	}
 }
 
