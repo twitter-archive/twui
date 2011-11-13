@@ -75,7 +75,7 @@
 
 static void patternDraw(void *info, CGContextRef ctx)
 {
-	TUIImage *image = (TUIImage *)info;
+	TUIImage *image = (__bridge TUIImage *)info;
 	CGRect rect;
 	rect.origin = CGPointZero;
 	rect.size = image.size;
@@ -84,7 +84,7 @@ static void patternDraw(void *info, CGContextRef ctx)
 
 static void patternRelease(void *info)
 {
-	TUIImage *image = (TUIImage *)info;
+	TUIImage *image = (__bridge_transfer TUIImage *)info;
 	[image release];
 }
 
@@ -101,10 +101,8 @@ static void patternRelease(void *info)
 		callbacks.drawPattern = patternDraw;
 		callbacks.releaseInfo = patternRelease;
 		
-		[image retain]; // released in patternRelease
-		
 		CGColorSpaceRef colorSpace = CGColorSpaceCreatePattern(NULL);
-		CGPatternRef pattern = CGPatternCreate(image, bounds, CGAffineTransformIdentity, bounds.size.width, bounds.size.height, kCGPatternTilingConstantSpacing, YES, &callbacks);
+		CGPatternRef pattern = CGPatternCreate((__bridge_retained void *)image, bounds, CGAffineTransformIdentity, bounds.size.width, bounds.size.height, kCGPatternTilingConstantSpacing, YES, &callbacks);
 		CGFloat components[] = {1.0, 1.0, 1.0, 1.0};
 		_cgColor = CGColorCreateWithPattern(colorSpace, pattern, components);
 		CGPatternRelease(pattern);
@@ -151,9 +149,9 @@ static void patternRelease(void *info)
 
 #define CACHED_COLOR(NAME, IMPLEMENTATION) \
 + (TUIColor *)NAME { \
-	static TUIColor *c = nil; \
+	static __strong TUIColor *c = nil; \
 	if(!c) \
-		c = [IMPLEMENTATION retain]; \
+		c = (IMPLEMENTATION); \
 	return c; \
 }
 
