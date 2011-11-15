@@ -143,6 +143,7 @@
 - (void)viewDidMoveToWindow
 {
 	if(self.window != nil && rootView.layer.superlayer != [self layer]) {
+		rootView.layer.frame = self.layer.bounds;
 		[[self layer] addSublayer:rootView.layer];
 	}
 	
