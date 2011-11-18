@@ -65,6 +65,7 @@
 @property (nonatomic, retain) NSArray *lastCheckResults;
 @property (nonatomic, retain) NSTextCheckingResult *selectedTextCheckingResult;
 @property (nonatomic, retain) NSMutableDictionary *autocorrectedResults;
+@property (nonatomic, retain) TUITextRenderer *placeholderRenderer;
 @end
 
 @implementation TUITextView
@@ -82,6 +83,7 @@
 @synthesize selectedTextCheckingResult;
 @synthesize autocorrectionEnabled;
 @synthesize autocorrectedResults;
+@synthesize placeholderRenderer;
 
 - (void)_updateDefaultAttributes
 {
@@ -136,6 +138,7 @@
 	[lastCheckResults release];
 	[selectedTextCheckingResult release];
 	[autocorrectedResults release];
+	[placeholderRenderer release];
 	[super dealloc];
 }
 
@@ -303,6 +306,16 @@ static CAAnimation *ThrobAnimation()
 	}
 	
 	[renderer draw];
+	
+	if(renderer.attributedString.length < 1 && self.placeholder.length > 0) {
+		TUIAttributedString *attributedString = [TUIAttributedString stringWithString:self.placeholder];
+		attributedString.font = self.font;
+		attributedString.color = [self.textColor colorWithAlphaComponent:0.4f];
+		
+		self.placeholderRenderer.attributedString = attributedString;
+		self.placeholderRenderer.frame = rendererFrame;
+		[self.placeholderRenderer draw];
+	}
 	
 	if(doMask) {
 		CGContextRestoreGState(ctx);
@@ -538,6 +551,14 @@ static CAAnimation *ThrobAnimation()
 	}
 	
 	return NO;
+}
+
+- (TUITextRenderer *)placeholderRenderer {
+	if(placeholderRenderer == nil) {
+		self.placeholderRenderer = [[[TUITextRenderer alloc] init] autorelease];
+	}
+	
+	return placeholderRenderer;
 }
 
 

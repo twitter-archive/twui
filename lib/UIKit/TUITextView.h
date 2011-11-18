@@ -30,6 +30,7 @@
 	TUIViewDrawRect drawFrame;
 	
 	NSString *placeholder;
+	TUITextRenderer *placeholderRenderer;
 	
 	TUIFont *font;
 	TUIColor *textColor;
