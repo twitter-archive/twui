@@ -182,6 +182,7 @@ typedef enum {
 @property (nonatomic, readonly) CGPoint bounceOffset;
 
 @property (nonatomic, readonly, getter=isDragging) BOOL dragging;
+@property (nonatomic, readonly, getter=isDecelerating) BOOL decelerating;
 
 @end
 
