@@ -40,6 +40,7 @@
 #import "TUIViewController.h"
 #import "TUICGAdditions.h"
 #import "CoreText+Additions.h"
+#import "TUITextEditor.h"
 
 extern CGContextRef TUIGraphicsGetCurrentContext(void);
 extern void TUIGraphicsPushContext(CGContextRef context);
