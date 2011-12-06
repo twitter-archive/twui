@@ -337,10 +337,7 @@
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
 {
-	BOOL consumed = [rootView performKeyEquivalent:event];
-	if(consumed) return YES;
-	
-	return [[self.window firstResponder] performKeyEquivalent:event];
+	return [rootView performKeyEquivalent:event];
 }
 
 - (void)setEverythingNeedsDisplay
