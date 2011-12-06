@@ -544,6 +544,14 @@ static CAAnimation *ThrobAnimation()
     return YES;
 }
 
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+	if([self.nsWindow firstResponder] == renderer) {
+		return [renderer performKeyEquivalent:event];
+	}
+	
+	return [super performKeyEquivalent:event];
+}
+
 - (BOOL)doCommandBySelector:(SEL)selector
 {
 	if(_textViewFlags.delegateDoCommandBySelector) {
