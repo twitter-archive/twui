@@ -115,6 +115,14 @@
 	[inputContext handleEvent:event]; // transform into commands
 }
 
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+	BOOL consumed = [inputContext handleEvent:event];
+	if(consumed && wasValidSelector) return YES;
+	
+	return NO;
+}
+
 - (void)deleteCharactersInRange:(NSRange)range // designated delete
 {
 	if(range.length == 0)
@@ -152,6 +160,8 @@
 - (void)doCommandBySelector:(SEL)selector
 {
 	[super doCommandBySelector:selector];
+	
+	wasValidSelector = selector != @selector(noop:);
 }
 
 - (void)insertText:(id)aString

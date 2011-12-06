@@ -23,6 +23,7 @@
 	NSRange markedRange;
 	NSDictionary *defaultAttributes;
 	NSDictionary *markedAttributes;
+	BOOL wasValidSelector;
 }
 
 - (NSTextInputContext *)inputContext;
