@@ -18,10 +18,7 @@
 
 - (void)doCommandBySelector:(SEL)selector
 {
-	BOOL consumed = [[self _textView] doCommandBySelector:selector];
-	if(!consumed) {
-		[super doCommandBySelector:selector];
-	}
+	return [super doCommandBySelector:selector];
 }
 
 - (BOOL)becomeFirstResponder
