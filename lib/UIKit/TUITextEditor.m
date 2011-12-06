@@ -120,7 +120,7 @@
 	BOOL consumed = [inputContext handleEvent:event];
 	if(consumed && wasValidSelector) return YES;
 	
-	return NO;
+	return [super performKeyEquivalent:event];
 }
 
 - (void)deleteCharactersInRange:(NSRange)range // designated delete
