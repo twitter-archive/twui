@@ -402,6 +402,9 @@ static CAAnimation *ThrobAnimation()
 					// Don't redo corrections that the user undid.
 					if([self.autocorrectedResults objectForKey:correctionPair] != nil) continue;
 					
+					[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:result.range];
+					[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:result.range];
+					
 					[self.autocorrectedResults setObject:oldString forKey:correctionPair];
 					[[renderer backingStore] replaceCharactersInRange:result.range withString:result.replacementString];
 					[autocorrectedResultsThisRound addObject:result];
@@ -413,12 +416,6 @@ static CAAnimation *ThrobAnimation()
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
 				}
-			}
-			
-			// We need to go back and remove any misspelled markers from the results that we autocorrected.
-			for(NSTextCheckingResult *result in autocorrectedResultsThisRound) {
-				[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:result.range];
-				[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:result.range];
 			}
 			
 			[[renderer backingStore] endEditing];
