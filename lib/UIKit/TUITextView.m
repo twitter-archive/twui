@@ -575,6 +575,11 @@ static CAAnimation *ThrobAnimation()
 	return placeholderRenderer;
 }
 
+- (CGSize)sizeThatFits:(CGSize)size {
+	CGSize textSize = [renderer sizeConstrainedToWidth:CGRectGetWidth([self textRect])];
+	return CGSizeMake(CGRectGetWidth(self.bounds), textSize.height + contentInset.top + contentInset.bottom);
+}
+
 
 #pragma mark TUITextRendererDelegate
 
