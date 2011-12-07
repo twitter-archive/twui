@@ -563,11 +563,25 @@ static CAAnimation *ThrobAnimation()
 		if(consumed) return YES;
 	}
 	
-	if(selector == @selector(moveUp:) && [self singleLine]) {
-		self.selectedRange = NSMakeRange(0, 0);
+	if(selector == @selector(moveUp:)) {
+		if([self singleLine]) {
+			self.selectedRange = NSMakeRange(0, 0);
+		} else {
+			CGRect rect = [renderer firstRectForCharacterRange:ABCFRangeFromNSRange(self.selectedRange)];
+			CFIndex aboveIndex = [renderer stringIndexForPoint:CGPointMake(rect.origin.x - rect.size.width, rect.origin.y + rect.size.height*2)];
+			self.selectedRange = NSMakeRange(MAX(aboveIndex - 1, 0), 0);
+		}
+		
 		return YES;
-	} else if(selector == @selector(moveDown:) && [self singleLine]) {
-		self.selectedRange = NSMakeRange(self.text.length, 0);
+	} else if(selector == @selector(moveDown:)) {
+		if([self singleLine]) {
+			self.selectedRange = NSMakeRange(self.text.length, 0);
+		} else {
+			CGRect rect = [renderer firstRectForCharacterRange:ABCFRangeFromNSRange(self.selectedRange)];
+			CFIndex belowIndex = [renderer stringIndexForPoint:CGPointMake(rect.origin.x - rect.size.width, rect.origin.y)];
+			self.selectedRange = NSMakeRange(MAX(belowIndex - 1, 0), 0);
+		}
+		
 		return YES;
 	}
 	
