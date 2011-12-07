@@ -28,8 +28,10 @@
 {
 	_currentTextRenderer = nil;
 	
-	for(TUITextRenderer *renderer in _textRenderers)
+	for(TUITextRenderer *renderer in _textRenderers) {
 		renderer.view = nil;
+		[renderer setNextResponder:nil];
+	}
 	
 	[renderers retain];
 	[_textRenderers release];
