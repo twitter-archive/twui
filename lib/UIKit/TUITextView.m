@@ -343,11 +343,18 @@ static CAAnimation *ThrobAnimation()
 	r.origin.y += floor(self.font.leading);
 	//NSLog(@"ascent: %f, descent: %f, leading: %f, cap height: %f, x-height: %f, bounding: %@", self.font.ascender, self.font.descender, self.font.leading, self.font.capHeight, self.font.xHeight, NSStringFromRect(CTFontGetBoundingBox(self.font.ctFont)));
 	
+	// Sigh. So if the string ends with a return, CTFrameGetLines doesn't consider that a new line. So we have to fudge it.
+	if([self.text hasSuffix:@"\n"]) {
+		CGRect firstCharacterRect = [renderer firstRectForCharacterRange:CFRangeMake(0, 0)];
+		r.origin.y -= firstCharacterRect.size.height;
+		r.origin.x = firstCharacterRect.origin.x;
+	}
+	
 	if(fakeMetrics) {
 		// restore
 		renderer.attributedString = [renderer backingStore];
 	}
-	
+		
 	return r;
 }
 
@@ -577,6 +584,12 @@ static CAAnimation *ThrobAnimation()
 
 - (CGSize)sizeThatFits:(CGSize)size {
 	CGSize textSize = [renderer sizeConstrainedToWidth:CGRectGetWidth([self textRect])];
+	// Sigh. So if the string ends with a return, CTFrameGetLines doesn't consider that a new line. So we have to fudge it.
+	if([self.text hasSuffix:@"\n"]) {
+		CGRect firstCharacterRect = [renderer firstRectForCharacterRange:CFRangeMake(0, 0)];
+		textSize.height += firstCharacterRect.size.height;
+	}
+	
 	return CGSizeMake(CGRectGetWidth(self.bounds), textSize.height + contentInset.top + contentInset.bottom);
 }
 
