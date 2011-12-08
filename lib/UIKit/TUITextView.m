@@ -343,11 +343,14 @@ static CAAnimation *ThrobAnimation()
 	r.origin.y += floor(self.font.leading);
 	//NSLog(@"ascent: %f, descent: %f, leading: %f, cap height: %f, x-height: %f, bounding: %@", self.font.ascender, self.font.descender, self.font.leading, self.font.capHeight, self.font.xHeight, NSStringFromRect(CTFontGetBoundingBox(self.font.ctFont)));
 	
-	// Sigh. So if the string ends with a return, CTFrameGetLines doesn't consider that a new line. So we have to fudge it.
-	if([self.text hasSuffix:@"\n"]) {
-		CGRect firstCharacterRect = [renderer firstRectForCharacterRange:CFRangeMake(0, 0)];
-		r.origin.y -= firstCharacterRect.size.height;
-		r.origin.x = firstCharacterRect.origin.x;
+	if(self.text.length > 0) {
+		unichar lastCharacter = [self.text characterAtIndex:MAX(selection.location - 1, 0)];
+		// Sigh. So if the string ends with a return, CTFrameGetLines doesn't consider that a new line. So we have to fudge it.
+		if(lastCharacter == '\n') {
+			CGRect firstCharacterRect = [renderer firstRectForCharacterRange:CFRangeMake(0, 0)];
+			r.origin.y -= firstCharacterRect.size.height;
+			r.origin.x = firstCharacterRect.origin.x;
+		}
 	}
 	
 	if(fakeMetrics) {
@@ -563,6 +566,8 @@ static CAAnimation *ThrobAnimation()
 		if(consumed) return YES;
 	}
 	
+	NSLog(@"%@", NSStringFromSelector(selector));
+	
 	if(selector == @selector(moveUp:)) {
 		if([self singleLine]) {
 			self.selectedRange = NSMakeRange(0, 0);
@@ -579,7 +584,14 @@ static CAAnimation *ThrobAnimation()
 		} else {
 			CGRect rect = [renderer firstRectForCharacterRange:ABCFRangeFromNSRange(self.selectedRange)];
 			CFIndex belowIndex = [renderer stringIndexForPoint:CGPointMake(rect.origin.x - rect.size.width, rect.origin.y)];
-			self.selectedRange = NSMakeRange(MAX(belowIndex - 1, 0), 0);
+			belowIndex = MAX(belowIndex - 1, 0);
+			
+			// if we're on the same level as the belowIndex, then we've hit the last line and want to go to the end
+			CGRect belowRect = [renderer firstRectForCharacterRange:CFRangeMake(belowIndex, 0)];
+			if(belowRect.origin.y == rect.origin.y) {
+				belowIndex = MIN(belowIndex + 1, self.text.length);
+			}
+			self.selectedRange = NSMakeRange(belowIndex, 0);
 		}
 		
 		return YES;
