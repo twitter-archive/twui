@@ -137,16 +137,16 @@
 }
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow {
+	if(newWindow != nil && rootView.layer.superlayer != [self layer]) {
+		rootView.layer.frame = self.layer.bounds;
+		[[self layer] addSublayer:rootView.layer];
+	}
+	
 	[self.rootView willMoveToWindow:(TUINSWindow *) newWindow];
 }
 
 - (void)viewDidMoveToWindow
 {
-	if(self.window != nil && rootView.layer.superlayer != [self layer]) {
-		rootView.layer.frame = self.layer.bounds;
-		[[self layer] addSublayer:rootView.layer];
-	}
-	
 	[self.rootView didMoveToWindow];
 }
 
