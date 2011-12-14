@@ -1096,7 +1096,7 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 
 - (void)selectRowAtIndexPath:(TUIFastIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(TUITableViewScrollPosition)scrollPosition
 {
-  TUIFastIndexPath *oldIndexPath = [self indexPathForSelectedRow];  
+	TUIFastIndexPath *oldIndexPath = [[[self indexPathForSelectedRow] retain] autorelease];
 //	if([indexPath isEqual:oldIndexPath]) {
 //		// just scroll to visible
 //	} else {
