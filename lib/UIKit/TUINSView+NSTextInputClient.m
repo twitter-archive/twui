@@ -97,7 +97,8 @@
 		NSRect windowRelativeRect = [_tempTextRendererForTextInputClient.view.nsView convertRect:vf toView:nil];
 //		NSLog(@"windowRelativeRect = %@", NSStringFromRect(windowRelativeRect));
 		
-		NSRect screenRect = [_tempTextRendererForTextInputClient.view.nsWindow convertRectToScreen:windowRelativeRect];
+		NSRect screenRect = windowRelativeRect;
+		screenRect.origin = [_tempTextRendererForTextInputClient.view.nsWindow convertBaseToScreen:windowRelativeRect.origin];
 	
 		ret = screenRect;
 		
