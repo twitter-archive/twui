@@ -43,6 +43,8 @@
 	[_trackingArea release];
 	_trackingArea = nil;
 	[_hyperCompletion release];
+	[_tempTextRendererForTextInputClient release];
+	_tempTextRendererForTextInputClient = nil;
 	
 	[super dealloc];
 }
