@@ -63,7 +63,7 @@
 - (NSUInteger)characterIndexForPoint:(NSPoint)screenPoint
 {
 //	NSLog(@"%@ %@", NSStringFromSelector(_cmd), NSStringFromPoint(screenPoint));
-	_tempTextRendererForTextInputClient = [self _textRendererAtScreenPoint:screenPoint];
+	_tempTextRendererForTextInputClient = [[self _textRendererAtScreenPoint:screenPoint] retain];
 	if(_tempTextRendererForTextInputClient) {
 		NSPoint locationInWindow = [[self window] convertScreenToBase:screenPoint];
 		CGPoint vp = [_tempTextRendererForTextInputClient.view localPointForLocationInWindow:locationInWindow];
