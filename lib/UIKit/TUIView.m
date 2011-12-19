@@ -89,10 +89,9 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 - (void)dealloc
 {
-	[self setTextRenderers:nil];
 	self.subviews = nil; // we explicitly retained all added subviews (because only the layer backings were retained by CA) so we must release them
+	[self setTextRenderers:nil];
 	[_layer release]; // be sure to do this *after* we release our subviews (we only get a handle on them by looking over _layer's sublayers)
-	[_textRenderers release];
 	[drawRect release];
 	[layout release];
 	[toolTip release];
