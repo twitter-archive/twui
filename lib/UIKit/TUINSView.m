@@ -41,6 +41,7 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidResignKeyNotification object:nil];
 	
+	[rootView removeFromSuperview];
 	[rootView release];
 	rootView = nil;
 	[_hoverView release];
@@ -154,6 +155,10 @@
 	}
 	
 	[self.rootView willMoveToWindow:(TUINSWindow *) newWindow];
+	
+	if(newWindow == nil) {
+		[rootView removeFromSuperview];
+	}
 }
 
 - (void)viewDidMoveToWindow
