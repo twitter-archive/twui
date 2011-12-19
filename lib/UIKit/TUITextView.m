@@ -374,7 +374,7 @@ static CAAnimation *ThrobAnimation()
 - (void)_checkSpelling
 {
 	NSTextCheckingType checkingTypes = NSTextCheckingTypeSpelling;
-	if(autocorrectionEnabled) checkingTypes |= NSTextCheckingTypeCorrection;
+	if(autocorrectionEnabled) checkingTypes |= NSTextCheckingTypeCorrection | NSTextCheckingTypeReplacement;
 	
 	lastCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:NSMakeRange(0, [self.text length]) types:checkingTypes options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
 		// This needs to happen on the main thread so that the user doesn't enter more text while we're changing the attributed string.
@@ -402,8 +402,8 @@ static CAAnimation *ThrobAnimation()
 					unichar lastCharacter = [[[renderer backingStore] string] characterAtIndex:self.selectedRange.location - 1];
 					if(lastCharacter == '\'') continue;
 				}
-				
-				if(result.resultType == NSTextCheckingTypeCorrection) {
+								
+				if(result.resultType == NSTextCheckingTypeCorrection || result.resultType == NSTextCheckingTypeReplacement) {
 					NSString *oldString = [[[renderer backingStore] string] substringWithRange:result.range];
 					TUITextViewAutocorrectedPair *correctionPair = [[[TUITextViewAutocorrectedPair alloc] init] autorelease];
 					correctionPair.correctionResult = result;
