@@ -60,7 +60,7 @@ CGFloat AB_CTFrameGetHeight(CTFrameRef f)
 {
 	NSArray *lines = (NSArray *)CTFrameGetLines(f);
 	NSInteger n = (NSInteger)[lines count];
-	CGPoint lineOrigins[n];
+	CGPoint *lineOrigins = (CGPoint *) malloc(sizeof(CGPoint) * n);
 	CTFrameGetLineOrigins(f, CFRangeMake(0, n), lineOrigins);
 	
 	CGPoint first, last;
@@ -79,9 +79,11 @@ CGFloat AB_CTFrameGetHeight(CTFrameRef f)
 			last = lineOrigins[i];
 			h += first.y - last.y;
 			h += descent;
+			free(lineOrigins);
 			return ceil(h);
 		}
 	}
+	free(lineOrigins);
 	return 0.0;
 }
 
@@ -94,7 +96,7 @@ CFIndex AB_CTFrameGetStringIndexForPosition(CTFrameRef frame, CGPoint p)
 	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
 	
 	CFIndex linesCount = [lines count];
-	CGPoint lineOrigins[linesCount];
+	CGPoint *lineOrigins = (CGPoint *) malloc(sizeof(CGPoint) * linesCount);
 	CTFrameGetLineOrigins(frame, CFRangeMake(0, linesCount), lineOrigins);
 	
 	CTLineRef line = NULL;
@@ -108,12 +110,15 @@ CFIndex AB_CTFrameGetStringIndexForPosition(CTFrameRef frame, CGPoint p)
 		CTLineGetTypographicBounds(line, &ascent, &descent, NULL);
 		if(p.y > (floor(lineOrigin.y) - floor(descent))) { // above bottom of line
 			if(i == 0 && (p.y > (ceil(lineOrigin.y) + ceil(ascent)))) { // above top of first line
+				free(lineOrigins);
 				return 0;
 			} else {
 				goto found;
 			}
 		}
 	}
+	
+	free(lineOrigins);
 	
 	// didn't find a line, must be beneath the last line
 	return CTFrameGetStringRange(frame).length; // last character index
@@ -125,8 +130,11 @@ found:
 	
 	if(line) {
 		CFIndex i = CTLineGetStringIndexForPosition(line, p);
+		free(lineOrigins);
 		return i;
 	}
+	
+	free(lineOrigins);
 	
 	return 0;
 }
@@ -150,10 +158,11 @@ void AB_CTFrameGetRectsForRangeWithAggregationType(CTFrameRef frame, CFRange ran
 	
 	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
 	CFIndex linesCount = [lines count];
-	CGPoint lineOrigins[linesCount];
+	CGPoint *lineOrigins = (CGPoint *) malloc(sizeof(CGPoint) * linesCount);
 	CTFrameGetLineOrigins(frame, CFRangeMake(0, linesCount), lineOrigins);
 	
 	AB_CTLinesGetRectsForRangeWithAggregationType(lines, lineOrigins, bounds, range, aggregationType, rects, rectCount);
+	free(lineOrigins);
 }
 
 void AB_CTLinesGetRectsForRangeWithAggregationType(NSArray *lines, CGPoint *lineOrigins, CGRect bounds, CFRange range, AB_CTLineRectAggregationType aggregationType, CGRect rects[], CFIndex *rectCount)
