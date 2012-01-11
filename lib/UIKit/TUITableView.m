@@ -898,7 +898,8 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 		CGSize s = self.contentSize;
 		CGRect headerViewRect = CGRectMake(0, s.height - _headerView.frame.size.height, visible.size.width, _headerView.frame.size.height);
 		if(CGRectIntersectsRect(headerViewRect, visible)) {
-			_headerView.frame = headerViewRect;
+			_headerView.frame = headerViewRect;			
+			[_headerView setNeedsLayout];
 			
 			if(_headerView.hidden) {
 				// show
