@@ -356,6 +356,16 @@
 	return CGSizeZero;
 }
 
+- (CGSize)sizeConstrainedToWidth:(CGFloat)width numberOfLines:(NSUInteger)numberOfLines
+{
+	NSMutableAttributedString *fake = [self.attributedString mutableCopy];
+	[fake replaceCharactersInRange:NSMakeRange(0, [fake length]) withString:@"M"];
+	CGFloat singleLineHeight = [fake ab_sizeConstrainedToWidth:width].height;
+	CGFloat maxHeight = singleLineHeight * numberOfLines;
+	CGSize size = [self sizeConstrainedToWidth:width];
+	return CGSizeMake(size.width, MIN(maxHeight, size.height));
+}
+
 - (void)setAttributedString:(NSAttributedString *)a
 {
 	[a retain];

@@ -95,6 +95,7 @@ typedef enum {
 - (void)drawInContext:(CGContextRef)context;
 - (CGSize)size; // calculates vertical size based on frame width
 - (CGSize)sizeConstrainedToWidth:(CGFloat)width;
+- (CGSize)sizeConstrainedToWidth:(CGFloat)width numberOfLines:(NSUInteger)numberOfLines;
 - (void)reset;
 
 - (NSRange)selectedRange;
