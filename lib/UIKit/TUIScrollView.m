@@ -1145,6 +1145,8 @@ static float clampBounce(float x) {
     _scrollViewFlags.mouseDownInScrollKnob = TRUE;
     [self _updateScrollKnobsAnimated:TRUE];
   }
+	
+	[super mouseDown:event onSubview:subview];
 }
 
 -(void)mouseUp:(NSEvent *)event fromSubview:(TUIView *)subview {
@@ -1152,6 +1154,8 @@ static float clampBounce(float x) {
     _scrollViewFlags.mouseDownInScrollKnob = FALSE;
     [self _updateScrollKnobsAnimated:TRUE];
   }
+	
+	[super mouseUp:event fromSubview:subview];
 }
 
 -(void)mouseEntered:(NSEvent *)event onSubview:(TUIView *)subview {
