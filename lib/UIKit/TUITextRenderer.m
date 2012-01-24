@@ -74,8 +74,7 @@
 {
 	[self _resetFrame];
 	
-	_ct_path = CGPathCreateMutable();
-	CGPathAddRect((CGMutablePathRef)_ct_path, NULL, effectiveFrame);
+	_ct_path = CGPathCreateWithRect(effectiveFrame, NULL);
 	_ct_frame = CTFramesetterCreateFrame(_ct_framesetter, CFRangeMake(0, 0), _ct_path, NULL);
 }
 
@@ -339,17 +338,12 @@
 - (CGSize)sizeConstrainedToWidth:(CGFloat)width
 {
 	if(attributedString) {
-		CTFrameRef oldCTFrame = _ct_frame != NULL ? CFRetain(_ct_frame) : NULL;
-		CGPathRef oldCGPath = _ct_path != NULL ? CGPathRetain(_ct_path) : NULL;
-		
 		CGRect oldFrame = frame;
 		self.frame = CGRectMake(0.0f, 0.0f, width, 1000000.0f);
 
 		CGSize size = [self size];
 		
 		frame = oldFrame;
-		_ct_frame = oldCTFrame;
-		_ct_path = oldCGPath;
 		
 		return size;
 	}
