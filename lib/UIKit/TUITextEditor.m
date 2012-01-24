@@ -307,24 +307,17 @@
  */
 - (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
-	NSRange r = NSIntersectionRange(aRange, NSMakeRange(0, [backingStore length]));
 	if(actualRange)
-		*actualRange = r;
-	CGRect f = [self firstRectForCharacterRange:CFRangeMake(r.location, r.length)];
-	NSRect vf = [view frameInNSView];
+        *actualRange = aRange;
+    CGRect f = [self firstRectForCharacterRange:CFRangeMake(aRange.location, aRange.length)];
 	
-	NSPoint globalViewOffset = [[view nsWindow] convertBaseToScreen:[[view nsView] convertPointToBase:NSZeroPoint]];
+    NSRect vf = [self.view convertRect:f toView:nil];
+    NSRect windowRelativeRect = [self.view.nsView convertRect:vf toView:nil];
 	
-	NSPoint origin;
-	origin.x = globalViewOffset.x + vf.origin.x + f.origin.x;
-	origin.y = globalViewOffset.y + vf.origin.y + f.origin.y;
+    NSRect screenRect = windowRelativeRect;
+    screenRect.origin = [self.view.nsWindow convertBaseToScreen:windowRelativeRect.origin];
 	
-	NSRect screenRect;
-	screenRect.origin = origin;
-	screenRect.size.width = f.size.width;
-	screenRect.size.height = f.size.height;
-	
-	return screenRect;
+    return screenRect;
 }
 
 /* Returns the index for character that is nearest to aPoint. aPoint is in the 
