@@ -110,6 +110,16 @@
 	[self insertText:[[NSPasteboard generalPasteboard] stringForType:NSPasteboardTypeString]];
 }
 
+- (void)patchMenuWithStandardEditingMenuItems:(NSMenu *)menu
+{
+	NSMenuItem *item = [menu addItemWithTitle:NSLocalizedString(@"Cut", @"") action:@selector(cut:) keyEquivalent:@""];
+	[item setTarget:self];
+	item = [menu addItemWithTitle:NSLocalizedString(@"Copy", @"") action:@selector(copy:) keyEquivalent:@""];
+	[item setTarget:self];
+	item = [menu addItemWithTitle:NSLocalizedString(@"Paste", @"") action:@selector(paste:) keyEquivalent:@""];
+	[item setTarget:self];
+}
+
 - (void)keyDown:(NSEvent *)event
 {
 	[inputContext handleEvent:event]; // transform into commands
