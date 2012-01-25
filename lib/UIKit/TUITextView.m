@@ -483,12 +483,52 @@ static CAAnimation *ThrobAnimation()
 			[menuItem release];
 		}
 	} else {
-		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:@"No guesses" action:NULL keyEquivalent:@""];
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No guesses", @"") action:NULL keyEquivalent:@""];
 		[menu addItem:menuItem];
 		[menuItem release];
 	}
 	
-	return [menu autorelease];
+	[menu addItem:[NSMenuItem separatorItem]];
+	
+	[renderer patchMenuWithStandardEditingMenuItems:menu];
+	
+	[menu addItem:[NSMenuItem separatorItem]];
+	
+	NSMenuItem *spellingAndGrammarItem = [menu addItemWithTitle:NSLocalizedString(@"Spelling and Grammar", @"") action:NULL keyEquivalent:@""];
+	NSMenu *spellingAndGrammarMenu = [[NSMenu alloc] initWithTitle:@""];
+	[spellingAndGrammarMenu addItemWithTitle:NSLocalizedString(@"Show Spelling and Grammar", @"") action:@selector(showGuessPanel:) keyEquivalent:@""];
+	[spellingAndGrammarMenu addItemWithTitle:NSLocalizedString(@"Check Document Now", @"") action:@selector(checkSpelling:) keyEquivalent:@""];
+	[spellingAndGrammarMenu addItem:[NSMenuItem separatorItem]];
+	[spellingAndGrammarMenu addItemWithTitle:NSLocalizedString(@"Check Spelling While Typing", @"") action:@selector(toggleContinuousSpellChecking:) keyEquivalent:@""];
+	[spellingAndGrammarMenu addItemWithTitle:NSLocalizedString(@"Check Grammar With Spelling", @"") action:@selector(toggleGrammarChecking:) keyEquivalent:@""];
+	[spellingAndGrammarMenu addItemWithTitle:NSLocalizedString(@"Correct Spelling Automatically", @"") action:@selector(toggleAutomaticSpellingCorrection:) keyEquivalent:@""];
+	[spellingAndGrammarItem setSubmenu:spellingAndGrammarMenu];
+	
+	NSMenuItem *substitutionsItem = [menu addItemWithTitle:NSLocalizedString(@"Substitutions", @"") action:NULL keyEquivalent:@""];
+	NSMenu *substitutionsMenu = [[NSMenu alloc] initWithTitle:@""];
+	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Show Substitutions", @"") action:@selector(orderFrontSubstitutionsPanel:) keyEquivalent:@""];
+	[substitutionsMenu addItem:[NSMenuItem separatorItem]];
+	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Smart Copy/Paste", @"") action:@selector(toggleSmartInsertDelete:) keyEquivalent:@""];
+	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Smart Quotes", @"") action:@selector(toggleAutomaticQuoteSubstitution:) keyEquivalent:@""];
+	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Smart Dashes", @"") action:@selector(toggleAutomaticDashSubstitution:) keyEquivalent:@""];
+	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Smart Links", @"") action:@selector(toggleAutomaticLinkDetection:) keyEquivalent:@""];
+	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Text Replacement", @"") action:@selector(toggleAutomaticTextReplacement:) keyEquivalent:@""];
+	[substitutionsItem setSubmenu:substitutionsMenu];
+	
+	NSMenuItem *transformationsItem = [menu addItemWithTitle:NSLocalizedString(@"Transformations", @"") action:NULL keyEquivalent:@""];
+	NSMenu *transformationsMenu = [[NSMenu alloc] initWithTitle:@""];
+	[transformationsMenu addItemWithTitle:NSLocalizedString(@"Make Upper Case", @"") action:@selector(uppercaseWord:) keyEquivalent:@""];
+	[transformationsMenu addItemWithTitle:NSLocalizedString(@"Make Lower Case", @"") action:@selector(lowercaseWord:) keyEquivalent:@""];
+	[transformationsMenu addItemWithTitle:NSLocalizedString(@"Capitalize", @"") action:@selector(capitalizeWord:) keyEquivalent:@""];
+	[transformationsItem setSubmenu:transformationsMenu];
+	
+	NSMenuItem *speechItem = [menu addItemWithTitle:NSLocalizedString(@"Speech", @"") action:NULL keyEquivalent:@""];
+	NSMenu *speechMenu = [[NSMenu alloc] initWithTitle:@""];
+	[speechMenu addItemWithTitle:NSLocalizedString(@"Start Speaking", @"") action:@selector(startSpeaking:) keyEquivalent:@""];
+	[speechMenu addItemWithTitle:NSLocalizedString(@"Stop Speaking", @"") action:@selector(stopSpeaking:) keyEquivalent:@""];
+	[speechItem setSubmenu:speechMenu];
+	
+	return [self.nsView menuWithPatchedItems:[menu autorelease]];
 }
 
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem
