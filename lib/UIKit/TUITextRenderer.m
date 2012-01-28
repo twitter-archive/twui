@@ -74,7 +74,8 @@
 {
 	[self _resetFrame];
 	
-	_ct_path = CGPathCreateWithRect(effectiveFrame, NULL);
+	_ct_path = CGPathCreateMutable();
+	CGPathAddRect((CGMutablePathRef)_ct_path, NULL, effectiveFrame);
 	_ct_frame = CTFramesetterCreateFrame(_ct_framesetter, CFRangeMake(0, 0), _ct_path, NULL);
 }
 
@@ -343,7 +344,7 @@
 
 		CGSize size = [self size];
 		
-		frame = oldFrame;
+		self.frame = oldFrame;
 		
 		return size;
 	}
