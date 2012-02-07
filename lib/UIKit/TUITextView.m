@@ -376,7 +376,17 @@ static CAAnimation *ThrobAnimation()
 	NSTextCheckingType checkingTypes = NSTextCheckingTypeSpelling;
 	if(autocorrectionEnabled) checkingTypes |= NSTextCheckingTypeCorrection | NSTextCheckingTypeReplacement;
 	
-	lastCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:NSMakeRange(0, [self.text length]) types:checkingTypes options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
+	NSRange wholeLineRange = NSMakeRange(0, [self.text length]);
+	lastCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:wholeLineRange types:checkingTypes options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
+		NSRange selectionRange = [self selectedRange];
+		__block NSRange activeWordSubstringRange = NSMakeRange(0, 0);
+		[self.text enumerateSubstringsInRange:wholeLineRange options:NSStringEnumerationByWords | NSStringEnumerationSubstringNotRequired | NSStringEnumerationReverse usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+			if(selectionRange.location >= substringRange.location && selectionRange.location <= substringRange.location + substringRange.length) {
+				activeWordSubstringRange = substringRange;
+				*stop = YES;
+			}
+		}];
+		
 		// This needs to happen on the main thread so that the user doesn't enter more text while we're changing the attributed string.
 		dispatch_async(dispatch_get_main_queue(), ^{
 			// we only care about the most recent results, ignore anything older
@@ -390,11 +400,10 @@ static CAAnimation *ThrobAnimation()
 			[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:wholeStringRange];
 			[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:wholeStringRange];
 			
-			NSRange selectionRange = [self selectedRange];
 			NSMutableArray *autocorrectedResultsThisRound = [NSMutableArray array];
 			for(NSTextCheckingResult *result in results) {
 				// Don't check the word they're typing. It's just annoying.
-				BOOL isActiveWord = selectionRange.location - (result.range.location + result.range.length) < 1;
+				BOOL isActiveWord = NSEqualRanges(result.range, activeWordSubstringRange);
 				if(selectionRange.length == 0) {
 					if(isActiveWord) continue;
 					
