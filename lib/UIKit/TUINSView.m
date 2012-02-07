@@ -204,6 +204,15 @@
 	[TUITooltipWindow endTooltip];
 }
 
+- (void)viewWillMoveToSuperview:(NSView *)newSuperview
+{
+	[super viewWillMoveToSuperview:newSuperview];
+	
+	if(newSuperview == nil) {
+		[TUITooltipWindow endTooltip];
+	}
+}
+
 - (void)_updateHoverView:(TUIView *)_newHoverView withEvent:(NSEvent *)event
 {
 	if(_hyperFocusView) {
