@@ -106,6 +106,13 @@ typedef enum {
 - (NSArray *)rectsForCharacterRange:(CFRange)range;
 - (NSArray *)rectsForCharacterRange:(CFRange)range aggregationType:(AB_CTLineRectAggregationType)aggregationType;
 
+// Draw the selection for the given rects. You probably shouldn't ever call this directly but it is exposed to allow for overriding. This will only get called if the selection is not empty and the selected text isn't being dragged.
+// Note that at the point at which this is called, the selection color has already been set.
+//
+// rects - an array of rects for the current selection
+// count - the number of rects in the `rects` array
+- (void)drawSelectionWithRects:(CGRect *)rects count:(CFIndex)count;
+
 @property (nonatomic, retain) id<ABActiveTextRange> hitRange;
 
 @end

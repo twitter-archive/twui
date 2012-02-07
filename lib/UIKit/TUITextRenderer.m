@@ -298,7 +298,6 @@
 		}
 		
 		CFRange selectedRange = [self _selectedRange];
-		
 		if(selectedRange.length > 0) {
 			[[NSColor selectedTextBackgroundColor] set];
 			// draw (or mask) selection
@@ -308,12 +307,7 @@
 			if(_flags.drawMaskDragSelection) {
 				CGContextClipToRects(context, rects, rectCount);
 			} else {
-				for(CFIndex i = 0; i < rectCount; ++i) {
-					CGRect r = rects[i];
-					r = CGRectIntegral(r);
-					if(r.size.width > 1)
-						CGContextFillRect(context, r);
-				}
+				[self drawSelectionWithRects:rects count:rectCount];
 			}
 		}
 		
@@ -325,6 +319,16 @@
 		CTFrameDraw(f, context); // draw actual text
 				
 		CGContextRestoreGState(context);
+	}
+}
+
+- (void)drawSelectionWithRects:(CGRect *)rects count:(CFIndex)count {
+	CGContextRef context = TUIGraphicsGetCurrentContext();
+	for(CFIndex i = 0; i < count; ++i) {
+		CGRect r = rects[i];
+		r = CGRectIntegral(r);
+		if(r.size.width > 1)
+			CGContextFillRect(context, r);
 	}
 }
 
