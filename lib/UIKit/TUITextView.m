@@ -380,7 +380,7 @@ static CAAnimation *ThrobAnimation()
 	lastCheckToken = [[NSSpellChecker sharedSpellChecker] requestCheckingOfString:self.text range:wholeLineRange types:checkingTypes options:nil inSpellDocumentWithTag:0 completionHandler:^(NSInteger sequenceNumber, NSArray *results, NSOrthography *orthography, NSInteger wordCount) {
 		NSRange selectionRange = [self selectedRange];
 		__block NSRange activeWordSubstringRange = NSMakeRange(0, 0);
-		[self.text enumerateSubstringsInRange:wholeLineRange options:NSStringEnumerationByWords | NSStringEnumerationSubstringNotRequired | NSStringEnumerationReverse usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+		[self.text enumerateSubstringsInRange:NSMakeRange(0, [self.text length]) options:NSStringEnumerationByWords | NSStringEnumerationSubstringNotRequired | NSStringEnumerationReverse usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
 			if(selectionRange.location >= substringRange.location && selectionRange.location <= substringRange.location + substringRange.length) {
 				activeWordSubstringRange = substringRange;
 				*stop = YES;
