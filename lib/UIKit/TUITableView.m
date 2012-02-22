@@ -1170,14 +1170,36 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 	// no selection or selected cell not visible and this is not repeative key press
 	BOOL noCurrentSelection = (_selectedIndexPath == nil || ([self cellForRowAtIndexPath:_selectedIndexPath] == nil && ![event isARepeat]));;
 	
+	typedef TUIFastIndexPath * (^TUITableViewCalculateNextIndexPathBlock)(TUIFastIndexPath *lastIndexPath);
+	void (^selectValidIndexPath)(TUIFastIndexPath *startForNoSelection, TUITableViewCalculateNextIndexPathBlock calculateNextIndexPath) = ^(TUIFastIndexPath *startForNoSelection, TUITableViewCalculateNextIndexPathBlock calculateNextIndexPath) {
+		NSParameterAssert(calculateNextIndexPath != nil);
+		
+		BOOL foundValidNextRow = NO;
+		TUIFastIndexPath *lastIndexPath = _selectedIndexPath;
+		while(!foundValidNextRow) {
+			TUIFastIndexPath *newIndexPath;
+			if(noCurrentSelection && lastIndexPath == nil) {
+				newIndexPath = startForNoSelection;
+			} else {
+				newIndexPath = calculateNextIndexPath(lastIndexPath);
+			}
+			
+			if(![_delegate respondsToSelector:@selector(tableView:shouldSelectRowAtIndexPath:forEvent:)] || [_delegate tableView:self shouldSelectRowAtIndexPath:newIndexPath forEvent:event]){
+				[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
+				foundValidNextRow = YES;
+			}
+			
+			if([lastIndexPath isEqual:newIndexPath]) foundValidNextRow = YES;
+			
+			lastIndexPath = newIndexPath;
+		}
+	};
+	
 	switch([[event charactersIgnoringModifiers] characterAtIndex:0]) {
 		case NSUpArrowFunctionKey: {
-			TUIFastIndexPath *newIndexPath;
-			if(noCurrentSelection) {
-				newIndexPath = [self indexPathForLastVisibleRow];
-			} else {
-				NSUInteger section = _selectedIndexPath.section;
-				NSUInteger row = _selectedIndexPath.row;
+			selectValidIndexPath([self indexPathForLastVisibleRow], ^(TUIFastIndexPath *lastIndexPath) {
+				NSUInteger section = lastIndexPath.section;
+				NSUInteger row = lastIndexPath.row;
 				if(row > 0) {
 					row--;
 				} else {
@@ -1190,22 +1212,17 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 						}
 					}
 				}
-				newIndexPath = [TUIFastIndexPath indexPathForRow:row inSection:section];
-			}
-			if(![_delegate respondsToSelector:@selector(tableView:shouldSelectRowAtIndexPath:forEvent:)] || [_delegate tableView:self shouldSelectRowAtIndexPath:newIndexPath forEvent:event]){
-				[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
-			}
-
+				
+				return [TUIFastIndexPath indexPathForRow:row inSection:section];
+			});
+			
 			return YES;
 		}
 	
 		case NSDownArrowFunctionKey:  {
-			TUIFastIndexPath *newIndexPath;
-			if(noCurrentSelection) {
-				newIndexPath = [self indexPathForFirstVisibleRow]; 
-			} else {
-				NSUInteger section = _selectedIndexPath.section;
-				NSUInteger row = _selectedIndexPath.row;
+			selectValidIndexPath([self indexPathForFirstVisibleRow], ^(TUIFastIndexPath *lastIndexPath) {
+				NSUInteger section = lastIndexPath.section;
+				NSUInteger row = lastIndexPath.row;
 				NSUInteger rowsInSection = [self numberOfRowsInSection:section];
 				if(row + 1 < rowsInSection) {
 					row++;
@@ -1220,13 +1237,10 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 						}
 					}
 				}
-				newIndexPath = [TUIFastIndexPath indexPathForRow:row inSection:section];
-			}
-			
-			if(![_delegate respondsToSelector:@selector(tableView:shouldSelectRowAtIndexPath:forEvent:)] || [_delegate tableView:self shouldSelectRowAtIndexPath:newIndexPath forEvent:event]){
-				[self selectRowAtIndexPath:newIndexPath animated:self.animateSelectionChanges scrollPosition:TUITableViewScrollPositionToVisible];
-			}
-			
+				
+				return [TUIFastIndexPath indexPathForRow:row inSection:section];
+			});
+
 			return YES;
 		}
 	}
