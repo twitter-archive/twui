@@ -196,6 +196,11 @@ NSInteger makeFirstResponderCount = 0;
 	[self setEverythingNeedsDisplay];
 }
 
+- (BOOL)canBecomeKeyWindow
+{
+	return YES;
+}
+
 @end
 
 static NSScreen *ABScreenForProposedWindowRect(NSRect proposedRect)
