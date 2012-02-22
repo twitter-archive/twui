@@ -154,6 +154,7 @@ NSInteger makeFirstResponderCount = 0;
 			[contentView release];
 		} else {
 			[self setOpaque:YES];
+            [self setHasShadow:YES];
 		}
 
 		b.size.height -= ([self toolbarHeight]-22);
