@@ -614,9 +614,7 @@ static CAAnimation *ThrobAnimation()
 		BOOL consumed = [delegate textView:self doCommandBySelector:selector];
 		if(consumed) return YES;
 	}
-	
-	NSLog(@"%@", NSStringFromSelector(selector));
-	
+		
 	if(selector == @selector(moveUp:)) {
 		if([self singleLine]) {
 			self.selectedRange = NSMakeRange(0, 0);
