@@ -162,8 +162,6 @@ NSInteger makeFirstResponderCount = 0;
 		nsView = [[TUINSView alloc] initWithFrame:b];
 		[nsView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 		[[self contentView] addSubview:nsView];
-		// why the hell was this being released? it would end up dangling in -resignKeyWindow
-//		[nsView release];
 		
 		altUINSViews = [[NSMutableArray alloc] init];
 	}
@@ -172,6 +170,7 @@ NSInteger makeFirstResponderCount = 0;
 
 - (void)dealloc
 {
+    [nsView release];
 	[altUINSViews release];
 	[super dealloc];
 }
