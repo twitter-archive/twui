@@ -994,6 +994,10 @@ static float clampBounce(float x) {
 
 - (void)scrollWheel:(NSEvent *)event
 {
+	if(_contentSize.height <= CGRectGetHeight(self.bounds)) {
+		[super scrollWheel:event];
+	}
+	
 	if(self.scrollEnabled)
 	{
 		int phase = ScrollPhaseNormal;
