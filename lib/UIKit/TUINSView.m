@@ -42,6 +42,7 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidResignKeyNotification object:nil];
 	
 	[rootView removeFromSuperview];
+    rootView.nsView = nil;
 	[rootView release];
 	rootView = nil;
 	[_hoverView release];

@@ -622,12 +622,10 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 		[superview willRemoveSubview:self];
 		[self willMoveToSuperview:nil];
 		[self.layer removeFromSuperlayer];
-		
+		self.nsView = nil;
 		[self didMoveToSuperview];
 		[self autorelease]; // 'release'?
 	}
-    
-    self.nsView = nil;
 }
 
 - (BOOL)_canRespondToEvents
