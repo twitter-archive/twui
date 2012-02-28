@@ -372,29 +372,29 @@ enum {
 	
 	switch(self.verticalScrollIndicatorVisibility){
     case TUIScrollViewIndicatorVisibleNever:
-      vEffectiveVisible = FALSE;
+      vEffectiveVisible = _verticalScrollKnob.flashing;
       break;
     case TUIScrollViewIndicatorVisibleWhenScrolling:
-      vEffectiveVisible = vVisible && _scrollViewFlags.animationMode != AnimationModeNone;
+	  vEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _verticalScrollKnob.flashing);
       break;
     case TUIScrollViewIndicatorVisibleWhenMouseInside:
-      vEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob);
+      vEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob || _verticalScrollKnob.flashing);
       break;
     case TUIScrollViewIndicatorVisibleAlways:
     default:
       // don't alter the visibility
       break;
 	}
-	
+		
 	switch(self.horizontalScrollIndicatorVisibility){
     case TUIScrollViewIndicatorVisibleNever:
       hEffectiveVisible = FALSE;
       break;
     case TUIScrollViewIndicatorVisibleWhenScrolling:
-      hEffectiveVisible = vVisible && _scrollViewFlags.animationMode != AnimationModeNone;
+      hEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _horizontalScrollKnob.flashing);
       break;
     case TUIScrollViewIndicatorVisibleWhenMouseInside:
-      hEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob);
+      hEffectiveVisible = vVisible && (_scrollViewFlags.animationMode != AnimationModeNone || _scrollViewFlags.mouseInside || _scrollViewFlags.mouseDownInScrollKnob || _horizontalScrollKnob.flashing);
       break;
     case TUIScrollViewIndicatorVisibleAlways:
     default:
@@ -879,6 +879,7 @@ static float clampBounce(float x) {
 {
 	[_horizontalScrollKnob flash];
 	[_verticalScrollKnob flash];
+	[self _updateScrollKnobsAnimated:YES];
 }
 
 - (BOOL)isDragging
