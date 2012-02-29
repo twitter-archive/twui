@@ -125,6 +125,33 @@
 	[inputContext handleEvent:event]; // transform into commands
 }
 
+- (void)mouseDown:(NSEvent *)event
+{
+	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
+    if([currentInputManager wantsToHandleMouseEvents] && [currentInputManager handleMouseEvent:event])
+        return;
+	
+	[super mouseDown:event];
+}
+
+- (void)mouseDragged:(NSEvent *)event
+{
+	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
+    if([currentInputManager wantsToHandleMouseEvents] && [currentInputManager handleMouseEvent:event])
+        return;
+	
+	[super mouseDragged:event];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
+    if([currentInputManager wantsToHandleMouseEvents] && [currentInputManager handleMouseEvent:event])
+        return;
+	
+	[super mouseUp:event];
+}
+
 - (BOOL)performKeyEquivalent:(NSEvent *)event
 {
 	BOOL consumed = [inputContext handleEvent:event];
