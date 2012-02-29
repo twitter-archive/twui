@@ -29,7 +29,6 @@
 
 @synthesize scrollView;
 @synthesize knob;
-@synthesize flashing;
 
 - (id)initWithFrame:(CGRect)frame
 {
