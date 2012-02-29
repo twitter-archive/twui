@@ -107,16 +107,14 @@
 {
 	_scrollKnobFlags.flashing = 1;
 	
-	static const CFTimeInterval duration = 1.0f;
+	static const CFTimeInterval duration = 0.6f;
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animation];
 	animation.duration = duration;
 	animation.keyPath = @"opacity";
 	animation.values = [NSArray arrayWithObjects:
 						[NSNumber numberWithDouble:0.5],
 						[NSNumber numberWithDouble:0.2],
-						[NSNumber numberWithDouble:0.5],
-						[NSNumber numberWithDouble:0.2],
-						[NSNumber numberWithDouble:0.5],
+						[NSNumber numberWithDouble:0.0],
 						nil];
 	[knob.layer addAnimation:animation forKey:@"opacity"];
 	[self performSelector:@selector(_endFlashing) withObject:nil afterDelay:duration];
