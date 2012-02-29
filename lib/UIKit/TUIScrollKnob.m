@@ -117,7 +117,7 @@
 						[NSNumber numberWithDouble:0.0],
 						nil];
 	[knob.layer addAnimation:animation forKey:@"opacity"];
-	[self performSelector:@selector(_endFlashing) withObject:nil afterDelay:duration];
+	[self performSelector:@selector(_endFlashing) withObject:nil afterDelay:(duration - 0.01)];
 }
 
 - (void)_endFlashing
