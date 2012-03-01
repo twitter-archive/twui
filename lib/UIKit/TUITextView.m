@@ -93,7 +93,7 @@
 						 ABNSParagraphStyleForTextAlignment(textAlignment), NSParagraphStyleAttributeName,
 						 nil];
 	renderer.markedAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-						(id)[self.font ctFont], kCTFontAttributeName,
+						[NSFont fontWithName:self.font.fontName size:self.font.pointSize], kCTFontAttributeName, // NSFont and CTFont are toll-free bridged. *BUT* for reasons beyond my understanding, advanced input methods like Japanese and simplified Pinyin break unless this is an NSFont. So there we go.
 						[self.textColor CGColor], kCTForegroundColorAttributeName,
 						ABNSParagraphStyleForTextAlignment(textAlignment), NSParagraphStyleAttributeName,
 						nil];

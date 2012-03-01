@@ -127,37 +127,26 @@
 
 - (void)mouseDown:(NSEvent *)event
 {
-	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
-    if([currentInputManager wantsToHandleMouseEvents] && [currentInputManager handleMouseEvent:event])
-        return;
+	BOOL handled = [inputContext handleEvent:event];
+	if(handled) return;
 	
 	[super mouseDown:event];
 }
 
 - (void)mouseDragged:(NSEvent *)event
 {
-	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
-    if([currentInputManager wantsToHandleMouseEvents] && [currentInputManager handleMouseEvent:event])
-        return;
+	BOOL handled = [inputContext handleEvent:event];
+	if(handled) return;
 	
 	[super mouseDragged:event];
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
-	NSInputManager *currentInputManager = [NSInputManager currentInputManager];
-    if([currentInputManager wantsToHandleMouseEvents] && [currentInputManager handleMouseEvent:event])
-        return;
+	BOOL handled = [inputContext handleEvent:event];
+	if(handled) return;
 	
 	[super mouseUp:event];
-}
-
-- (BOOL)performKeyEquivalent:(NSEvent *)event
-{
-	BOOL consumed = [inputContext handleEvent:event];
-	if(consumed && wasValidSelector) return YES;
-	
-	return [super performKeyEquivalent:event];
 }
 
 - (void)deleteCharactersInRange:(NSRange)range // designated delete
@@ -197,8 +186,6 @@
 - (void)doCommandBySelector:(SEL)selector
 {
 	[super doCommandBySelector:selector];
-	
-	wasValidSelector = selector != @selector(noop:);
 }
 
 - (void)insertText:(id)aString
