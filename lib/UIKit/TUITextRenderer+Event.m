@@ -25,7 +25,6 @@
 - (CTFrameRef)ctFrame;
 - (CGPathRef)ctPath;
 - (CFRange)_selectedRange;
-- (CGRect)rectForRange:(CFRange)range;
 @end
 
 @implementation TUITextRenderer (Event)

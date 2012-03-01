@@ -8,11 +8,6 @@
 
 #import "TUIView+Accessibility.h"
 
-@interface TUIView ()
-- (NSString *)accessibilityTraitsToRole;
-- (NSString *)accessibilityTraitsToRoleDescription;
-@end
-
 
 @implementation TUIView (Accessibility)
 
