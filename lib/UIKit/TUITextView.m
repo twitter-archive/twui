@@ -541,7 +541,8 @@ static CAAnimation *ThrobAnimation()
 }
 
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem
-{	
+{
+	NSString *oldString = [self.text substringWithRange:self.selectedTextCheckingResult.range];
 	NSString *replacement = [menuItem representedObject];
 	[[renderer backingStore] beginEditing];
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
@@ -549,6 +550,9 @@ static CAAnimation *ThrobAnimation()
 	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:replacement];
 	[[renderer backingStore] endEditing];
 	[renderer reset];
+	
+	NSInteger lengthChange = replacement.length - oldString.length;
+	[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
 	
 	[self _textDidChange];
 	
@@ -557,6 +561,7 @@ static CAAnimation *ThrobAnimation()
 
 - (void)_replaceAutocorrectedWord:(NSMenuItem *)menuItem
 {
+	NSString *oldString = [self.text substringWithRange:self.selectedTextCheckingResult.range];
 	NSString *replacement = [menuItem representedObject];
 	[[renderer backingStore] beginEditing];
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
@@ -564,6 +569,9 @@ static CAAnimation *ThrobAnimation()
 	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:replacement];
 	[[renderer backingStore] endEditing];
 	[renderer reset];
+	
+	NSInteger lengthChange = replacement.length - oldString.length;
+	[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
 	
 	[self _textDidChange];
 	
