@@ -34,6 +34,7 @@
 	TUIFont *_font;
 	TUIColor *_textColor;
 	TUITextAlignment _alignment;
+	TUILineBreakMode _lineBreakMode;
 }
 
 @property(nonatomic,copy) NSString *text;
@@ -44,5 +45,6 @@
 @property(nonatomic,retain) TUIFont *font;
 @property(nonatomic,retain) TUIColor *textColor;
 @property(nonatomic,assign) TUITextAlignment alignment;
+@property(nonatomic, assign) TUILineBreakMode lineBreakMode; 
 
 @end
