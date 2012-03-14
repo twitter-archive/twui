@@ -22,6 +22,7 @@
 
 @interface TUINSView ()
 - (void)windowDidResignKey:(NSNotification *)notification;
+- (void)windowDidBecomeKey:(NSNotification *)notification;
 @end
 
 
@@ -40,6 +41,7 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidResignKeyNotification object:nil];
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidBecomeKeyNotification object:nil];
 	
 	[rootView removeFromSuperview];
     rootView.nsView = nil;
@@ -178,6 +180,7 @@
 	[self.rootView didMoveToWindow];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:self.window];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:self.window];
 }
 
 - (TUIView *)viewForLocalPoint:(NSPoint)p
@@ -203,6 +206,25 @@
 - (void)windowDidResignKey:(NSNotification *)notification
 {
 	[TUITooltipWindow endTooltip];
+	
+	if(![self isWindowKey]) {
+		[self.rootView windowDidResignKey];
+	}
+}
+
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+	[self.rootView windowDidBecomeKey];
+}
+
+- (BOOL)isWindowKey
+{
+	if([self.window isKeyWindow]) return YES;
+	
+	NSWindow *keyWindow = [NSApp keyWindow];
+	if(keyWindow == nil) return NO;
+	
+	return keyWindow == [self.window attachedSheet];
 }
 
 - (void)viewWillMoveToSuperview:(NSView *)newSuperview

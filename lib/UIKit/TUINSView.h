@@ -61,6 +61,8 @@
 
 - (void)tui_setOpaque:(BOOL)o;
 
+- (BOOL)isWindowKey;
+
 @end
 
 #import "TUINSView+Hyperfocus.h"
