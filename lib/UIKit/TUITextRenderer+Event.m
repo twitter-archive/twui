@@ -186,8 +186,17 @@
 			goto normal;
 	} else {
 normal:
-		_selectionStart = [self stringIndexForEvent:event];
-		_selectionEnd = _selectionStart;
+		if(([event modifierFlags] & NSShiftKeyMask) != 0) {
+			CFIndex newIndex = [self stringIndexForEvent:event];
+			if(newIndex < _selectionStart) {
+				_selectionStart = newIndex;
+			} else {
+				_selectionEnd = newIndex;
+			}
+		} else {
+			_selectionStart = [self stringIndexForEvent:event];
+			_selectionEnd = _selectionStart;
+		}
 		
 		self.hitRange = hitActiveRange;
 	}
@@ -202,8 +211,10 @@ normal:
 {
 	CGRect previousSelectionRect = [self rectForCurrentSelection];
 	
-	CFIndex i = [self stringIndexForEvent:event];
-	_selectionEnd = i;
+	if(([event modifierFlags] & NSShiftKeyMask) == 0) {
+		CFIndex i = [self stringIndexForEvent:event];
+		_selectionEnd = i;
+	}
 	
 	// fixup selection based on selection affinity
 	BOOL flip = _selectionEnd < _selectionStart;
