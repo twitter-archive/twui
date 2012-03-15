@@ -401,6 +401,19 @@
 	}
 }
 
+- (void)keyDown:(NSEvent *)event
+{
+	BOOL consumed = NO;
+	// TUIView uses -performKeyAction: in -keyDown: to do its key equivalents. If none of our TUIViews consumed the key down as a key action, we want to give our view controller a chance to handle the key down as a key equivalent.
+	if([[self nextResponder] isKindOfClass:[NSViewController class]]) {
+		consumed = [[self nextResponder] performKeyEquivalent:event];
+	}
+	
+	if(!consumed) {
+		[super keyDown:event];
+	}
+}
+
 - (BOOL)performKeyEquivalent:(NSEvent *)event
 {
 	return [rootView performKeyEquivalent:event];
