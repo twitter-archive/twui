@@ -50,7 +50,6 @@ CGSize AB_CTFrameGetSize(CTFrameRef frame)
 		CGFloat ascent, descent, leading;
 		CTLineGetTypographicBounds(lastLine, &ascent, &descent, &leading);
 		h = CGRectGetMaxY(frameRect) - lastLineOrigin.y + descent;
-		if(lines.count > 1) h += ascent + leading;
 	}
 	
 	return CGSizeMake(ceil(w), ceil(h));
