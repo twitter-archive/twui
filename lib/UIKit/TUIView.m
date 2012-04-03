@@ -191,6 +191,34 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 	_viewFlags.disableSubpixelTextRendering = !b;
 }
 
+- (BOOL)needsDisplayWhenWindowsKeyednessChanges
+{
+	return _viewFlags.needsDisplayWhenWindowsKeyednessChanges;
+}
+
+- (void)setNeedsDisplayWhenWindowsKeyednessChanges:(BOOL)needsDisplay
+{
+	_viewFlags.needsDisplayWhenWindowsKeyednessChanges = needsDisplay;
+}
+
+- (void)windowDidBecomeKey
+{
+	if(self.needsDisplayWhenWindowsKeyednessChanges) {
+		[self setNeedsDisplay];
+	}
+	
+	[self.subviews makeObjectsPerformSelector:@selector(windowDidBecomeKey)];
+}
+
+- (void)windowDidResignKey
+{
+	if(self.needsDisplayWhenWindowsKeyednessChanges) {
+		[self setNeedsDisplay];
+	}
+	
+	[self.subviews makeObjectsPerformSelector:@selector(windowDidResignKey)];
+}
+
 - (id<TUIViewDelegate>)viewDelegate
 {
 	return _viewDelegate;

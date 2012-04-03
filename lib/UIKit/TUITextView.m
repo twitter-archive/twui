@@ -512,6 +512,7 @@ static CAAnimation *ThrobAnimation()
 	[spellingAndGrammarMenu addItemWithTitle:NSLocalizedString(@"Check Grammar With Spelling", @"") action:@selector(toggleGrammarChecking:) keyEquivalent:@""];
 	[spellingAndGrammarMenu addItemWithTitle:NSLocalizedString(@"Correct Spelling Automatically", @"") action:@selector(toggleAutomaticSpellingCorrection:) keyEquivalent:@""];
 	[spellingAndGrammarItem setSubmenu:spellingAndGrammarMenu];
+	[spellingAndGrammarMenu release];
 	
 	NSMenuItem *substitutionsItem = [menu addItemWithTitle:NSLocalizedString(@"Substitutions", @"") action:NULL keyEquivalent:@""];
 	NSMenu *substitutionsMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -523,6 +524,7 @@ static CAAnimation *ThrobAnimation()
 	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Smart Links", @"") action:@selector(toggleAutomaticLinkDetection:) keyEquivalent:@""];
 	[substitutionsMenu addItemWithTitle:NSLocalizedString(@"Text Replacement", @"") action:@selector(toggleAutomaticTextReplacement:) keyEquivalent:@""];
 	[substitutionsItem setSubmenu:substitutionsMenu];
+	[substitutionsMenu release];
 	
 	NSMenuItem *transformationsItem = [menu addItemWithTitle:NSLocalizedString(@"Transformations", @"") action:NULL keyEquivalent:@""];
 	NSMenu *transformationsMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -530,18 +532,21 @@ static CAAnimation *ThrobAnimation()
 	[transformationsMenu addItemWithTitle:NSLocalizedString(@"Make Lower Case", @"") action:@selector(lowercaseWord:) keyEquivalent:@""];
 	[transformationsMenu addItemWithTitle:NSLocalizedString(@"Capitalize", @"") action:@selector(capitalizeWord:) keyEquivalent:@""];
 	[transformationsItem setSubmenu:transformationsMenu];
+	[transformationsMenu release];
 	
 	NSMenuItem *speechItem = [menu addItemWithTitle:NSLocalizedString(@"Speech", @"") action:NULL keyEquivalent:@""];
 	NSMenu *speechMenu = [[NSMenu alloc] initWithTitle:@""];
 	[speechMenu addItemWithTitle:NSLocalizedString(@"Start Speaking", @"") action:@selector(startSpeaking:) keyEquivalent:@""];
 	[speechMenu addItemWithTitle:NSLocalizedString(@"Stop Speaking", @"") action:@selector(stopSpeaking:) keyEquivalent:@""];
 	[speechItem setSubmenu:speechMenu];
+	[speechMenu release];
 	
 	return [self.nsView menuWithPatchedItems:[menu autorelease]];
 }
 
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem
-{	
+{
+	NSString *oldString = [self.text substringWithRange:self.selectedTextCheckingResult.range];
 	NSString *replacement = [menuItem representedObject];
 	[[renderer backingStore] beginEditing];
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
@@ -549,6 +554,9 @@ static CAAnimation *ThrobAnimation()
 	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:replacement];
 	[[renderer backingStore] endEditing];
 	[renderer reset];
+	
+	NSInteger lengthChange = replacement.length - oldString.length;
+	[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
 	
 	[self _textDidChange];
 	
@@ -557,6 +565,7 @@ static CAAnimation *ThrobAnimation()
 
 - (void)_replaceAutocorrectedWord:(NSMenuItem *)menuItem
 {
+	NSString *oldString = [self.text substringWithRange:self.selectedTextCheckingResult.range];
 	NSString *replacement = [menuItem representedObject];
 	[[renderer backingStore] beginEditing];
 	[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:selectedTextCheckingResult.range];
@@ -564,6 +573,9 @@ static CAAnimation *ThrobAnimation()
 	[[renderer backingStore] replaceCharactersInRange:self.selectedTextCheckingResult.range withString:replacement];
 	[[renderer backingStore] endEditing];
 	[renderer reset];
+	
+	NSInteger lengthChange = replacement.length - oldString.length;
+	[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
 	
 	[self _textDidChange];
 	

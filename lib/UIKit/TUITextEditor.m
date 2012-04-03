@@ -186,6 +186,17 @@
 - (void)doCommandBySelector:(SEL)selector
 {
 	[super doCommandBySelector:selector];
+	
+	wasValidKeyEquivalentSelector = selector != @selector(noop:);
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+	// Some key equivalents--most notably command-arrows--should be handled and translated into selectors by our input context. But the input context will claim it consumed the event when it really just translated it into the `noop:` selector. So in that case, we want to go ahead and send the event up the responder chain.
+	BOOL consumed = [inputContext handleEvent:event];
+	if(consumed && wasValidKeyEquivalentSelector) return YES;
+
+	return [super performKeyEquivalent:event];
 }
 
 - (void)insertText:(id)aString

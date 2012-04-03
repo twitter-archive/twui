@@ -18,6 +18,7 @@
 #import "TUIControl+Private.h"
 #import "TUIView+Accessibility.h"
 #import "TUIAccessibility.h"
+#import "TUINSView.h"
 
 @implementation TUIControl
 
@@ -63,7 +64,7 @@
   if(_controlFlags.disabled)        actual |= TUIControlStateDisabled;
   if(_controlFlags.selected)        actual |= TUIControlStateSelected;
 	if(_controlFlags.tracking)        actual |= TUIControlStateHighlighted;
-	if(![self.nsWindow isKeyWindow])  actual |= TUIControlStateNotKey;
+	if(![self.nsView isWindowKey])  actual |= TUIControlStateNotKey;
 	
 	return actual;
 }

@@ -40,6 +40,7 @@
 		_buttonFlags.dimsInBackground = 1;
 		_buttonFlags.firstDraw = 1;
 		self.backgroundColor = [TUIColor clearColor];
+		self.needsDisplayWhenWindowsKeyednessChanges = YES;
 	}
 	return self;
 }
@@ -171,7 +172,7 @@ static CGRect ButtonRectCenteredInRect(CGRect a, CGRect b)
 	
 	CGRect bounds = self.bounds;
 
-	BOOL key = [self.nsWindow isKeyWindow];
+	BOOL key = [self.nsView isWindowKey];
 	BOOL down = self.state == TUIControlStateHighlighted;
 	CGFloat alpha = down?0.7:1.0;
 	if(_buttonFlags.dimsInBackground)
