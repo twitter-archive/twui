@@ -249,13 +249,14 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 	NSInteger w = b.size.width;
 	NSInteger h = b.size.height;
 	BOOL o = self.opaque;
+	CGFloat currentScale = [self.layer respondsToSelector:@selector(contentsScale)] ? self.layer.contentsScale : 1.0f;
 	
 	if(_context.context) {
 		// kill if we're a different size
 		if(w != _context.lastWidth || 
 		   h != _context.lastHeight ||
 		   o != _context.lastOpaque ||
-		   fabs(self.layer.contentsScale - _context.lastContentsScale) > 0.1f) 
+		   fabs(currentScale - _context.lastContentsScale) > 0.1f) 
 		{
 			CGContextRelease(_context.context);
 			_context.context = NULL;
@@ -267,10 +268,10 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 		_context.lastWidth = w;
 		_context.lastHeight = h;
 		_context.lastOpaque = o;
-		_context.lastContentsScale = self.layer.contentsScale;
+		_context.lastContentsScale = currentScale;
 
-		b.size.width *= self.layer.contentsScale;
-		b.size.height *= self.layer.contentsScale;
+		b.size.width *= currentScale;
+		b.size.height *= currentScale;
 		if(b.size.width < 1) b.size.width = 1;
 		if(b.size.height < 1) b.size.height = 1;
 		CGContextRef ctx = TUICreateGraphicsContextWithOptions(b.size, o);
@@ -304,7 +305,8 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	TUIGraphicsPushContext(context); \
 	if(_viewFlags.clearsContextBeforeDrawing) \
 		CGContextClearRect(context, b); \
-	CGContextScaleCTM(context, self.layer.contentsScale, self.layer.contentsScale); \
+	CGFloat scale = [self.layer respondsToSelector:@selector(contentsScale)] ? self.layer.contentsScale : 1.0f; \
+	CGContextScaleCTM(context, scale, scale); \
 	CGContextSetAllowsAntialiasing(context, true); \
 	CGContextSetShouldAntialias(context, true); \
 	CGContextSetShouldSmoothFonts(context, !_viewFlags.disableSubpixelTextRendering);
@@ -313,7 +315,7 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	CA_COLOR_OVERLAY_DEBUG \
 	TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext(); \
 	layer.contents = (id)image.CGImage; \
-	CGContextScaleCTM(context, 1.0f / self.layer.contentsScale, 1.0f / self.layer.contentsScale); \
+	CGContextScaleCTM(context, 1.0f / scale, 1.0f / scale); \
 	TUIGraphicsPopContext(); \
 	if(self.drawInBackground) [CATransaction flush];
 
@@ -808,7 +810,9 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 			scale = [[self nsWindow] backingScaleFactor];
 		}
 		
-		self.layer.contentsScale = scale;
+		if([self.layer respondsToSelector:@selector(setContentsScale:)]) {
+			self.layer.contentsScale = scale;
+		}
 	}
 	
 	for(TUIView *subview in self.subviews) {

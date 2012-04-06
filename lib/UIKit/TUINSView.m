@@ -190,7 +190,9 @@
 			scale = [[self window] backingScaleFactor];
 		}
 		
-		self.layer.contentsScale = scale;
+		if([self.layer respondsToSelector:@selector(setContentsScale:)]) {
+			self.layer.contentsScale = scale;
+		}
 	}
 }
 
