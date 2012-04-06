@@ -144,9 +144,7 @@
 	[layer setDelegate:self];
 	[layer addSublayer:rootView.layer];
 	
-	if([self window] != nil) {
-		self.layer.contentsScale = [[self window] backingScaleFactor];
-	}
+	[self _updateLayerScaleFactor];
 }
 
 - (void)setNextResponder:(NSResponder *)r
@@ -177,14 +175,23 @@
 
 - (void)viewDidMoveToWindow
 {
-	if([self window] != nil) {
-		self.layer.contentsScale = [[self window] backingScaleFactor];
-	}
+	[self _updateLayerScaleFactor];
 	
 	[self.rootView didMoveToWindow];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:self.window];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:self.window];
+}
+
+- (void)_updateLayerScaleFactor {
+	if([self window] != nil) {
+		CGFloat scale = 1.0f;
+		if([[self window] respondsToSelector:@selector(backingScaleFactor)]) {
+			scale = [[self window] backingScaleFactor];
+		}
+		
+		self.layer.contentsScale = scale;
+	}
 }
 
 - (TUIView *)viewForLocalPoint:(NSPoint)p
