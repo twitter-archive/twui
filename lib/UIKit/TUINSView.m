@@ -143,9 +143,9 @@
 	CALayer *layer = [self layer];
 	[layer setDelegate:self];
 	[layer addSublayer:rootView.layer];
-	if(Screen_Scale != 1.0) {
-		layer.anchorPoint = CGPointMake(0, 0);
-		layer.transform = CATransform3DMakeScale(Screen_Scale, Screen_Scale, Screen_Scale);
+	
+	if([self window] != nil) {
+		self.layer.contentsScale = [[self window] backingScaleFactor];
 	}
 }
 
@@ -177,6 +177,10 @@
 
 - (void)viewDidMoveToWindow
 {
+	if([self window] != nil) {
+		self.layer.contentsScale = [[self window] backingScaleFactor];
+	}
+	
 	[self.rootView didMoveToWindow];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:self.window];

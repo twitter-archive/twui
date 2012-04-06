@@ -64,5 +64,4 @@ extern TUIImage *TUIGraphicsDrawAsImage(CGSize size, void(^draw)(void));
  */
 extern NSData *TUIGraphicsDrawAsPDF(CGRect *optionalMediaBox, void(^draw)(CGContextRef));
 
-extern CGFloat Screen_Scale; // set this at launch for experimental hidpi support
 extern BOOL AtLeastLion; // set at launch

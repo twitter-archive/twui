@@ -238,8 +238,6 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 // actionForLayer:forKey: implementetd in TUIView+Animation
 
-extern CGFloat Screen_Scale;
-
 - (BOOL)_disableDrawRect
 {
 	return NO;
@@ -256,7 +254,8 @@ extern CGFloat Screen_Scale;
 		// kill if we're a different size
 		if(w != _context.lastWidth || 
 		   h != _context.lastHeight ||
-		   o != _context.lastOpaque) 
+		   o != _context.lastOpaque ||
+		   fabs(self.layer.contentsScale - _context.lastContentsScale) > 0.1f) 
 		{
 			CGContextRelease(_context.context);
 			_context.context = NULL;
@@ -268,9 +267,10 @@ extern CGFloat Screen_Scale;
 		_context.lastWidth = w;
 		_context.lastHeight = h;
 		_context.lastOpaque = o;
+		_context.lastContentsScale = self.layer.contentsScale;
 
-		b.size.width *= Screen_Scale;
-		b.size.height *= Screen_Scale;
+		b.size.width *= self.layer.contentsScale;
+		b.size.height *= self.layer.contentsScale;
 		if(b.size.width < 1) b.size.width = 1;
 		if(b.size.height < 1) b.size.height = 1;
 		CGContextRef ctx = TUICreateGraphicsContextWithOptions(b.size, o);
@@ -304,7 +304,7 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	TUIGraphicsPushContext(context); \
 	if(_viewFlags.clearsContextBeforeDrawing) \
 		CGContextClearRect(context, b); \
-	CGContextScaleCTM(context, Screen_Scale, Screen_Scale); \
+	CGContextScaleCTM(context, self.layer.contentsScale, self.layer.contentsScale); \
 	CGContextSetAllowsAntialiasing(context, true); \
 	CGContextSetShouldAntialias(context, true); \
 	CGContextSetShouldSmoothFonts(context, !_viewFlags.disableSubpixelTextRendering);
@@ -313,6 +313,7 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	CA_COLOR_OVERLAY_DEBUG \
 	TUIImage *image = TUIGraphicsGetImageFromCurrentImageContext(); \
 	layer.contents = (id)image.CGImage; \
+	CGContextScaleCTM(context, 1.0f / self.layer.contentsScale, 1.0f / self.layer.contentsScale); \
 	TUIGraphicsPopContext(); \
 	if(self.drawInBackground) [CATransaction flush];
 
@@ -801,6 +802,10 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	[[NSNotificationCenter defaultCenter] postNotificationName:TUIViewWillMoveToWindowNotification object:self userInfo:newWindow != nil ? [NSDictionary dictionaryWithObject:newWindow forKey:TUIViewWindow] : nil];
 }
 - (void)didMoveToWindow {
+	if(self.nsWindow != nil) {
+		self.layer.contentsScale = [self.nsWindow backingScaleFactor];
+	}
+	
 	for(TUIView *subview in self.subviews) {
 		[subview didMoveToWindow];
 	}

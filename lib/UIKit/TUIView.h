@@ -102,6 +102,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 		BOOL lastOpaque;
 		CGContextRef context;
 		CGRect dirtyRect;
+		CGFloat lastContentsScale;
 	} _context;
 	
 	struct {
