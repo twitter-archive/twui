@@ -803,21 +803,11 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:TUIViewWillMoveToWindowNotification object:self userInfo:newWindow != nil ? [NSDictionary dictionaryWithObject:newWindow forKey:TUIViewWindow] : nil];
 }
+
 - (void)didMoveToWindow {
-	if([self nsWindow] != nil) {
-		CGFloat scale = 1.0f;
-		if([[self nsWindow] respondsToSelector:@selector(backingScaleFactor)]) {
-			scale = [[self nsWindow] backingScaleFactor];
-		}
-		
-		if([self.layer respondsToSelector:@selector(setContentsScale:)]) {
-			self.layer.contentsScale = scale;
-		}
-	}
+	[self _updateLayerScaleFactor];
 	
-	for(TUIView *subview in self.subviews) {
-		[subview didMoveToWindow];
-	}
+	[self.subviews makeObjectsPerformSelector:_cmd];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:TUIViewDidMoveToWindowNotification object:self userInfo:self.nsView.window != nil ? [NSDictionary dictionaryWithObject:self.nsView.window forKey:TUIViewWindow] : nil];
 }

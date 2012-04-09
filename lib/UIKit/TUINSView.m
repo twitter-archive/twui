@@ -23,6 +23,7 @@
 @interface TUINSView ()
 - (void)windowDidResignKey:(NSNotification *)notification;
 - (void)windowDidBecomeKey:(NSNotification *)notification;
+- (void)screenDidChange:(NSNotification *)notification;
 @end
 
 
@@ -159,7 +160,11 @@
 }
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow {
-	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidResignKeyNotification object:self.window];
+	if(self.window != nil) {
+		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidBecomeKeyNotification object:self.window];
+		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidResignKeyNotification object:self.window];
+		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidChangeScreenNotification object:self.window];
+	}
 	
 	if(newWindow != nil && rootView.layer.superlayer != [self layer]) {
 		rootView.layer.frame = self.layer.bounds;
@@ -179,8 +184,11 @@
 	
 	[self.rootView didMoveToWindow];
 	
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:self.window];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:self.window];
+	if(self.window != nil) {
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:self.window];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:self.window];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(screenDidChange:) name:NSWindowDidChangeScreenNotification object:self.window];
+	}
 }
 
 - (void)_updateLayerScaleFactor {
@@ -191,9 +199,22 @@
 		}
 		
 		if([self.layer respondsToSelector:@selector(setContentsScale:)]) {
-			self.layer.contentsScale = scale;
+			if(fabs(self.layer.contentsScale - scale) > 0.1f) {
+				self.layer.contentsScale = scale;
+			}
 		}
+		
+		[self.rootView _updateLayerScaleFactor];
 	}
+}
+
+- (void)screenDidChange:(NSNotification *)notification {
+	// at the time this is called, the window's backing scale hasn't been updated for the new screen
+	[self performSelector:@selector(backingScaleMayHaveChanged) withObject:nil afterDelay:0];
+}
+
+- (void)backingScaleMayHaveChanged {
+	[self _updateLayerScaleFactor];
 }
 
 - (TUIView *)viewForLocalPoint:(NSPoint)p

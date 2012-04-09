@@ -23,4 +23,6 @@
 
 - (TUITextRenderer *)textRendererAtPoint:(CGPoint)point;
 
+- (void)_updateLayerScaleFactor;
+
 @end

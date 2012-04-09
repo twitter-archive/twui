@@ -52,4 +52,22 @@
 	return nil;
 }
 
+- (void)_updateLayerScaleFactor {
+	if([self nsWindow] != nil) {
+		[self.subviews makeObjectsPerformSelector:_cmd];
+		
+		CGFloat scale = 1.0f;
+		if([[self nsWindow] respondsToSelector:@selector(backingScaleFactor)]) {
+			scale = [[self nsWindow] backingScaleFactor];
+		}
+		
+		if([self.layer respondsToSelector:@selector(setContentsScale:)]) {
+			if(fabs(self.layer.contentsScale - scale) > 0.1f) {
+				self.layer.contentsScale = scale;
+				[self.layer setNeedsDisplay];
+			}
+		}
+	}
+}
+
 @end
