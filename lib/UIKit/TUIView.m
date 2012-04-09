@@ -56,7 +56,7 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 
 @interface TUIView ()
-@property (nonatomic, copy) NSArray *subviews;
+@property (nonatomic, strong) NSMutableArray *subviews;
 @end
 
 @implementation TUIView
@@ -66,6 +66,15 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 @synthesize toolTip;
 @synthesize toolTipDelay;
 @synthesize drawQueue;
+
+- (void)setSubviews:(NSArray *)s
+{
+	[self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+	
+	for(TUIView *subview in s) {
+		[self addSubview:subview];
+	}
+}
 
 + (void)initialize
 {
@@ -89,21 +98,11 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 - (void)dealloc
 {
-	self.subviews = nil; // we explicitly retained all added subviews (because only the layer backings were retained by CA) so we must release them
 	[self setTextRenderers:nil];
-	[_layer release]; // be sure to do this *after* we release our subviews (we only get a handle on them by looking over _layer's sublayers)
-	[drawRect release];
-	[layout release];
-	[toolTip release];
-	[accessibilityHint release];
-	[accessibilityLabel release];
-	[accessibilityValue release];
-	[drawQueue release];
 	if(_context.context) {
 		CGContextRelease(_context.context);
 		_context.context = NULL;
 	}
-	[super dealloc];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -132,8 +131,7 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 - (void)setLayer:(CALayer *)l
 {
-	[_layer release];
-	_layer = [l retain];
+	_layer = l;
 }
 
 - (BOOL)makeFirstResponder
@@ -366,7 +364,6 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 - (void)setLayout:(TUIViewLayout)l
 {
 	self.autoresizingMask = TUIViewAutoresizingNone;
-	[layout release];
 	layout = [l copy];
 	[self _blockLayout];
 }
@@ -582,32 +579,13 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 
 @end
 
-@interface NSArray (TUIViewAdditions)
-@end
-@implementation NSArray (TUIViewAdditions)
-
-- (NSArray *)tui_map:(SEL)s
-{
-	NSMutableArray *array = [NSMutableArray arrayWithCapacity:[self count]];
-	for(id obj in self) {
-		id o = [obj performSelector:s];
-		if(o)
-			[array addObject:o];
-	}
-	return [NSArray arrayWithArray:array];
-}
-@end
-
 @implementation TUIView (TUIViewHierarchy)
+// use the accessor from the main implementation block
+@dynamic subviews;
 
 - (TUIView *)superview
 {
 	return [self.layer.superlayer closestAssociatedView];
-}
-
-- (NSArray *)subviews
-{
-	return [self.layer.sublayers tui_map:@selector(associatedView)];
 }
 
 - (NSInteger)deepNumberOfSubviews
@@ -652,10 +630,12 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	if(superview) {
 		[superview willRemoveSubview:self];
 		[self willMoveToSuperview:nil];
+
+		[superview.subviews removeObjectIdenticalTo:self];
 		[self.layer removeFromSuperlayer];
 		self.nsView = nil;
+
 		[self didMoveToSuperview];
-		[self autorelease]; // 'release'?
 	}
 }
 
@@ -714,7 +694,10 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 }
 
 #define PRE_ADDSUBVIEW \
-	[view retain]; \
+	if (!_subviews) \
+		_subviews = [[NSMutableArray alloc] init]; \
+	\
+	[self.subviews addObject:view]; \
  	[view removeFromSuperview]; /* will call willAdd:nil and didAdd (nil) */ \
 	[view willMoveToSuperview:self]; \
 	view.nsView = _nsView;
@@ -771,28 +754,24 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 - (void)bringSubviewToFront:(TUIView *)view
 {
 	if([self.subviews containsObject:view]) {
-		[view retain];
 		[view removeFromSuperview];
 		TUIView *top = [self _topSubview];
 		if(top)
 			[self insertSubview:view aboveSubview:top];
 		else
 			[self addSubview:view];
-		[view release];
 	}
 }
 
 - (void)sendSubviewToBack:(TUIView *)view
 {
 	if([self.subviews containsObject:view]) {
-		[view retain];
 		[view removeFromSuperview];
 		TUIView *bottom = [self _bottomSubview];
 		if(bottom)
 			[self insertSubview:view belowSubview:bottom];
 		else
 			[self addSubview:view];
-		[view release];
 	}
 }
 
@@ -897,7 +876,6 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 
 - (void)setDrawRect:(TUIViewDrawRect)d
 {
-	[drawRect release];
 	drawRect = [d copy];
 	[self setNeedsDisplay];
 }

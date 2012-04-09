@@ -33,8 +33,6 @@
 		[renderer setNextResponder:nil];
 	}
 	
-	[renderers retain];
-	[_textRenderers release];
 	_textRenderers = renderers;
 
 	for(TUITextRenderer *renderer in _textRenderers) {

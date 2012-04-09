@@ -46,19 +46,12 @@
 	
 	[rootView removeFromSuperview];
     rootView.nsView = nil;
-	[rootView release];
-	rootView = nil;
-	[_hoverView release];
-	_hoverView = nil;
-	[_trackingView release];
-	_trackingView = nil;
-	[_trackingArea release];
-	_trackingArea = nil;
-	[_hyperCompletion release];
-	[_tempTextRendererForTextInputClient release];
-	_tempTextRendererForTextInputClient = nil;
 	
-	[super dealloc];
+	rootView = nil;
+	_hoverView = nil;
+	_trackingView = nil;
+	_trackingArea = nil;
+	
 }
 
 - (void)resetCursorRects
@@ -94,7 +87,6 @@
 	
 	if(_trackingArea) {
 		[self removeTrackingArea:_trackingArea];
-		[_trackingArea release];
 	}
 	
 	NSRect r = [self frame];
@@ -130,8 +122,6 @@
 	v.autoresizingMask = TUIViewAutoresizingFlexibleSize;
 
 	rootView.nsView = nil;
-	[v retain];
-	[rootView release];
 	rootView = v;
 	rootView.nsView = self;
 	
@@ -289,8 +279,7 @@
 	if(_newHoverView != _hoverView) {
 		[_newHoverView mouseEntered:event];
 		[_hoverView mouseExited:event];
-		[_hoverView release];
-		_hoverView = [_newHoverView retain];
+		_hoverView = _newHoverView;
 		
 		if([[self window] isKeyWindow]) {
 			[TUITooltipWindow updateTooltip:_hoverView.toolTip delay:_hoverView.toolTipDelay];
@@ -343,8 +332,8 @@
 	} else {
 		// normal case
 	normal:
-		[_trackingView release];
-		_trackingView = [[self viewForEvent:event] retain];
+		;
+		_trackingView = [self viewForEvent:event];
 		[_trackingView mouseDown:event];
 	}
 	
@@ -353,9 +342,8 @@
 
 - (void)mouseUp:(NSEvent *)event
 {
-	TUIView *lastTrackingView = [[_trackingView retain] autorelease];
+	TUIView *lastTrackingView = _trackingView;
 
-	[_trackingView release];
 	_trackingView = nil;
 
 	[lastTrackingView mouseUp:event]; // after _trackingView set to nil, will call mouseUp:fromSubview:
@@ -383,8 +371,7 @@
 
 - (void)rightMouseDown:(NSEvent *)event
 {
-	[_trackingView release];
-	_trackingView = [[self viewForEvent:event] retain];
+	_trackingView = [self viewForEvent:event];
 	[_trackingView rightMouseDown:event];
 	[TUITooltipWindow endTooltip];
 	[super rightMouseDown:event]; // we need to send this up the responder chain so that -menuForEvent: will get called for two-finger taps
@@ -392,9 +379,8 @@
 
 - (void)rightMouseUp:(NSEvent *)event
 {
-	TUIView *lastTrackingView = [[_trackingView retain] autorelease];
+	TUIView *lastTrackingView = _trackingView;
 	
-	[_trackingView release];
 	_trackingView = nil;
 	
 	[lastTrackingView rightMouseUp:event]; // after _trackingView set to nil, will call mouseUp:fromSubview:

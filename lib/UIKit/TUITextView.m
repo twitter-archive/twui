@@ -62,10 +62,10 @@
 - (void)_replaceMisspelledWord:(NSMenuItem *)menuItem;
 - (CGRect)_cursorRect;
 
-@property (nonatomic, retain) NSArray *lastCheckResults;
-@property (nonatomic, retain) NSTextCheckingResult *selectedTextCheckingResult;
-@property (nonatomic, retain) NSMutableDictionary *autocorrectedResults;
-@property (nonatomic, retain) TUITextRenderer *placeholderRenderer;
+@property (nonatomic, strong) NSArray *lastCheckResults;
+@property (nonatomic, strong) NSTextCheckingResult *selectedTextCheckingResult;
+@property (nonatomic, strong) NSMutableDictionary *autocorrectedResults;
+@property (nonatomic, strong) TUITextRenderer *placeholderRenderer;
 @end
 
 @implementation TUITextView
@@ -117,7 +117,6 @@
 		cursor.userInteractionEnabled = NO;
 		cursor.backgroundColor = [TUIColor linkColor];
 		[self addSubview:cursor];
-		[cursor release];
 		
 		self.autocorrectedResults = [NSMutableDictionary dictionary];
 		
@@ -126,20 +125,6 @@
 		[self _updateDefaultAttributes];
 	}
 	return self;
-}
-
-- (void)dealloc
-{
-	[renderer release];
-	[drawFrame release];
-	[font release];
-	[textColor release];
-	[placeholder release];
-	[lastCheckResults release];
-	[selectedTextCheckingResult release];
-	[autocorrectedResults release];
-	[placeholderRenderer release];
-	[super dealloc];
 }
 
 - (id)forwardingTargetForSelector:(SEL)sel
@@ -179,16 +164,12 @@
 
 - (void)setFont:(TUIFont *)f
 {
-	[f retain];
-	[font release];
 	font = f;
 	[self _updateDefaultAttributes];
 }
 
 - (void)setTextColor:(TUIColor *)c
 {
-	[c retain];
-	[textColor release];
 	textColor = c;
 	[self _updateDefaultAttributes];
 }	
@@ -489,12 +470,10 @@ static CAAnimation *ThrobAnimation()
 			[menuItem setTarget:self];
 			[menuItem setRepresentedObject:guess];
 			[menu addItem:menuItem];
-			[menuItem release];
 		}
 	} else {
 		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No guesses", @"") action:NULL keyEquivalent:@""];
 		[menu addItem:menuItem];
-		[menuItem release];
 	}
 	
 	[menu addItem:[NSMenuItem separatorItem]];
@@ -746,14 +725,14 @@ static void TUITextViewDrawRoundedFrame(TUIView *view, CGFloat radius, BOOL over
 
 TUIViewDrawRect TUITextViewSearchFrame(void)
 {
-	return [[^(TUIView *view, CGRect rect) {
+	return [^(TUIView *view, CGRect rect) {
 		TUITextViewDrawRoundedFrame(view, 	floor(view.bounds.size.height / 2), NO);
-	} copy] autorelease];
+	} copy];
 }
 
 TUIViewDrawRect TUITextViewSearchFrameOverDark(void)
 {
-	return [[^(TUIView *view, CGRect rect) {
+	return [^(TUIView *view, CGRect rect) {
 		TUITextViewDrawRoundedFrame(view, 	floor(view.bounds.size.height / 2), YES);
-	} copy] autorelease];
+	} copy];
 }

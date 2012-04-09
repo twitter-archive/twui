@@ -28,15 +28,15 @@ CGSize AB_CTFrameGetSize(CTFrameRef frame)
 {
 	CGFloat h = 0.0;
 	CGFloat w = 0.0;
-	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
+	NSArray *lines = (__bridge NSArray *)CTFrameGetLines(frame);
 	for(id line in lines) {
-		CGSize s = AB_CTLineGetSize((CTLineRef)line);
+		CGSize s = AB_CTLineGetSize((__bridge CTLineRef)line);
 		if(s.width > w)
 			w = s.width;
 	}
 	
 	// Mostly based off http://lists.apple.com/archives/quartz-dev/2008/Mar/msg00079.html
-	CTLineRef lastLine = (CTLineRef)[lines lastObject];
+	CTLineRef lastLine = (__bridge CTLineRef)[lines lastObject];
 	if(lastLine != NULL) {
 		// Get the origin of the last line. We add the descent to this
 		// (below) to get the bottom edge of the last line of text.
@@ -57,7 +57,7 @@ CGSize AB_CTFrameGetSize(CTFrameRef frame)
 
 CGFloat AB_CTFrameGetHeight(CTFrameRef f)
 {
-	NSArray *lines = (NSArray *)CTFrameGetLines(f);
+	NSArray *lines = (__bridge NSArray *)CTFrameGetLines(f);
 	NSInteger n = (NSInteger)[lines count];
 	CGPoint *lineOrigins = (CGPoint *) malloc(sizeof(CGPoint) * n);
 	CTFrameGetLineOrigins(f, CFRangeMake(0, n), lineOrigins);
@@ -66,7 +66,7 @@ CGFloat AB_CTFrameGetHeight(CTFrameRef f)
 	
 	CGFloat h = 0.0;
 	for(int i = 0; i < n; ++i) {
-		CTLineRef line = (CTLineRef)[lines objectAtIndex:i];
+		CTLineRef line = (__bridge CTLineRef)[lines objectAtIndex:i];
 		CGFloat ascent, descent, leading;
 		CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
 		if(i == 0) {
@@ -92,7 +92,7 @@ CFIndex AB_CTFrameGetStringIndexForPosition(CTFrameRef frame, CGPoint p)
 //	NSLog(@"checking p = %@", NSStringFromCGPoint(p));
 //	CGRect f = [self frame];
 //	NSLog(@"frame = %@", f);
-	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
+	NSArray *lines = (__bridge NSArray *)CTFrameGetLines(frame);
 	
 	CFIndex linesCount = [lines count];
 	CGPoint *lineOrigins = (CGPoint *) malloc(sizeof(CGPoint) * linesCount);
@@ -102,7 +102,7 @@ CFIndex AB_CTFrameGetStringIndexForPosition(CTFrameRef frame, CGPoint p)
 	CGPoint lineOrigin = CGPointZero;
 	
 	for(CFIndex i = 0; i < linesCount; ++i) {
-		line = (CTLineRef)[lines objectAtIndex:i];
+		line = (__bridge CTLineRef)[lines objectAtIndex:i];
 		lineOrigin = lineOrigins[i];
 //		NSLog(@"%d origin = %@", i, NSStringFromCGPoint(lineOrigin));
 		CGFloat descent, ascent;
@@ -175,7 +175,7 @@ void AB_CTLinesGetRectsForRangeWithAggregationType(NSArray *lines, CGPoint *line
 	CFIndex linesCount = [lines count];
 	
 	for(CFIndex i = 0; i < linesCount; ++i) {
-		CTLineRef line = (CTLineRef)[lines objectAtIndex:i];
+		CTLineRef line = (__bridge CTLineRef)[lines objectAtIndex:i];
 		
 		CFRange lineRange = CTLineGetStringRange(line);
 		CFIndex lineStartIndex = lineRange.location;

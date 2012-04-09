@@ -63,11 +63,7 @@
 
 - (void)dealloc
 {
-	[attributedString release];
 	[self _resetFramesetter];
-	[hitRange release];
-	[shadowColor release];
-	[super dealloc];
 }
 
 - (void)_buildFrameWithEffectiveFrame:(CGRect)effectiveFrame
@@ -105,7 +101,7 @@
 - (void)_buildFramesetter
 {
 	if(!_ct_framesetter) {
-		_ct_framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)attributedString);
+		_ct_framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)attributedString);
 	}
 	
 	[self _buildFrame];
@@ -250,7 +246,7 @@
 			[self.attributedString enumerateAttribute:TUIAttributedStringBackgroundColorAttributeName inRange:NSMakeRange(0, [self.attributedString length]) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
 				if(value == NULL) return;
 				
-				CGColorRef color = (CGColorRef) value;
+				CGColorRef color = (__bridge CGColorRef) value;
 				CGContextSetFillColorWithColor(context, color);
 				
 				AB_CTLineRectAggregationType aggregationType = (AB_CTLineRectAggregationType) [[self.attributedString attribute:TUIAttributedStringBackgroundFillStyleName atIndex:range.location effectiveRange:NULL] integerValue];
@@ -368,8 +364,6 @@
 
 - (void)setAttributedString:(NSAttributedString *)a
 {
-	[a retain];
-	[attributedString release];
 	attributedString = a;
 	
 	[self _resetFramesetter];

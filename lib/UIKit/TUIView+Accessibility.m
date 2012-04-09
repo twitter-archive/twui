@@ -30,7 +30,6 @@
 {
 	if(label == accessibilityLabel) return;
 	
-	[accessibilityLabel release];
 	accessibilityLabel = [label copy];
 }
 
@@ -43,7 +42,6 @@
 {
 	if(hint == accessibilityHint) return;
 	
-	[accessibilityHint release];
 	accessibilityHint = [hint copy];
 }
 
@@ -56,7 +54,6 @@
 {
 	if(value == accessibilityValue) return;
 	
-	[accessibilityValue release];
 	accessibilityValue = [value copy];
 }
 
@@ -223,7 +220,7 @@
 		}
 	}
 	
-	return [[accessibleSubviews copy] autorelease];
+	return [accessibleSubviews copy];
 }
 
 @end

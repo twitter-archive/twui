@@ -23,7 +23,6 @@
 
 - (void)setReuseIdentifier:(NSString *)r
 {
-	[_reuseIdentifier release];
 	_reuseIdentifier = [r copy];
 }
 
@@ -36,11 +35,6 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	[_reuseIdentifier release];
-	[super dealloc];
-}
 
 - (NSString *)reuseIdentifier
 {

@@ -45,11 +45,6 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	[knob release];
-	[super dealloc];
-}
 
 - (BOOL)isVertical
 {

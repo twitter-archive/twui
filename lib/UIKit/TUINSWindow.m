@@ -151,7 +151,6 @@ NSInteger makeFirstResponderCount = 0;
 			TUINSWindowFrame *contentView = [[TUINSWindowFrame alloc] initWithFrame:b];
 			contentView->w = self;
 			[self setContentView:contentView];
-			[contentView release];
 		} else {
 			[self setOpaque:YES];
             [self setHasShadow:YES];
@@ -166,13 +165,6 @@ NSInteger makeFirstResponderCount = 0;
 		altUINSViews = [[NSMutableArray alloc] init];
 	}
 	return self;
-}
-
-- (void)dealloc
-{
-    [nsView release];
-	[altUINSViews release];
-	[super dealloc];
 }
 
 - (void)drawBackground:(CGRect)rect

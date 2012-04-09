@@ -19,6 +19,7 @@
 #import "TUIView+Accessibility.h"
 #import "TUIAccessibility.h"
 #import "TUINSView.h"
+#import "TUINSWindow.h"
 
 @implementation TUIControl
 
@@ -26,7 +27,6 @@
 {
 	self = [super initWithFrame:rect];
 	if(self == nil) {
-		[self release];
 		return nil;
 	}
 	
@@ -35,11 +35,6 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	[_targetActions release];
-	[super dealloc];
-}
 
 - (BOOL)isEnabled
 {

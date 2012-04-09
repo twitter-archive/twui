@@ -23,7 +23,7 @@
 	NSInteger leftCapWidth;
 	NSInteger topCapHeight;
 	@private
-	TUIImage *slices[9];
+	__strong TUIImage *slices[9];
 	struct {
 		unsigned int haveSlices:1;
 	} _flags;
@@ -75,7 +75,7 @@
 
 + (TUIImage *)imageWithData:(NSData *)data
 {
-	CGImageSourceRef imageSource = CGImageSourceCreateWithData((CFDataRef)data, NULL);
+	CGImageSourceRef imageSource = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
 	if(!imageSource) {
 		return nil;
 	}
@@ -107,12 +107,11 @@
 {
 	if(_imageRef)
 		CGImageRelease(_imageRef);
-	[super dealloc];
 }
 
 + (TUIImage *)imageWithCGImage:(CGImageRef)imageRef
 {
-	return [[[self alloc] initWithCGImage:imageRef] autorelease];
+	return [[self alloc] initWithCGImage:imageRef];
 }
 
 /**
@@ -134,7 +133,7 @@
   for(NSImageRep *rep in [image representations]){
     CGImageRef cgImage;
     if([rep isKindOfClass:[NSBitmapImageRep class]] && (cgImage = [(NSBitmapImageRep *)rep CGImage]) != nil){
-      return [[[TUIImage alloc] initWithCGImage:cgImage] autorelease];
+      return [[TUIImage alloc] initWithCGImage:cgImage];
     }
   }
 #endif
@@ -164,7 +163,7 @@
       // create an image from the context and use that to create our TUIImage
       CGImageRef cgImage;
       if((cgImage = CGBitmapContextCreateImage(context)) != NULL){
-        result = [[[TUIImage alloc] initWithCGImage:cgImage] autorelease];
+        result = [[TUIImage alloc] initWithCGImage:cgImage];
         CFRelease(cgImage);
       }
       
@@ -239,9 +238,11 @@
 {
 	if(_imageRef) {
 		NSMutableData *mutableData = [NSMutableData data];
-		CGImageDestinationRef destination = CGImageDestinationCreateWithData((CFMutableDataRef)mutableData, (CFStringRef)type, 1, NULL);
+		CGImageDestinationRef destination = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)mutableData, (__bridge CFStringRef)type, 1, NULL);
+		
 		NSDictionary *properties = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:compressionQuality], kCGImageDestinationLossyCompressionQuality, nil];
-		CGImageDestinationAddImage(destination, _imageRef, (CFDictionaryRef)properties);
+		CGImageDestinationAddImage(destination, _imageRef, (__bridge CFDictionaryRef)properties);
+		
 		CGImageDestinationFinalize(destination);
 		CFRelease(destination);
 		return mutableData;
@@ -259,8 +260,7 @@
 - (void)dealloc
 {
 	for(int i = 0; i < 9; ++i)
-		[slices[i] release];
-	[super dealloc];
+		;
 }
 
 - (NSInteger)leftCapWidth
@@ -324,7 +324,7 @@
 	if(_imageRef) {
 		if(!_flags.haveSlices) {
 			STRETCH_COORDS(0.0, 0.0, s.width, s.height, t, l, t, l)
-			#define X(I) slices[I] = [[self upsideDownCrop:r[I]] retain];
+			#define X(I) slices[I] = [self upsideDownCrop:r[I]];
 			X(0) X(1) X(2)
 			X(3) X(4) X(5)
 			X(6) X(7) X(8)
@@ -366,7 +366,7 @@ NSData *TUIImageJPEGRepresentation(TUIImage *image, CGFloat compressionQuality)
 
 - (id)nsImage
 {
-	return [[[NSImage alloc] initWithCGImage:self.CGImage size:NSZeroSize] autorelease];
+	return [[NSImage alloc] initWithCGImage:self.CGImage size:NSZeroSize];
 }
 
 @end

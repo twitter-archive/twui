@@ -43,7 +43,7 @@ typedef enum {
 {
 	NSAttributedString *attributedString;
 	CGRect frame;
-	TUIView *view; // weak
+	TUIView *__unsafe_unretained view; // unsafe_unretained
 	
 	CTFramesetterRef _ct_framesetter;
 	CGPathRef _ct_path;
@@ -77,13 +77,13 @@ typedef enum {
 	} _flags;
 }
 
-@property (nonatomic, retain) NSAttributedString *attributedString;
+@property (nonatomic, strong) NSAttributedString *attributedString;
 @property (nonatomic, assign) CGRect frame;
-@property (nonatomic, assign) TUIView *view; // weak, remember to set to nil before view goes away
+@property (nonatomic, unsafe_unretained) TUIView *view; // unsafe_unretained, remember to set to nil before view goes away
 
 @property (nonatomic, assign) CGSize shadowOffset;
 @property (nonatomic, assign) CGFloat shadowBlur;
-@property (nonatomic, retain) TUIColor *shadowColor; // default = nil for no shadow
+@property (nonatomic, strong) TUIColor *shadowColor; // default = nil for no shadow
 
 @property (nonatomic, assign) TUITextVerticalAlignment verticalAlignment;
 
@@ -113,7 +113,7 @@ typedef enum {
 // count - the number of rects in the `rects` array
 - (void)drawSelectionWithRects:(CGRect *)rects count:(CFIndex)count;
 
-@property (nonatomic, retain) id<ABActiveTextRange> hitRange;
+@property (nonatomic, strong) id<ABActiveTextRange> hitRange;
 
 @end
 
