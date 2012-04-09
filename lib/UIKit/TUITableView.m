@@ -926,7 +926,6 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
     [self.delegate tableViewWillReloadData:self];
   }
 	
-	[_selectedIndexPath release]; // should already be nil
 	_selectedIndexPath = nil;
   
 	// need to recycle all visible cells, have them be regenerated on layoutSubviews
@@ -993,7 +992,6 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 
 - (void)reloadLayout
 {
-	[_sectionInfo release];
 	_sectionInfo = nil; // will be regenerated on next layout
 	
 	[self _preLayoutCells];

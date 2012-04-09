@@ -116,7 +116,7 @@ NSString * const TUIAttributedStringPreDrawBlockName = @"TUIAttributedStringPreD
     };
 	
 	CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(settings, sizeof(settings) / sizeof(settings[0]));
-	[self addAttributes:[NSDictionary dictionaryWithObjectsAndKeys:(id)paragraphStyle, kCTParagraphStyleAttributeName, nil] range:range];
+	[self addAttributes:[NSDictionary dictionaryWithObjectsAndKeys:(__bridge id)paragraphStyle, kCTParagraphStyleAttributeName, nil] range:range];
 	CFRelease(paragraphStyle);
 }
 

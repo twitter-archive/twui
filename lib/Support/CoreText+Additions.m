@@ -155,7 +155,7 @@ void AB_CTFrameGetRectsForRangeWithAggregationType(CTFrameRef frame, CFRange ran
 	CGRect bounds;
 	CGPathIsRect(CTFrameGetPath(frame), &bounds);
 	
-	NSArray *lines = (NSArray *)CTFrameGetLines(frame);
+	NSArray *lines = (__bridge NSArray *)CTFrameGetLines(frame);
 	CFIndex linesCount = [lines count];
 	CGPoint *lineOrigins = (CGPoint *) malloc(sizeof(CGPoint) * linesCount);
 	CTFrameGetLineOrigins(frame, CFRangeMake(0, linesCount), lineOrigins);

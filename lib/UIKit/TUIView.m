@@ -61,15 +61,21 @@ CGRect(^TUIViewCenteredLayout)(TUIView*) = nil;
 
 @implementation TUIView
 
-@dynamic subviews;
 @synthesize layout;
 @synthesize toolTip;
 @synthesize toolTipDelay;
 @synthesize drawQueue;
+// use the accessor from the main implementation block
+@synthesize subviews = _subviews;
 
 - (void)setSubviews:(NSArray *)s
 {
-	[self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+	NSMutableArray *toRemove = [NSMutableArray array];
+	for(CALayer *sublayer in self.layer.sublayers) {
+		TUIView *associatedView = [sublayer associatedView];
+		if(associatedView != nil) [toRemove addObject:associatedView];
+	}
+	[toRemove makeObjectsPerformSelector:@selector(removeFromSuperview)];
 	
 	for(TUIView *subview in s) {
 		[self addSubview:subview];
@@ -580,7 +586,7 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 @end
 
 @implementation TUIView (TUIViewHierarchy)
-// use the accessor from the main implementation block
+
 @dynamic subviews;
 
 - (TUIView *)superview
@@ -594,20 +600,6 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	for(TUIView *s in self.subviews)
 		n += s.deepNumberOfSubviews;
 	return n;
-}
-
-- (void)setSubviews:(NSArray *)s
-{
-	NSMutableArray *toRemove = [NSMutableArray array];
-	for(CALayer *sublayer in self.layer.sublayers) {
-		TUIView *associatedView = [sublayer associatedView];
-		if(associatedView != nil) [toRemove addObject:associatedView];
-	}
-	[toRemove makeObjectsPerformSelector:@selector(removeFromSuperview)];
-	
-	for(TUIView *subview in s) {
-		[self addSubview:subview];
-	}
 }
 
 - (void)_cleanupResponderChain // called when a view is about to be removed from the heirarchy

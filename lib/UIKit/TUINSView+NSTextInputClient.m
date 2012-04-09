@@ -63,7 +63,7 @@
 - (NSUInteger)characterIndexForPoint:(NSPoint)screenPoint
 {
 //	NSLog(@"%@ %@", NSStringFromSelector(_cmd), NSStringFromPoint(screenPoint));
-	_tempTextRendererForTextInputClient = [[self _textRendererAtScreenPoint:screenPoint] retain];
+	_tempTextRendererForTextInputClient = [self _textRendererAtScreenPoint:screenPoint];
 	if(_tempTextRendererForTextInputClient) {
 		NSPoint locationInWindow = [[self window] convertScreenToBase:screenPoint];
 		CGPoint vp = [_tempTextRendererForTextInputClient.view localPointForLocationInWindow:locationInWindow];
@@ -101,8 +101,6 @@
 		screenRect.origin = [_tempTextRendererForTextInputClient.view.nsWindow convertBaseToScreen:windowRelativeRect.origin];
 	
 		ret = screenRect;
-		
-		[_tempTextRendererForTextInputClient release];
 	}
 	
 	_tempTextRendererForTextInputClient = nil; // reset (this is the last call in the dictionary-lookup sequence

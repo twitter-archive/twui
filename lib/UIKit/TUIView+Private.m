@@ -16,6 +16,7 @@
 
 #import "TUIView+Private.h"
 #import "TUITextRenderer.h"
+#import "TUINSWindow.h"
 
 @implementation TUIView (Private)
 
