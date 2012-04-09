@@ -52,7 +52,8 @@
 	return nil;
 }
 
-- (void)_updateLayerScaleFactor {
+- (void)_updateLayerScaleFactor
+{
 	if([self nsWindow] != nil) {
 		[self.subviews makeObjectsPerformSelector:_cmd];
 		
