@@ -23,7 +23,7 @@
 @interface TUINSView ()
 - (void)windowDidResignKey:(NSNotification *)notification;
 - (void)windowDidBecomeKey:(NSNotification *)notification;
-- (void)screenDidChange:(NSNotification *)notification;
+- (void)screenProfileOrBackingPropertiesDidChange:(NSNotification *)notification;
 @end
 
 
