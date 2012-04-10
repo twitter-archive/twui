@@ -19,6 +19,7 @@
 
 typedef enum {
 	TUITableViewStylePlain,              // regular table view
+	TUITableViewStyleGrouped, // grouped table view—headers stick to the top of the table view and scroll with it
 } TUITableViewStyle;
 
 typedef enum {

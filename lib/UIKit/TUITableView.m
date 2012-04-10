@@ -732,27 +732,29 @@ static NSInteger SortCells(TUITableViewCell *a, TUITableViewCell *b, void *ctx)
 			if(section.headerView != nil) {
 				CGRect headerFrame = [self rectForHeaderOfSection:index];
 				
-				// check if this header needs to be pinned
-				if(CGRectGetMaxY(headerFrame) > CGRectGetMaxY(visible)) {
-					headerFrame.origin.y = CGRectGetMaxY(visible) - headerFrame.size.height;
-					pinnedHeader = section.headerView;
-					// if the header is a TUITableViewSectionHeader notify it of it's pinned state
-					if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
-					  ((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = TRUE;
-					}
-				}else if((pinnedHeader != nil) && (CGRectGetMaxY(headerFrame) > pinnedHeader.frame.origin.y)) {
-					// this header is intersecting with the pinned header, so we push the pinned header upwards.
-					CGRect pinnedHeaderFrame = pinnedHeader.frame;
-					pinnedHeaderFrame.origin.y = CGRectGetMaxY(headerFrame);
-					pinnedHeader.frame = pinnedHeaderFrame;
-					// if the header is a TUITableViewSectionHeader notify it of it's pinned state
-					if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
-					  ((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = FALSE;
-					}
-				}else{
-					// if the header is a TUITableViewSectionHeader notify it of it's pinned state
-					if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
-					  ((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = FALSE;
+				if(_style == TUITableViewStyleGrouped) {
+					// check if this header needs to be pinned
+					if(CGRectGetMaxY(headerFrame) > CGRectGetMaxY(visible)) {
+						headerFrame.origin.y = CGRectGetMaxY(visible) - headerFrame.size.height;
+						pinnedHeader = section.headerView;
+						// if the header is a TUITableViewSectionHeader notify it of it's pinned state
+						if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
+							((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = TRUE;
+						}
+					}else if((pinnedHeader != nil) && (CGRectGetMaxY(headerFrame) > pinnedHeader.frame.origin.y)) {
+						// this header is intersecting with the pinned header, so we push the pinned header upwards.
+						CGRect pinnedHeaderFrame = pinnedHeader.frame;
+						pinnedHeaderFrame.origin.y = CGRectGetMaxY(headerFrame);
+						pinnedHeader.frame = pinnedHeaderFrame;
+						// if the header is a TUITableViewSectionHeader notify it of it's pinned state
+						if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
+							((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = FALSE;
+						}
+					}else{
+						// if the header is a TUITableViewSectionHeader notify it of it's pinned state
+						if([section.headerView isKindOfClass:[TUITableViewSectionHeader class]]){
+							((TUITableViewSectionHeader *)section.headerView).pinnedToViewport = FALSE;
+						}
 					}
 				}
 				
