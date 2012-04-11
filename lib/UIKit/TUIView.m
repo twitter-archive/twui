@@ -685,11 +685,15 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 	}
 }
 
-#define PRE_ADDSUBVIEW \
+#define PRE_ADDSUBVIEW(index) \
 	if (!_subviews) \
 		_subviews = [[NSMutableArray alloc] init]; \
 	\
-	[self.subviews addObject:view]; \
+	if (index == NSUIntegerMax) {\
+		[self.subviews addObject:view]; \
+	} else {\
+		[self.subviews insertObject:view atIndex:index];\
+	}\
  	[view removeFromSuperview]; /* will call willAdd:nil and didAdd (nil) */ \
 	[view willMoveToSuperview:self]; \
 	view.nsView = _nsView;
@@ -704,28 +708,36 @@ else CGContextSetRGBFillColor(context, 1, 0, 0, 0.3); CGContextFillRect(context,
 {
 	if(!view)
 		return;
-	PRE_ADDSUBVIEW
+	PRE_ADDSUBVIEW(NSUIntegerMax)
 	[self.layer addSublayer:view.layer];
 	POST_ADDSUBVIEW
 }
 
 - (void)insertSubview:(TUIView *)view atIndex:(NSInteger)index
 {
-	PRE_ADDSUBVIEW
+	PRE_ADDSUBVIEW(index)
 	[self.layer insertSublayer:view.layer atIndex:(unsigned int)index];
 	POST_ADDSUBVIEW
 }
 
 - (void)insertSubview:(TUIView *)view belowSubview:(TUIView *)siblingSubview
 {
-	PRE_ADDSUBVIEW
+	NSUInteger siblingIndex = [self.subviews indexOfObject:siblingSubview];
+	if (siblingIndex == NSNotFound)
+		return;
+	
+	PRE_ADDSUBVIEW(siblingIndex + 1)
 	[self.layer insertSublayer:view.layer below:siblingSubview.layer];
 	POST_ADDSUBVIEW
 }
 
 - (void)insertSubview:(TUIView *)view aboveSubview:(TUIView *)siblingSubview
 {
-	PRE_ADDSUBVIEW
+	NSUInteger siblingIndex = [self.subviews indexOfObject:siblingSubview];
+	if (siblingIndex == NSNotFound)
+		return;
+	
+	PRE_ADDSUBVIEW(siblingIndex)
 	[self.layer insertSublayer:view.layer above:siblingSubview.layer];
 	POST_ADDSUBVIEW
 }
