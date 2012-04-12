@@ -153,12 +153,7 @@
 	if(self.window != nil) {
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidBecomeKeyNotification object:self.window];
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidResignKeyNotification object:self.window];
-		
-		if(NSWindowDidChangeBackingPropertiesNotification) {
-			[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidChangeBackingPropertiesNotification object:self.window];
-		} else {
-			[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidChangeScreenProfileNotification object:self.window];
-		}
+		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidChangeScreenProfileNotification object:self.window];
 	}
 	
 	if(newWindow != nil && rootView.layer.superlayer != [self layer]) {
@@ -183,13 +178,9 @@
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:self.window];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:self.window];
 		
-		if(NSWindowDidChangeBackingPropertiesNotification) {
-			[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(screenProfileOrBackingPropertiesDidChange:) name:NSWindowDidChangeBackingPropertiesNotification object:self.window];
-		} else {
-			// make sure the window will post NSWindowDidChangeScreenProfileNotification
-			[self.window setDisplaysWhenScreenProfileChanges:YES];
-			[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(screenProfileOrBackingPropertiesDidChange:) name:NSWindowDidChangeScreenProfileNotification object:self.window];
-		}
+		// make sure the window will post NSWindowDidChangeScreenProfileNotification
+		[self.window setDisplaysWhenScreenProfileChanges:YES];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(screenProfileOrBackingPropertiesDidChange:) name:NSWindowDidChangeScreenProfileNotification object:self.window];
 	}
 }
 
