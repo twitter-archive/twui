@@ -41,6 +41,8 @@
 #import "TUICGAdditions.h"
 #import "CoreText+Additions.h"
 #import "TUITextEditor.h"
+#import "TUIPopover.h"
+#import "CAAnimation+TUIExtensions.h"
 
 extern CGContextRef TUIGraphicsGetCurrentContext(void);
 extern void TUIGraphicsPushContext(CGContextRef context);
