@@ -26,7 +26,7 @@ NSString * const TUIAttributedStringPreDrawBlockName = @"TUIAttributedStringPreD
 
 + (TUIAttributedString *)stringWithString:(NSString *)string
 {
-	return (TUIAttributedString *)[[NSMutableAttributedString alloc] initWithString:string];
+	return (TUIAttributedString *)[[NSMutableAttributedString alloc] initWithString:string ? : @""];
 }
 
 @end
