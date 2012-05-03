@@ -388,24 +388,29 @@ static CAAnimation *ThrobAnimation()
 				}
 								
 				if(result.resultType == NSTextCheckingTypeCorrection || result.resultType == NSTextCheckingTypeReplacement) {
-					NSString *oldString = [[[renderer backingStore] string] substringWithRange:result.range];
-					TUITextViewAutocorrectedPair *correctionPair = [[TUITextViewAutocorrectedPair alloc] init];
-					correctionPair.correctionResult = result;
-					correctionPair.originalString = oldString;
-					
-					// Don't redo corrections that the user undid.
-					if([self.autocorrectedResults objectForKey:correctionPair] != nil) continue;
-					
-					[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:result.range];
-					[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:result.range];
-					
-					[self.autocorrectedResults setObject:oldString forKey:correctionPair];
-					[[renderer backingStore] replaceCharactersInRange:result.range withString:result.replacementString];
-					[autocorrectedResultsThisRound addObject:result];
-					
-					// the replacement could have changed the length of the string, so adjust the selection to account for that
-					NSInteger lengthChange = result.replacementString.length - oldString.length;
-					[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
+					NSString *backingString = [[renderer backingStore] string];
+					if(NSMaxRange(result.range) <= backingString.length) {
+						NSString *oldString = [backingString substringWithRange:result.range];
+						TUITextViewAutocorrectedPair *correctionPair = [[TUITextViewAutocorrectedPair alloc] init];
+						correctionPair.correctionResult = result;
+						correctionPair.originalString = oldString;
+						
+						// Don't redo corrections that the user undid.
+						if([self.autocorrectedResults objectForKey:correctionPair] != nil) continue;
+						
+						[[renderer backingStore] removeAttribute:(id)kCTUnderlineColorAttributeName range:result.range];
+						[[renderer backingStore] removeAttribute:(id)kCTUnderlineStyleAttributeName range:result.range];
+						
+						[self.autocorrectedResults setObject:oldString forKey:correctionPair];
+						[[renderer backingStore] replaceCharactersInRange:result.range withString:result.replacementString];
+						[autocorrectedResultsThisRound addObject:result];
+						
+						// the replacement could have changed the length of the string, so adjust the selection to account for that
+						NSInteger lengthChange = result.replacementString.length - oldString.length;
+						[self setSelectedRange:NSMakeRange(self.selectedRange.location + lengthChange, self.selectedRange.length)];
+					} else {
+						NSLog(@"Autocorrection result that's out of range: %@", result);
+					}
 				} else if(result.resultType == NSTextCheckingTypeSpelling) {
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineColorAttributeName value:(id)[TUIColor redColor].CGColor range:result.range];
 					[[renderer backingStore] addAttribute:(id)kCTUnderlineStyleAttributeName value:[NSNumber numberWithInteger:kCTUnderlineStyleThick | kCTUnderlinePatternDot] range:result.range];
