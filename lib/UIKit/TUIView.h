@@ -85,7 +85,7 @@ extern CGRect(^TUIViewCenteredLayout)(TUIView*);
 	
 	CGPoint		startDrag;
 	
-	id<TUIViewDelegate> _viewDelegate;
+	__unsafe_unretained id<TUIViewDelegate> _viewDelegate;
 	
 	TUIViewDrawRect	drawRect;
 	TUIViewLayout		layout;

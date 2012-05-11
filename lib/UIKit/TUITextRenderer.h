@@ -53,7 +53,7 @@ typedef enum {
 	CFIndex _selectionEnd;
 	TUITextSelectionAffinity _selectionAffinity;
 	
-	id<TUITextRendererDelegate> delegate;
+	__unsafe_unretained id<TUITextRendererDelegate> delegate;
 	id<ABActiveTextRange> hitRange;
 	
 	CGSize shadowOffset;
