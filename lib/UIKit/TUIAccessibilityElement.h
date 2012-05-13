@@ -11,7 +11,7 @@
 
 // implements the TUIAccessibility informal protocol
 @interface TUIAccessibilityElement : NSObject {
-	id accessibilityContainer;
+	__unsafe_unretained id accessibilityContainer;
 	NSString *accessibilityLabel;
 }
 
