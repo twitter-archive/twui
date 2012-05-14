@@ -15,7 +15,7 @@
 	NSString *accessibilityLabel;
 }
 
-@property (nonatomic, assign) id accessibilityContainer;
+@property (nonatomic, __unsafe_unretained) id accessibilityContainer;
 @property (nonatomic, copy) NSString *accessibilityLabel;
 
 @end
